@@ -188,7 +188,7 @@ class TestRenderCardHtml:
 
     def test_sprint_badge_outlined_style(self):
         html = render_card_html(_item(sprint_target=3))
-        assert "transparent" in html
+        assert "background:none" in html
         assert "border:1px solid #e5e7eb" in html
 
     def test_priority_badge_has_bg_color(self):

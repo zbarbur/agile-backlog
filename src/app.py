@@ -67,60 +67,29 @@ def render_card_html(item: BacklogItem) -> str:
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
 
-    # P1 left border accent
-    p1_border = "border-left:3px solid #ef4444;" if item.priority == "P1" else ""
+    p1_style = "border-left:3px solid #ef4444;" if item.priority == "P1" else ""
+    pill = "font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap"
 
-    # Category pill — uppercase, no emoji
-    category_html = (
-        f'<span style="display:inline-flex;align-items:center;height:20px;'
-        f"font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;"
-        f"color:{cat_color};background:{cat_bg};"
-        f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
-        f"{item.category}</span>"
-    )
-
-    # Priority pill
-    priority_html = (
-        f'<span style="display:inline-flex;align-items:center;height:20px;'
-        f"font-size:11px;font-weight:600;text-transform:uppercase;"
-        f"color:{pri_color};background:{pri_bg};"
-        f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
-        f"{item.priority}</span>"
-    )
-
-    # Phase pill — lowercase italic, gray
-    phase_html = ""
+    badges = [
+        f'<span style="{pill};text-transform:uppercase;color:{cat_color};background:{cat_bg}">{item.category}</span>',
+        f'<span style="{pill};text-transform:uppercase;color:{pri_color};background:{pri_bg}">{item.priority}</span>',
+    ]
     if item.phase:
-        phase_html = (
-            f'<span style="display:inline-flex;align-items:center;height:20px;'
-            f"font-size:11px;font-weight:600;font-style:italic;text-transform:none;"
-            f"color:#6b7280;background:#f3f4f6;"
-            f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
-            f"{item.phase}</span>"
+        badges.append(f'<span style="{pill};font-style:italic;color:#6b7280;background:#f3f4f6">{item.phase}</span>')
+    if item.sprint_target is not None:
+        badges.append(
+            f'<span style="{pill};font-weight:500;color:#6b7280;background:none;'
+            f'border:1px solid #e5e7eb">S{item.sprint_target}</span>'
         )
 
-    # Sprint pill — outlined style
-    sprint_html = ""
-    if item.sprint_target is not None:
-        sprint_html = (
-            f'<span style="display:inline-flex;align-items:center;height:20px;'
-            f"font-size:11px;font-weight:500;"
-            f"color:#6b7280;background:transparent;border:1px solid #e5e7eb;"
-            f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
-            f"S{item.sprint_target}</span>"
-        )
+    badge_row = " ".join(badges)
 
     return (
-        f'<div style="margin:0;padding:2px 0;{p1_border}">\n'
-        f'  <div style="font-size:14px;font-weight:600;color:#111827;line-height:1.35;'
-        f'margin-bottom:6px;">{item.title}</div>\n'
-        f'  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">\n'
-        f"    {category_html}\n"
-        f"    {priority_html}\n"
-        f"    {phase_html}\n"
-        f"    {sprint_html}\n"
-        f"  </div>\n"
-        f"</div>"
+        f'<div style="margin:0;padding:2px 0;{p1_style}">'
+        f'<div style="font-size:14px;font-weight:600;color:#111827;line-height:1.35;'
+        f'margin-bottom:6px">{item.title}</div>'
+        f'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+        f"{badge_row}</div></div>"
     )
 
 
