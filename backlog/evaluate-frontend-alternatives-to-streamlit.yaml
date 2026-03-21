@@ -1,5 +1,5 @@
 title: Evaluate frontend alternatives to Streamlit
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 6
@@ -27,4 +27,6 @@ acceptance_criteria:
 test_plan:
 - "No code tests \u2014 output is a recommendation document"
 notes: ''
-phase: spec
+phase: null
+design_reviewed: false
+code_reviewed: false

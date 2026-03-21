@@ -1,5 +1,5 @@
 title: Auto-set phase when moving to doing
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 6
@@ -26,4 +26,6 @@ test_plan:
 - 'tests/test_cli.py: test move to doing without --phase defaults to plan'
 - 'tests/test_cli.py: test move to done clears phase'
 notes: ''
-phase: spec
+phase: null
+design_reviewed: false
+code_reviewed: false

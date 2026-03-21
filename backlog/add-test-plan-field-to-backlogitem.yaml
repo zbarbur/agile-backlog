@@ -1,5 +1,5 @@
 title: Add test_plan field to BacklogItem
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 6
@@ -26,4 +26,6 @@ test_plan:
 - 'tests/test_models.py: test test_plan defaults to empty list'
 - 'tests/test_cli.py: test edit --test-plan populates field'
 notes: ''
-phase: coding
+phase: null
+design_reviewed: false
+code_reviewed: false

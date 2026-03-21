@@ -1,5 +1,5 @@
 title: Update sprint skills to use YAML
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 6
@@ -35,4 +35,6 @@ test_plan:
 - 'Manual: run /sprint-start and verify YAML items get populated'
 - 'Manual: run /sprint-end and verify it reads from YAML'
 notes: ''
-phase: spec
+phase: null
+design_reviewed: false
+code_reviewed: false

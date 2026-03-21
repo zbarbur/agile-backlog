@@ -1,5 +1,5 @@
 title: Simplify phases to plan/build/review with review flags
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 6
@@ -30,4 +30,6 @@ test_plan:
 - 'tests/test_models.py: test design_reviewed and code_reviewed defaults'
 - 'tests/test_app.py: test review flag badges render on card'
 notes: ''
-phase: spec
+phase: null
+design_reviewed: false
+code_reviewed: false

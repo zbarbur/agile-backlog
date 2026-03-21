@@ -1,5 +1,5 @@
 title: Filtering improvements for sprint planning
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 6
@@ -26,4 +26,6 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_app.py: test filter_items with sprint=Unplanned'
 notes: ''
-phase: spec
+phase: null
+design_reviewed: false
+code_reviewed: false
