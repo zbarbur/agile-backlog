@@ -23,5 +23,7 @@ description: 'Improve filter UX for sprint planning workflow:
 acceptance_criteria:
 - Sprint filter has an Unplanned option to show items with no sprint_target
 - Unplanned filter helps identify candidates for next sprint
+test_plan:
+- 'tests/test_app.py: test filter_items with sprint=Unplanned'
 notes: ''
 phase: spec

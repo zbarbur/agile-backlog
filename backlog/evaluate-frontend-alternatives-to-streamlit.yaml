@@ -23,5 +23,7 @@ acceptance_criteria:
 - NiceGUI evaluated with prototype or detailed analysis
 - Reflex evaluated with prototype or detailed analysis
 - Recommendation doc with pros/cons/effort saved to docs/superpowers/specs/
+test_plan:
+- "No code tests \u2014 output is a recommendation document"
 notes: ''
 phase: spec

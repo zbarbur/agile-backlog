@@ -31,5 +31,8 @@ acceptance_criteria:
 - sprint-start skill writes goal, complexity, acceptance_criteria to YAML items
 - sprint-end skill reads item status from YAML not TODO.md
 - Current sprint number stored in config
+test_plan:
+- 'Manual: run /sprint-start and verify YAML items get populated'
+- 'Manual: run /sprint-end and verify it reads from YAML'
 notes: ''
 phase: spec

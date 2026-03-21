@@ -134,6 +134,10 @@ def show(item_id: str):
         click.echo("\nAcceptance Criteria:")
         for ac in item.acceptance_criteria:
             click.echo(f"  - {ac}")
+    if item.test_plan:
+        click.echo("\nTest Plan:")
+        for tp in item.test_plan:
+            click.echo(f"  - {tp}")
     if item.notes:
         click.echo(f"\nNotes:\n{item.notes}")
 
@@ -149,6 +153,7 @@ def show(item_id: str):
 @click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None)
 @click.option("--technical-specs", "technical_specs", multiple=True, help="Technical spec (repeatable).")
 @click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
+@click.option("--test-plan", "test_plan", multiple=True, help="Test plan item (repeatable).")
 @click.option(
     "--phase",
     type=click.Choice(

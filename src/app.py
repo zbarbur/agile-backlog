@@ -340,6 +340,12 @@ def main():
                             for ts in item.technical_specs:
                                 st.markdown(f"- {ts}")
 
+                        # Test Plan
+                        if item.test_plan:
+                            st.markdown("**Test Plan:**")
+                            for tp in item.test_plan:
+                                st.markdown(f"- {tp}")
+
                         # Notes
                         if item.notes:
                             st.markdown(f"**Notes:** {item.notes}")

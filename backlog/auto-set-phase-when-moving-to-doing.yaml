@@ -22,5 +22,8 @@ acceptance_criteria:
 - CLI move --status doing without --phase defaults to plan
 - Board move buttons set phase to plan when moving to doing
 - Phase cleared when moving to backlog or done
+test_plan:
+- 'tests/test_cli.py: test move to doing without --phase defaults to plan'
+- 'tests/test_cli.py: test move to done clears phase'
 notes: ''
 phase: spec

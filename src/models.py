@@ -34,6 +34,7 @@ class BacklogItem(BaseModel):
     technical_specs: list[str] = Field(default_factory=list)
     description: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
+    test_plan: list[str] = Field(default_factory=list)
     notes: str = ""
     phase: (
         Literal["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"] | None

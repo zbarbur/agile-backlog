@@ -78,6 +78,11 @@ fields:
     items: string
     description: Verifiable completion criteria
 
+  test_plan:
+    type: list
+    items: string
+    description: Which tests to write and what they verify
+
   notes:
     type: string
     multiline: true
