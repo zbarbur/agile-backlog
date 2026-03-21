@@ -1,0 +1,31 @@
+title: Auto-set phase when moving to doing
+status: done
+priority: P1
+category: feature
+sprint_target: 6
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: Every item moved to doing automatically gets a phase, ensuring phase badges
+  always show
+complexity: S
+technical_specs:
+- 'Modify src/cli.py move command: default phase to plan if status=doing and no --phase
+  given'
+- 'Modify src/app.py: board move button sets phase=plan for doing transitions'
+description: 'When moving an item to ''doing'' status without specifying --phase,
+  auto-default to ''scoping''. This ensures every doing item has a visible phase badge
+  on the card. Also: board move buttons should set phase to scoping when moving to
+  doing.'
+acceptance_criteria:
+- CLI move --status doing without --phase defaults to plan
+- Board move buttons set phase to plan when moving to doing
+- Phase cleared when moving to backlog or done
+test_plan:
+- 'tests/test_cli.py: test move to doing without --phase defaults to plan'
+- 'tests/test_cli.py: test move to done clears phase'
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

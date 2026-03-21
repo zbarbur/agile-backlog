@@ -1,0 +1,31 @@
+title: Add test_plan field to BacklogItem
+status: done
+priority: P1
+category: feature
+sprint_target: 6
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: Add test_plan field so every task has explicit test requirements
+complexity: S
+technical_specs:
+- 'Modify src/models.py: add test_plan: list[str] = Field(default_factory=list)'
+- 'Modify src/cli.py: add --test-plan to edit, show test_plan in show'
+- 'Modify src/app.py: render test plan in expander'
+- Update src/schema.yaml
+description: "Add test_plan as a list[str] field to BacklogItem model. Update schema,\
+  \ CLI edit/show, and board expander to display it. Test plan is distinct from acceptance\
+  \ criteria \u2014 it describes which tests to write and what they verify."
+acceptance_criteria:
+- 'test_plan: list[str] field added to BacklogItem'
+- CLI show displays test plan
+- CLI edit supports --test-plan (repeatable)
+- Board expander renders test plan section
+test_plan:
+- 'tests/test_models.py: test test_plan defaults to empty list'
+- 'tests/test_cli.py: test edit --test-plan populates field'
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

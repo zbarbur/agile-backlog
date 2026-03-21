@@ -1,147 +1,139 @@
 ---
 name: sprint-end
-description: Close the current sprint. Updates TODO.md, KANBAN.md, writes handover doc, updates PROJECT_CONTEXT.md and MEMORY.md, cleans up branches.
+description: Close the current sprint. Reads status from YAML items, writes handover doc, updates PROJECT_CONTEXT.md and MEMORY.md, cleans up branches.
 ---
 
 # Sprint End Skill
 
-You are closing a sprint for BigQuery-connector. The user invoked `/sprint-end $ARGUMENTS`.
+You are closing a sprint for agile-backlog. The user invoked `/sprint-end $ARGUMENTS`.
 
-Determine the current sprint number from TODO.md header or the current branch name.
+Determine the current sprint number from the branch name or by checking which sprint has doing items:
 
-Follow `docs/process/SPRINT_END_CHECKLIST.md` as the authoritative checklist. Execute each phase below.
+```bash
+agile-backlog list --status doing
+```
 
 ## Phase 1: Verify & Ship
 
 1. Run `ruff check . && ruff format --check . && pytest tests/ -v` — report results
 2. Check git status — warn about uncommitted changes
-3. Ask: has staging been deployed and verified?
-4. Ask: has production been deployed (if applicable)?
 
 ## Phase 2: Update Tracking
 
-### TODO.md
-Read TODO.md and for each task:
-- Check if DoD items are all checked (grep for `- [x]` vs `- [ ]`)
-- Report: which tasks are complete, which have unchecked items
-- For incomplete tasks, ask: defer to next sprint or mark as done?
+### Check Item Status
 
-### KANBAN.md
-Read and update `docs/process/KANBAN.md`:
-- Clear the "Doing" section
-- Move completed tasks to "Done (Sprint {N})" section
-- Ask: any new backlog items discovered during the sprint?
-- Ask: any new tech debt items?
-- Write the updated KANBAN.md
+List all items for the current sprint:
+
+```bash
+agile-backlog list --status doing
+agile-backlog list --status done
+```
+
+For each doing item, check its acceptance criteria by expanding details:
+
+```bash
+agile-backlog show <item-id>
+```
+
+Report: which items are complete (all acceptance criteria met), which are still in progress.
+
+For incomplete items, ask: move to done (if actually complete) or defer to next sprint (move back to backlog)?
+
+### Move Completed Items
+
+```bash
+agile-backlog move <item-id> --status done
+```
+
+### Move Deferred Items
+
+```bash
+agile-backlog move <item-id> --status backlog
+agile-backlog edit <item-id> --sprint 0  # clear sprint target
+```
 
 ## Phase 2b: Issue Reconciliation
 
-Read `.claude/project.json` for tracker configuration.
+Check for GitHub issues referenced in sprint commits:
 
-### GitHub Mode (`tracker.type === "github"`)
+```bash
+git log --oneline --grep="Fixes #" --grep="closes #"
+```
 
-1. Find issue references in sprint commits:
-   ```bash
-   git log --oneline --grep="Fixes #" --grep="fixes #" --grep="Closes #" --grep="closes #"
-   ```
-
-2. Extract referenced issue numbers and check their status:
-   ```bash
-   gh issue view {N} --repo "{tracker.repo}" --json state,title
-   ```
-
-3. Present a reconciliation table:
-   | Issue | Title | Status | Suggested Action |
-   |-------|-------|--------|-----------------|
-   | #N | {title} | open/closed | Close (fixed in commit abc) / Carry forward |
-
-4. For issues the user approves to close:
-   ```bash
-   gh issue close {N} --repo "{tracker.repo}" --comment "Closed as part of Sprint {N} — fixed in {commit_sha}"
-   ```
-
-5. For unresolved bugs, add them to KANBAN.md backlog.
-
-### File-Based Mode (`tracker.type === "none"` or missing)
-
-Check KANBAN.md for any `[BUG]` items that were addressed during the sprint. Ask the user which ones to move to Done.
-
-### No Tracker
-
-Skip this phase and continue.
+If issues found, check their status and offer to close them.
 
 ## Phase 3: Knowledge Transfer
 
 ### Sprint Handover
+
 Create `docs/sprints/SPRINT{N}_HANDOVER.md` with:
 
 Gather information by:
-- Reading TODO.md for delivered tasks
-- Running `git log --oneline sprint{N}/main..HEAD` (or similar) for commit history
-- Reading recent changes to understand architecture impacts
+- Running `agile-backlog list --status done` filtered by sprint
+- Running `git log --oneline` for commit history
+- Reading recent changes
 
-Generate the handover with these sections:
+Generate the handover with:
 - Sprint Theme
-- Completed tasks (table: task, status, key files)
+- Completed tasks (from YAML items — goal, complexity, key files)
 - Deferred items (if any, with reasons)
 - Key Decisions (ask the user)
-- Architecture Changes (derived from code changes)
+- Architecture Changes
 - Known Issues (ask the user)
-- Lessons Learned (ask the user, synthesize from sprint experience)
-- Test Coverage (run `pytest tests/ -v` and count)
+- Lessons Learned (ask the user)
+- Test Coverage (pytest count)
 - Recommendations for Next Sprint
 
 ### PROJECT_CONTEXT.md
+
 Update `docs/process/PROJECT_CONTEXT.md`:
 - Status → "Sprint {N+1} Planning"
 - Last Sync → today's date
 - Test count → from pytest output
 - Sprint History table → add current sprint
-- Current State → summarize what was delivered
 
 ### MEMORY.md
-If `.claude/MEMORY.md` exists, update it:
-- Add lessons learned from this sprint
-- Update sprint status (mark current as COMPLETED)
+
+Update `.claude/MEMORY.md`:
+- Update sprint status
+- Add lessons learned
 - Add new patterns or conventions
-- Keep under 200 lines
-
-## Phase 3b: Sync to Template (if applicable)
-
-If `bin/sync-to-template.sh` exists and it's been 2+ sprints since last sync:
-- Mention it to the user
-- Offer to run it
 
 ## Phase 4: Clean Slate
 
-### Branch Cleanup
-- Remind user to merge sprint branch to main via PR
-- After merge: `git checkout main && git pull`
-- List any remaining feature branches that should be cleaned up
+### Merge and Cleanup
+
+```bash
+# Create PR and merge
+gh pr create --title "Sprint N: <theme>" --body "..."
+gh pr merge --merge --delete-branch
+
+# Switch to main
+git checkout main && git pull
+```
 
 ### Final Verification
+
 ```bash
 git branch --show-current  # main
 git status                 # clean
-ruff check . && ruff format --check . && pytest tests/ -v  # all green
+agile-backlog list --status doing  # should be empty
+pytest tests/ -v  # all green
 ```
 
-### Check for Pre-Planned Next Sprint
+### Next Sprint
 
-Check if next sprint was pre-planned:
-- Read `docs/process/KANBAN.md` — look for "Sprint {N+1} — Candidate" section with items
-- Check if `TODO-NEXT.md` exists
+Check backlog for next sprint candidates:
 
-If pre-planned scope exists:
-- Report: "Sprint {N} is closed. Sprint {N+1} has pre-planned scope — run `/sprint-start` to review and promote."
-- List the candidate items
+```bash
+agile-backlog list --status backlog
+```
 
-If no pre-planned scope:
-- Report: "Sprint {N} is closed. Ready for Sprint {N+1} planning."
+Report: "Sprint {N} is closed. Ready for Sprint {N+1} planning — run `/sprint-start`."
 
 ## Important Rules
 
-- NEVER trust docs over code — verify task completion by checking the actual codebase
-- ALWAYS ask the user for lessons learned and known issues (don't fabricate)
-- Update TODO.md checkboxes based on actual code state, not assumptions
-- Write the handover doc even if the sprint was small — it's the context anchor for future sessions
+- YAML items are the single source of truth — read from `agile-backlog show/list`, not TODO.md
+- NEVER trust docs over code — verify completion by checking the codebase
+- ALWAYS ask the user for lessons learned and known issues
+- Write the handover doc even if the sprint was small

@@ -50,7 +50,9 @@ def filter_items(
             result = [i for i in result if i.priority == priority]
     if category:
         result = [i for i in result if i.category == category]
-    if sprint is not None:
+    if sprint == "unplanned":
+        result = [i for i in result if i.sprint_target is None]
+    elif sprint is not None:
         result = [i for i in result if i.sprint_target == sprint]
     if search:
         q = search.lower()
@@ -76,6 +78,11 @@ def render_card_html(item: BacklogItem) -> str:
     ]
     if item.phase:
         badges.append(f'<span style="{pill};font-style:italic;color:#6b7280;background:#f3f4f6">{item.phase}</span>')
+    review_badge = "font-size:10px;color:#059669;background:#d1fae5;padding:1px 6px;border-radius:3px"
+    if item.design_reviewed:
+        badges.append(f'<span style="{review_badge}">&#10003; design</span>')
+    if item.code_reviewed:
+        badges.append(f'<span style="{review_badge}">&#10003; code</span>')
     if item.sprint_target is not None:
         badges.append(
             f'<span style="{pill};font-weight:500;color:#6b7280;background:none;'
@@ -252,8 +259,12 @@ def main():
         )
     with f3:
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
+        sprint_options = [None, "unplanned", *sprints]
+        sprint_labels = {None: "All sprints", "unplanned": "Unplanned"}
         sprint_filter = st.selectbox(
-            "Sprint", [None, *sprints], format_func=lambda x: "All sprints" if x is None else f"Sprint {x}"
+            "Sprint",
+            sprint_options,
+            format_func=lambda x: sprint_labels.get(x, f"Sprint {x}"),
         )
     with f4:
         search = st.text_input("Search", placeholder="Filter by title, description, tags...")
@@ -269,7 +280,10 @@ def main():
     filtered_backlog = filter_items(
         backlog_items, priority=priority_filter, category=category_filter, sprint=sprint_filter, search=search
     )
-    if sprint_filter is not None:
+    if sprint_filter == "unplanned":
+        doing_items = [i for i in doing_items if i.sprint_target is None]
+        done_items = [i for i in done_items if i.sprint_target is None]
+    elif sprint_filter is not None:
         doing_items = [i for i in doing_items if i.sprint_target == sprint_filter]
         done_items = [i for i in done_items if i.sprint_target == sprint_filter]
 
@@ -340,6 +354,12 @@ def main():
                             for ts in item.technical_specs:
                                 st.markdown(f"- {ts}")
 
+                        # Test Plan
+                        if item.test_plan:
+                            st.markdown("**Test Plan:**")
+                            for tp in item.test_plan:
+                                st.markdown(f"- {tp}")
+
                         # Notes
                         if item.notes:
                             st.markdown(f"**Notes:** {item.notes}")
@@ -375,6 +395,10 @@ def main():
                             arrow = "←" if statuses.index(target) < statuses.index(status) else "→"
                             if st.button(f"{arrow} {target}", key=f"move_{item.id}_{target}", use_container_width=True):
                                 item.status = target
+                                if target == "doing":
+                                    item.phase = item.phase or "plan"
+                                else:
+                                    item.phase = None
                                 save_item(item)
                                 st.rerun()
 

@@ -75,9 +75,7 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), required=True)
 @click.option(
     "--phase",
-    type=click.Choice(
-        ["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"]
-    ),
+    type=click.Choice(["plan", "build", "review"]),
     default=None,
     help="Workflow phase.",
 )
@@ -89,7 +87,7 @@ def move(item_id: str, status: str, phase: str | None):
         raise SystemExit(f"Error: item '{item_id}' not found.")
     item.status = status
     if status == "doing":
-        item.phase = phase
+        item.phase = phase or item.phase or "plan"
     else:
         item.phase = None
     item.updated = date.today()
@@ -116,6 +114,10 @@ def show(item_id: str):
     click.echo(f"Updated:     {item.updated}")
     if item.phase:
         click.echo(f"Phase:       {item.phase}")
+    if item.design_reviewed:
+        click.echo("Design reviewed: yes")
+    if item.code_reviewed:
+        click.echo("Code reviewed:   yes")
     if item.tags:
         click.echo(f"Tags:        {', '.join(item.tags)}")
     if item.depends_on:
@@ -134,6 +136,10 @@ def show(item_id: str):
         click.echo("\nAcceptance Criteria:")
         for ac in item.acceptance_criteria:
             click.echo(f"  - {ac}")
+    if item.test_plan:
+        click.echo("\nTest Plan:")
+        for tp in item.test_plan:
+            click.echo(f"  - {tp}")
     if item.notes:
         click.echo(f"\nNotes:\n{item.notes}")
 
@@ -149,6 +155,14 @@ def show(item_id: str):
 @click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None)
 @click.option("--technical-specs", "technical_specs", multiple=True, help="Technical spec (repeatable).")
 @click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
+@click.option("--test-plan", "test_plan", multiple=True, help="Test plan item (repeatable).")
+@click.option(
+    "--phase",
+    type=click.Choice(["plan", "build", "review"]),
+    default=None,
+)
+@click.option("--design-reviewed", "design_reviewed", is_flag=True, default=None, help="Mark design as reviewed.")
+@click.option("--code-reviewed", "code_reviewed", is_flag=True, default=None, help="Mark code as reviewed.")
 @click.option("--tags", multiple=True)
 @click.option("--depends-on", "depends_on", multiple=True)
 @click.option("--notes", default=None)
