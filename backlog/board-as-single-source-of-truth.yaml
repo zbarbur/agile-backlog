@@ -7,9 +7,12 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Eliminate TODO.md as task spec location \u2014 YAML items become the single\
+  \ source of truth"
+complexity: M
+technical_specs:
+- Add edit command to src/cli.py
+- Populate Sprint 5 YAML items via CLI edit
 description: 'Eliminate TODO.md as task spec location. Changes needed:
 
   1. Sprint-start skill writes task specs directly into YAML items (goal, complexity,
@@ -22,6 +25,9 @@ description: 'Eliminate TODO.md as task spec location. Changes needed:
   4. TODO.md becomes auto-generated or deprecated
 
   5. Sprint-start and sprint-end skills updated to read/write YAML not TODO.md'
-acceptance_criteria: []
+acceptance_criteria:
+- CLI edit command works for all fields
+- Sprint 5 items have goal, complexity, acceptance_criteria populated
+- Board expander shows full task spec
 notes: ''
 phase: null

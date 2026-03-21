@@ -145,6 +145,41 @@ class TestShow:
         assert result.exit_code != 0
 
 
+class TestEdit:
+    def test_edit_goal(self, runner, backlog_dir):
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        result = runner.invoke(main, ["edit", "edit-me", "--goal", "Test goal"])
+        assert result.exit_code == 0
+        assert "Updated" in result.output
+        show = runner.invoke(main, ["show", "edit-me"])
+        assert "Test goal" in show.output
+
+    def test_edit_complexity(self, runner, backlog_dir):
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        result = runner.invoke(main, ["edit", "edit-me", "--complexity", "M"])
+        assert result.exit_code == 0
+
+    def test_edit_multiple_fields(self, runner, backlog_dir):
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        result = runner.invoke(main, ["edit", "edit-me", "--goal", "My goal", "--priority", "P1", "--complexity", "L"])
+        assert result.exit_code == 0
+        show = runner.invoke(main, ["show", "edit-me"])
+        assert "My goal" in show.output
+        assert "P1" in show.output
+
+    def test_edit_acceptance_criteria(self, runner, backlog_dir):
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        result = runner.invoke(
+            main,
+            ["edit", "edit-me", "--acceptance-criteria", "Criterion 1", "--acceptance-criteria", "Criterion 2"],
+        )
+        assert result.exit_code == 0
+
+    def test_edit_nonexistent(self, runner):
+        result = runner.invoke(main, ["edit", "nope", "--goal", "test"])
+        assert result.exit_code != 0
+
+
 class TestServe:
     def test_serve_launches_streamlit(self, runner: CliRunner, monkeypatch):
         """Verify serve attempts to launch streamlit (we mock subprocess.run)."""
