@@ -105,6 +105,24 @@ class TestFilterItems:
         items = [_item(id="a", priority="P3")]
         assert filter_items(items, priority="P1") == []
 
+    def test_filter_priority_range_p2_plus(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2"), _item(id="c", priority="P3")]
+        result = filter_items(items, priority="P2+")
+        assert len(result) == 2
+        ids = {i.id for i in result}
+        assert ids == {"a", "b"}
+
+    def test_filter_priority_range_p3_plus(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2"), _item(id="c", priority="P3")]
+        result = filter_items(items, priority="P3+")
+        assert len(result) == 3
+
+    def test_filter_priority_exact_still_works(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2")]
+        result = filter_items(items, priority="P1")
+        assert len(result) == 1
+        assert result[0].id == "a"
+
 
 class TestRenderCardHtml:
     def test_contains_title(self):
