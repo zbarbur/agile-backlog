@@ -1,0 +1,13 @@
+title: Claude Code plugin install
+status: backlog
+priority: P3
+category: infra
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Enable claude plugin add zbarbur/agile-backlog for installing the /backlog
+  command.
+acceptance_criteria: []
+notes: ''

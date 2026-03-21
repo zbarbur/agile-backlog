@@ -1,0 +1,13 @@
+title: Publish to PyPI
+status: backlog
+priority: P3
+category: infra
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Publish agile-backlog to PyPI for pip install agile-backlog. Requires
+  account setup, build workflow, and release process.
+acceptance_criteria: []
+notes: ''
