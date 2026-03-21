@@ -7,13 +7,14 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: Research and recommend whether to stay with Streamlit or switch to a better
-  UI framework
+goal: "Interactive brainstorming session to evaluate frontend alternatives \u2014\
+  \ use visual companion for mockups and comparisons"
 complexity: M
 technical_specs:
-- Web research on NiceGUI, Reflex, Streamlit custom components
-- 'Compare: styling control, component library, learning curve, deployment'
-- 'Output: docs/superpowers/specs/2026-03-21-frontend-evaluation.md'
+- Use superpowers:brainstorming skill with visual companion
+- Show side-by-side comparisons of Streamlit vs NiceGUI vs Reflex
+- Prototype a card component in the recommended framework
+- 'Output: recommendation doc + mockups in docs/superpowers/specs/'
 description: "Streamlit has design limitations (can't fully style widgets, no JS,\
   \ spacing issues). Evaluate:\n1. React/Next.js + FastAPI backend \u2014 full control,\
   \ most work\n2. Streamlit custom components \u2014 React inside Streamlit, moderate\
