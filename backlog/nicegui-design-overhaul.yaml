@@ -1,0 +1,22 @@
+title: NiceGUI design overhaul
+status: doing
+priority: P1
+category: feature
+sprint_target: 8
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Full visual redesign of the Kanban board using NiceGUI's Tailwind +\
+  \ Quasar capabilities. Apply the design system properly \u2014 card anatomy, typography,\
+  \ spacing, column tints, hover effects, compact layout. Make it look like Linear/Notion\
+  \ quality."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false

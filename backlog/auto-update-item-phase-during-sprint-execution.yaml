@@ -1,8 +1,8 @@
 title: Auto-update item phase during sprint execution
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 8
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
@@ -19,6 +19,6 @@ description: "Items stay in 'plan' phase even after work is done. The process sh
 acceptance_criteria: []
 test_plan: []
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
