@@ -4,12 +4,17 @@ priority: P1
 category: feature
 sprint_target: 8
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Edit item fields directly from the board via dialog \u2014 disabled for done\
+  \ items"
+complexity: M
+technical_specs:
+- Use ui.dialog() with form fields
+- 'Fields: title, priority, category, sprint, goal, complexity, acceptance_criteria,
+  technical_specs, test_plan, description, notes'
+- Call save_item() on save, render_board.refresh() after
 description: 'Edit item fields directly from the board:
 
   1. Edit button on each card (disabled for done items)
@@ -23,8 +28,13 @@ description: 'Edit item fields directly from the board:
   4. Board refreshes after save
 
   5. Only editable when status is backlog or doing'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Edit button on each card (hidden for done items)
+- Dialog opens with editable fields
+- Save persists to YAML and refreshes board
+- Tests pass (pytest tests/ -v)
+test_plan:
+- 'Manual: edit an item, verify YAML updated'
 notes: ''
 phase: plan
 design_reviewed: false

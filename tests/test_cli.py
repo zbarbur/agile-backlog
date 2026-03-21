@@ -193,8 +193,10 @@ class TestServe:
     def test_serve_calls_run_app(self, runner: CliRunner, monkeypatch):
         """Verify serve calls run_app with correct defaults."""
         calls = []
-        monkeypatch.setattr("src.app.run_app", lambda host, port: calls.append({"host": host, "port": port}))
+        monkeypatch.setattr("src.app.run_app", lambda **kw: calls.append(kw))
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
         assert len(calls) == 1
-        assert calls[0] == {"host": "127.0.0.1", "port": 8501}
+        assert calls[0]["host"] == "127.0.0.1"
+        assert calls[0]["port"] == 8501
+        assert calls[0]["reload"] is True

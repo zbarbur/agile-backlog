@@ -301,9 +301,9 @@ def kanban_page():
     render_board()
 
 
-def run_app(host: str = "127.0.0.1", port: int = 8501):
+def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = True):
     """Start the NiceGUI Kanban board server."""
-    ui.run(title="agile-backlog", host=host, port=port, reload=False)
+    ui.run(title="agile-backlog", host=host, port=port, reload=reload)
 
 
 if __name__ in {"__main__", "__mp_main__"}:

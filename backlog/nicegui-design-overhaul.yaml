@@ -4,18 +4,29 @@ priority: P1
 category: feature
 sprint_target: 8
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Make the board look Linear/Notion quality using NiceGUI Tailwind + Quasar
+complexity: L
+technical_specs:
+- Rewrite kanban_page() UI layer in src/app.py using Tailwind classes
+- Apply design tokens from src/tokens.py via Tailwind
+- Use Quasar card/badge/button props for polished components
 description: "Full visual redesign of the Kanban board using NiceGUI's Tailwind +\
   \ Quasar capabilities. Apply the design system properly \u2014 card anatomy, typography,\
   \ spacing, column tints, hover effects, compact layout. Make it look like Linear/Notion\
   \ quality."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Cards follow design system (typography, colors, spacing)
+- Column headers styled with tinted backgrounds
+- "Compact layout \u2014 minimal whitespace"
+- Hover effects on cards
+- Professional filter bar
+- Tests pass (pytest tests/ -v)
+test_plan:
+- 'Manual: visual verification in browser'
+- 'Automated: existing pure function tests unchanged'
 notes: ''
 phase: plan
 design_reviewed: false

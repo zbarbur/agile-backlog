@@ -187,8 +187,9 @@ def edit(item_id, **kwargs):
 @main.command()
 @click.option("--port", default=8501, type=int, help="Port number.")
 @click.option("--host", default="127.0.0.1", help="Host address.")
-def serve(port: int, host: str):
+@click.option("--no-reload", is_flag=True, help="Disable hot reload.")
+def serve(port: int, host: str, no_reload: bool):
     """Open the Kanban board in the browser."""
     from src.app import run_app
 
-    run_app(host=host, port=port)
+    run_app(host=host, port=port, reload=not no_reload)
