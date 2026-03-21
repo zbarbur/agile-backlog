@@ -4,13 +4,13 @@
 from src.models import BacklogItem
 
 CATEGORY_STYLES: dict[str, tuple[str, str, str]] = {
-    # category: (emoji, text_color, bg_color)
-    "bug": ("🐛", "#f472b6", "#3a1a2a"),
-    "feature": ("✨", "#60a5fa", "#1a2a3a"),
-    "tech-debt": ("🔧", "#fbbf24", "#2a2a1a"),
-    "docs": ("📚", "#34d399", "#1a3a2a"),
-    "security": ("🔒", "#a78bfa", "#2a1a3a"),
-    "infra": ("🏗️", "#22d3ee", "#1a2a2a"),
+    # category: (emoji, text_color, bg_color) — light-mode friendly
+    "bug": ("🐛", "#f472b6", "#fdf2f8"),
+    "feature": ("✨", "#60a5fa", "#eff6ff"),
+    "tech-debt": ("🔧", "#fbbf24", "#fefce8"),
+    "docs": ("📚", "#34d399", "#ecfdf5"),
+    "security": ("🔒", "#a78bfa", "#f5f3ff"),
+    "infra": ("🏗️", "#22d3ee", "#ecfeff"),
 }
 
 PRIORITY_COLORS: dict[str, str] = {
@@ -24,7 +24,7 @@ PRIORITY_ORDER: dict[str, int] = {"P1": 1, "P2": 2, "P3": 3}
 
 def category_style(category: str) -> tuple[str, str, str]:
     """Return (emoji, text_color, bg_color) for a category."""
-    return CATEGORY_STYLES.get(category, ("📋", "#9ca3af", "#2a2a2a"))
+    return CATEGORY_STYLES.get(category, ("📋", "#9ca3af", "#f3f4f6"))
 
 
 def filter_items(
@@ -64,21 +64,28 @@ def filter_items(
 
 def render_card_html(item: BacklogItem) -> str:
     """Generate the HTML string for a styled card."""
-    emoji, cat_color, _ = category_style(item.category)
+    emoji, cat_color, cat_bg = category_style(item.category)
     pri_color = PRIORITY_COLORS.get(item.priority, "#888")
     sprint_text = f"S{item.sprint_target}" if item.sprint_target is not None else ""
 
-    sprint_html = f' · <span style="color:#888;">{sprint_text}</span>' if sprint_text else ""
+    sprint_html = (
+        f'<span style="font-size:10px;color:#6b7280;background:#f3f4f6;'
+        f'padding:1px 6px;border-radius:3px;font-weight:500;">{sprint_text}</span>'
+        if sprint_text
+        else ""
+    )
 
     return (
-        f'<div style="margin-bottom:0;padding:4px 0 2px 0;">\n'
-        f'  <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;">\n'
-        f'    <span style="font-size:13px;font-weight:500;word-wrap:break-word;overflow-wrap:break-word;">'
-        f"{item.title}</span>\n"
-        f'    <span style="font-size:10px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
-        f"{emoji} {item.category}</span>\n"
-        f'    <span style="font-size:10px;color:{pri_color};font-weight:700;">{item.priority}</span>\n'
-        f"{sprint_html}\n"
+        f'<div style="margin:0;padding:2px 0;">\n'
+        f'  <div style="font-size:13px;font-weight:600;color:#1f2937;line-height:1.3;'
+        f'margin-bottom:4px;">{item.title}</div>\n'
+        f'  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">\n'
+        f'    <span style="font-size:10px;color:{cat_color};background:{cat_bg};'
+        f"padding:1px 6px;border-radius:3px;font-weight:600;text-transform:uppercase;"
+        f'letter-spacing:0.02em;">{emoji} {item.category}</span>\n'
+        f'    <span style="font-size:10px;color:{pri_color};font-weight:700;'
+        f'background:{pri_color}18;padding:1px 6px;border-radius:3px;">{item.priority}</span>\n'
+        f"    {sprint_html}\n"
         f"  </div>\n"
         f"</div>"
     )
@@ -106,38 +113,83 @@ def main():
     st.markdown(
         """
     <style>
-        /* Keep default padding */
-        /* Tighter spacing between elements */
-        [data-testid="stVerticalBlock"] > div { gap: 0.3rem; }
-        /* Compact buttons */
-        .stButton > button { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
-        /* Column header styling */
+        /* Tighter vertical spacing */
+        [data-testid="stVerticalBlock"] > div { gap: 0.25rem; }
+
+        /* Compact move buttons — small, ghost-style */
+        .stButton > button {
+            padding: 0.1rem 0.6rem;
+            font-size: 0.7rem;
+            border: 1px solid #e5e7eb;
+            background: #fafafa;
+            color: #6b7280;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        .stButton > button:hover {
+            background: #f3f4f6;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        /* Column header — clean, professional */
         .col-header {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 0.3rem 0;
-            border-bottom: 2px solid #333;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+            padding: 0.5rem 0.6rem 0.4rem;
+            margin-bottom: 0.3rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         .col-header .count {
-            background: rgba(255,255,255,0.1);
-            padding: 0.1rem 0.5rem;
+            background: #e5e7eb;
+            color: #4b5563;
+            padding: 0.05rem 0.5rem;
             border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 400;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
+
+        /* Card containers — subtle shadow, tighter padding */
+        [data-testid="stVerticalBlock"] [data-testid="stContainer"] {
+            border: 1px solid #e5e7eb !important;
+            border-radius: 6px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+            padding: 0.4rem 0.6rem !important;
+            transition: box-shadow 0.15s ease;
+        }
+        [data-testid="stVerticalBlock"] [data-testid="stContainer"]:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+        }
+
         /* Done column dimmed */
-        .done-card { opacity: 0.6; }
-        .done-card:hover { opacity: 1; }
-        /* Hide default streamlit header spacing */
-        h2 { margin-bottom: 0.2rem !important; }
-        /* Compact expander */
-        .streamlit-expanderHeader { font-size: 0.8rem; }
+        .done-card { opacity: 0.55; }
+        .done-card:hover { opacity: 1; transition: opacity 0.15s ease; }
+
+        /* Compact expander — subtle trigger text */
+        .streamlit-expanderHeader {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Hide default heading spacing */
+        h2 { margin-bottom: 0.1rem !important; }
+
+        /* Filter bar — subtle bottom border */
+        .filter-bar {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
+        }
+
+        /* Column background tints */
+        .col-bg-backlog { background: #fafbfc; border-radius: 8px; padding: 0.4rem; }
+        .col-bg-doing { background: #fefdf6; border-radius: 8px; padding: 0.4rem; }
+        .col-bg-done { background: #f6fdf8; border-radius: 8px; padding: 0.4rem; }
     </style>
     """,
         unsafe_allow_html=True,
@@ -149,9 +201,14 @@ def main():
     # --- Header ---
     current_sprint = detect_current_sprint(all_items)
     sprint_text = f" · Sprint {current_sprint}" if current_sprint is not None else ""
-    st.title(f"📋 agile-backlog{sprint_text}")
+    st.markdown(
+        f'<h2 style="font-weight:700;color:#111827;margin:0.2rem 0 0.1rem;">📋 agile-backlog'
+        f'<span style="font-weight:400;color:#9ca3af;font-size:0.6em;">{sprint_text}</span></h2>',
+        unsafe_allow_html=True,
+    )
 
     # --- Filters ---
+    st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
     f1, f2, f3, f4 = st.columns(4)
     with f1:
         priority_options = [None, "P1", "P2+", "P3+"]
@@ -171,6 +228,7 @@ def main():
         )
     with f4:
         search = st.text_input("Search", placeholder="Filter by title, description, tags...")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Apply filters only to backlog ---
     backlog_items = [i for i in all_items if i.status == "backlog"]
@@ -192,13 +250,16 @@ def main():
 
     statuses = ["backlog", "doing", "done"]
     column_widgets = [col_backlog, col_doing, col_done]
-    labels = ["BACKLOG", "DOING", "DONE"]
+    labels = ["BACKLOG", "IN PROGRESS", "DONE"]
+    col_bg_classes = ["col-bg-backlog", "col-bg-doing", "col-bg-done"]
 
-    for col_widget, status, label in zip(column_widgets, statuses, labels):
+    for col_widget, status, label, bg_class in zip(column_widgets, statuses, labels, col_bg_classes):
         items_in_col = columns_map[status]
         with col_widget:
             st.markdown(
-                f'<div class="col-header">{label}<span class="count">{len(items_in_col)}</span></div>',
+                f'<div class="{bg_class}">'
+                f'<div class="col-header">{label}<span class="count">{len(items_in_col)}</span></div>'
+                f"</div>",
                 unsafe_allow_html=True,
             )
 
@@ -218,8 +279,9 @@ def main():
                         card_html = f'<div class="done-card">{card_html}</div>'
                     st.markdown(card_html, unsafe_allow_html=True)
 
-                    # Detail expander
-                    with st.expander("details"):
+                    # Detail expander — contextual label
+                    expander_label = f"{item.id}"
+                    with st.expander(expander_label):
                         if item.description:
                             st.markdown(item.description)
                         if item.acceptance_criteria:
@@ -229,7 +291,12 @@ def main():
                         if item.notes:
                             st.markdown(f"**Notes:** {item.notes}")
                         if item.tags:
-                            st.markdown(f"**Tags:** {', '.join(item.tags)}")
+                            tag_html = " ".join(
+                                f'<span style="background:#f3f4f6;color:#4b5563;padding:1px 8px;'
+                                f'border-radius:3px;font-size:11px;margin-right:2px;">{t}</span>'
+                                for t in item.tags
+                            )
+                            st.markdown(f"**Tags:** {tag_html}", unsafe_allow_html=True)
                         if item.depends_on:
                             st.markdown(f"**Depends on:** {', '.join(item.depends_on)}")
                         detail_cols = st.columns(3)
@@ -240,7 +307,7 @@ def main():
                         with detail_cols[2]:
                             st.caption(f"Updated: {item.updated}")
 
-                    # Move buttons at bottom
+                    # Move buttons — compact row
                     other_statuses = [s for s in statuses if s != status]
                     btn_cols = st.columns(len(other_statuses))
                     for btn_col, target in zip(btn_cols, other_statuses):
