@@ -144,20 +144,15 @@ def main():
                     # Render styled card
                     st.markdown(render_card_html(item), unsafe_allow_html=True)
 
-                    # Move selectbox
+                    # Move buttons
                     other_statuses = [s for s in statuses if s != status]
-                    move_key = f"move_{item.id}"
-                    new_status = st.selectbox(
-                        "Move to",
-                        [status, *other_statuses],
-                        key=move_key,
-                        label_visibility="collapsed",
-                        format_func=lambda s, current=status: f"Move to → {s}" if s != current else f"📍 {current}",
-                    )
-                    if new_status != status:
-                        item.status = new_status
-                        save_item(item)
-                        st.rerun()
+                    btn_cols = st.columns(len(other_statuses))
+                    for btn_col, target in zip(btn_cols, other_statuses):
+                        with btn_col:
+                            if st.button(f"→ {target}", key=f"move_{item.id}_{target}", use_container_width=True):
+                                item.status = target
+                                save_item(item)
+                                st.rerun()
 
                     # Detail expander
                     with st.expander(f"Details: {item.title}"):
