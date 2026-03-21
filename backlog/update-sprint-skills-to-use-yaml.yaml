@@ -1,0 +1,28 @@
+title: Update sprint skills to use YAML
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Sprint-start and sprint-end skills currently read/write TODO.md. Update
+  them to:
+
+  1. sprint-start: auto-tag selected items with sprint_target via agile-backlog edit
+
+  2. sprint-start: write task specs (goal, complexity, acceptance_criteria, technical_specs)
+  to YAML items
+
+  3. sprint-end: read completion status from YAML items, not TODO.md
+
+  4. Add current sprint config so new items auto-tag
+
+  5. Moving to doing should set sprint_target if unset'
+acceptance_criteria: []
+notes: ''
+phase: null
