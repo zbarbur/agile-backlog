@@ -156,7 +156,7 @@ def main():
             f'padding:2px 10px;border-radius:12px;vertical-align:middle;">Sprint {current_sprint}</span>'
         )
     st.markdown(
-        f'<div style="font-size:1.2rem;font-weight:700;margin:0 0 0.5rem 0;">📋 agile-backlog{sprint_badge}</div>',
+        f'<h3 style="margin:0 0 0.3rem 0;padding:0;">📋 agile-backlog{sprint_badge}</h3>',
         unsafe_allow_html=True,
     )
 
