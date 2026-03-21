@@ -4,7 +4,7 @@ import re
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 def slugify(title: str) -> str:
@@ -36,9 +36,29 @@ class BacklogItem(BaseModel):
     acceptance_criteria: list[str] = Field(default_factory=list)
     test_plan: list[str] = Field(default_factory=list)
     notes: str = ""
-    phase: (
-        Literal["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"] | None
-    ) = None
+    phase: Literal["plan", "build", "review"] | None = None
+    design_reviewed: bool = False
+    code_reviewed: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_old_phases(cls, data):
+        """Map old 8-value phase enum to new 3-value enum on load."""
+        if isinstance(data, dict):
+            old_phase = data.get("phase")
+            if old_phase and old_phase not in ("plan", "build", "review"):
+                phase_map = {
+                    "scoping": "plan",
+                    "spec": "plan",
+                    "spec-review": "plan",
+                    "design": "plan",
+                    "design-review": "plan",
+                    "coding": "build",
+                    "code-review": "review",
+                    "testing": "review",
+                }
+                data["phase"] = phase_map.get(old_phase, "plan")
+        return data
 
     def to_yaml_dict(self) -> dict:
         """Serialize to dict for YAML output, excluding id (derived from filename)."""

@@ -159,8 +159,8 @@ class TestRenderCardHtml:
         assert "#5b21b6" in html
 
     def test_render_card_with_phase(self):
-        html = render_card_html(_item(phase="coding"))
-        assert "coding" in html
+        html = render_card_html(_item(phase="build"))
+        assert "build" in html
         # Phase uses italic style
         assert "italic" in html
 
@@ -195,6 +195,20 @@ class TestRenderCardHtml:
         html = render_card_html(_item(priority="P1"))
         assert "#dc2626" in html
         assert "#fef2f2" in html
+
+    def test_design_reviewed_badge_shown_when_true(self):
+        html = render_card_html(_item(design_reviewed=True))
+        assert "design" in html
+        assert "#059669" in html
+
+    def test_code_reviewed_badge_shown_when_true(self):
+        html = render_card_html(_item(code_reviewed=True))
+        assert "code" in html
+        assert "#059669" in html
+
+    def test_review_badges_not_shown_by_default(self):
+        html = render_card_html(_item())
+        assert "#d1fae5" not in html
 
 
 class TestDetectCurrentSprint:

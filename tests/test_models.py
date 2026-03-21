@@ -70,12 +70,33 @@ class TestPhaseField:
         assert item.phase is None
 
     def test_phase_valid_value(self):
-        item = BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="coding")
-        assert item.phase == "coding"
+        for val in ("plan", "build", "review"):
+            item = BacklogItem(id="test", title="Test", priority="P2", category="feature", phase=val)
+            assert item.phase == val
 
-    def test_phase_invalid_rejected(self):
-        with pytest.raises(ValueError):
-            BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="invalid-phase")
+    def test_phase_invalid_migrated_to_plan(self):
+        # Unknown old phase values are migrated to "plan" rather than raising
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="invalid-phase")
+        assert item.phase == "plan"
+
+    def test_phase_migration(self):
+        """Old phase values are migrated to new 3-value enum on load."""
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="scoping").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec-review").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="design").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="design-review").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="coding").phase == "build"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="code-review").phase == "review"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="testing").phase == "review"
+
+    def test_design_reviewed_default_false(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.design_reviewed is False
+
+    def test_code_reviewed_default_false(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.code_reviewed is False
 
 
 class TestTaskDefinitionFields:

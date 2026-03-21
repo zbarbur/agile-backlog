@@ -75,9 +75,7 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), required=True)
 @click.option(
     "--phase",
-    type=click.Choice(
-        ["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"]
-    ),
+    type=click.Choice(["plan", "build", "review"]),
     default=None,
     help="Workflow phase.",
 )
@@ -116,6 +114,10 @@ def show(item_id: str):
     click.echo(f"Updated:     {item.updated}")
     if item.phase:
         click.echo(f"Phase:       {item.phase}")
+    if item.design_reviewed:
+        click.echo("Design reviewed: yes")
+    if item.code_reviewed:
+        click.echo("Code reviewed:   yes")
     if item.tags:
         click.echo(f"Tags:        {', '.join(item.tags)}")
     if item.depends_on:
@@ -156,11 +158,11 @@ def show(item_id: str):
 @click.option("--test-plan", "test_plan", multiple=True, help="Test plan item (repeatable).")
 @click.option(
     "--phase",
-    type=click.Choice(
-        ["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"]
-    ),
+    type=click.Choice(["plan", "build", "review"]),
     default=None,
 )
+@click.option("--design-reviewed", "design_reviewed", is_flag=True, default=None, help="Mark design as reviewed.")
+@click.option("--code-reviewed", "code_reviewed", is_flag=True, default=None, help="Mark code as reviewed.")
 @click.option("--tags", multiple=True)
 @click.option("--depends-on", "depends_on", multiple=True)
 @click.option("--notes", default=None)

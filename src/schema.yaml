@@ -90,6 +90,16 @@ fields:
 
   phase:
     type: string
-    enum: [scoping, spec, spec-review, design, design-review, coding, code-review, testing]
+    enum: [plan, build, review]
     nullable: true
     description: Workflow phase for items in 'doing' status
+
+  design_reviewed:
+    type: boolean
+    default: false
+    description: Whether design review has been completed
+
+  code_reviewed:
+    type: boolean
+    default: false
+    description: Whether code review has been completed

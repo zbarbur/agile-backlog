@@ -76,6 +76,11 @@ def render_card_html(item: BacklogItem) -> str:
     ]
     if item.phase:
         badges.append(f'<span style="{pill};font-style:italic;color:#6b7280;background:#f3f4f6">{item.phase}</span>')
+    review_badge = "font-size:10px;color:#059669;background:#d1fae5;padding:1px 6px;border-radius:3px"
+    if item.design_reviewed:
+        badges.append(f'<span style="{review_badge}">&#10003; design</span>')
+    if item.code_reviewed:
+        badges.append(f'<span style="{review_badge}">&#10003; code</span>')
     if item.sprint_target is not None:
         badges.append(
             f'<span style="{pill};font-weight:500;color:#6b7280;background:none;'
