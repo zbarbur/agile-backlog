@@ -120,6 +120,14 @@ def show(item_id: str):
         click.echo(f"Tags:        {', '.join(item.tags)}")
     if item.depends_on:
         click.echo(f"Depends on:  {', '.join(item.depends_on)}")
+    if item.goal:
+        click.echo(f"Goal:        {item.goal}")
+    if item.complexity:
+        click.echo(f"Complexity:  {item.complexity}")
+    if item.technical_specs:
+        click.echo("\nTechnical Specs:")
+        for spec in item.technical_specs:
+            click.echo(f"  - {spec}")
     if item.description:
         click.echo(f"\n{item.description}")
     if item.acceptance_criteria:

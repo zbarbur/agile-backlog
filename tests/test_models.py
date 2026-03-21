@@ -78,6 +78,29 @@ class TestPhaseField:
             BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="invalid-phase")
 
 
+class TestTaskDefinitionFields:
+    def test_goal_default_empty(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.goal == ""
+
+    def test_complexity_valid_values(self):
+        for val in ("S", "M", "L"):
+            item = BacklogItem(id="test", title="Test", priority="P2", category="feature", complexity=val)
+            assert item.complexity == val
+
+    def test_complexity_invalid_rejected(self):
+        with pytest.raises(ValueError):
+            BacklogItem(id="test", title="Test", priority="P2", category="feature", complexity="XL")
+
+    def test_complexity_default_none(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.complexity is None
+
+    def test_technical_specs_default_empty(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.technical_specs == []
+
+
 class TestToYamlDict:
     def test_excludes_id(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")

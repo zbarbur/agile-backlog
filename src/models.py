@@ -29,6 +29,9 @@ class BacklogItem(BaseModel):
     updated: date = Field(default_factory=date.today)
     depends_on: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    goal: str = ""
+    complexity: Literal["S", "M", "L"] | None = None
+    technical_specs: list[str] = Field(default_factory=list)
     description: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
     notes: str = ""
