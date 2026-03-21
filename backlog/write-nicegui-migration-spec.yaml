@@ -1,0 +1,28 @@
+title: Write NiceGUI migration spec
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Expand the frontend evaluation into a proper migration spec. Address\
+  \ review findings:\n1. Component mapping table (Streamlit \u2192 NiceGUI equivalents)\n\
+  2. Feature parity checklist (every current behavior that must be preserved)\n3.\
+  \ NiceGUI architecture guidance (event callbacks vs rerun, state model, @ui.page)\n\
+  4. Drag-and-drop proof-of-concept (verify SortableJS works in NiceGUI)\n5. Serve\
+  \ command architecture (ui.run() vs subprocess)\n6. Testing strategy (how to test\
+  \ NiceGUI components, regression plan)\n7. Update design system for NiceGUI (framework-agnostic\
+  \ tokens + NiceGUI components)\n8. Document filter logic, phase auto-set, detail\
+  \ panel fields\n9. Dependency tree analysis (FastAPI, uvicorn transitive deps)\n\
+  10. Update CLAUDE.md references from Streamlit to NiceGUI"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
