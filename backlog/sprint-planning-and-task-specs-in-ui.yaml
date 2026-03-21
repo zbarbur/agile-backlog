@@ -1,5 +1,5 @@
 title: Sprint planning and task specs in UI
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: null
@@ -7,6 +7,9 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
+goal: ''
+complexity: null
+technical_specs: []
 description: 'Board should support sprint planning workflow:
 
   1. View/select candidate items for next sprint from backlog
@@ -17,3 +20,4 @@ description: 'Board should support sprint planning workflow:
   specs'
 acceptance_criteria: []
 notes: ''
+phase: null
