@@ -71,16 +71,15 @@ def render_card_html(item: BacklogItem) -> str:
     sprint_html = f' · <span style="color:#888;">{sprint_text}</span>' if sprint_text else ""
 
     return (
-        f'<div style="margin-bottom:0;padding:6px 0 2px 0;">\n'
-        f'  <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">\n'
-        f"    <span>{emoji}</span>\n"
-        f'    <span style="font-size:11px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
-        f"{item.category}</span>\n"
-        f'    <span style="font-size:11px;color:{pri_color};font-weight:700;">{item.priority}</span>\n'
+        f'<div style="margin-bottom:0;padding:4px 0 2px 0;">\n'
+        f'  <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;">\n'
+        f'    <span style="font-size:13px;font-weight:500;word-wrap:break-word;overflow-wrap:break-word;">'
+        f"{item.title}</span>\n"
+        f'    <span style="font-size:10px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
+        f"{emoji} {item.category}</span>\n"
+        f'    <span style="font-size:10px;color:{pri_color};font-weight:700;">{item.priority}</span>\n'
         f"{sprint_html}\n"
         f"  </div>\n"
-        f'  <div style="font-size:13px;font-weight:500;word-wrap:break-word;overflow-wrap:break-word;">'
-        f"{item.title}</div>\n"
         f"</div>"
     )
 
