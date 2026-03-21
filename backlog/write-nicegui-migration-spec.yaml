@@ -1,15 +1,19 @@
 title: Write NiceGUI migration spec
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 7
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Write a complete NiceGUI migration spec addressing all review findings \u2014\
+  \ component mapping, feature parity, architecture, testing"
+complexity: L
+technical_specs:
+- 'Output: docs/superpowers/specs/2026-03-21-nicegui-migration.md'
+- Research NiceGUI docs for component equivalents
+- Build minimal drag-and-drop PoC to verify feasibility
 description: "Expand the frontend evaluation into a proper migration spec. Address\
   \ review findings:\n1. Component mapping table (Streamlit \u2192 NiceGUI equivalents)\n\
   2. Feature parity checklist (every current behavior that must be preserved)\n3.\
@@ -20,8 +24,15 @@ description: "Expand the frontend evaluation into a proper migration spec. Addre
   \ tokens + NiceGUI components)\n8. Document filter logic, phase auto-set, detail\
   \ panel fields\n9. Dependency tree analysis (FastAPI, uvicorn transitive deps)\n\
   10. Update CLAUDE.md references from Streamlit to NiceGUI"
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- "Component mapping table (Streamlit \u2192 NiceGUI)"
+- Feature parity checklist from current app.py
+- NiceGUI architecture guidance (state model, event callbacks)
+- Drag-and-drop proof-of-concept verified
+- Testing strategy defined
+- Spec review passes
+test_plan:
+- "No code tests \u2014 spec document + PoC verification"
 notes: ''
 phase: null
 design_reviewed: false

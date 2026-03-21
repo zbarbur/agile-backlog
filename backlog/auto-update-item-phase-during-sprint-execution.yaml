@@ -1,0 +1,24 @@
+title: Auto-update item phase during sprint execution
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Items stay in 'plan' phase even after work is done. The process should\
+  \ auto-update phases:\n1. When spec is written \u2192 move to 'build' phase\n2.\
+  \ When code is committed \u2192 move to 'review' phase  \n3. When moved to done\
+  \ \u2192 clear phase\n4. Sprint execution (subagent-driven-development) should call\
+  \ agile-backlog edit --phase as work progresses\n5. Consider hooks or skill updates\
+  \ to automate this"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

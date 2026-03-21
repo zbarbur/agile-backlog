@@ -1,19 +1,27 @@
 title: GitHub Actions release workflow
-status: backlog
+status: done
 priority: P2
 category: infra
-sprint_target: null
+sprint_target: 7
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Automate releases \u2014 on tag push, run tests, build wheel, create GitHub\
+  \ Release"
+complexity: M
+technical_specs:
+- Create .github/workflows/release.yml
+- Use pypa/gh-action-pypi-publish or manual twine
+- Build with python -m build
 description: 'On git tag push: run tests, build wheel, create GitHub Release with
   artifact. Optional: publish to PyPI.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- GitHub Action triggers on v* tag push
+- Runs tests before building
+- Creates GitHub Release with wheel artifact
+test_plan:
+- Push a test tag and verify the workflow runs
 notes: ''
 phase: null
 design_reviewed: false

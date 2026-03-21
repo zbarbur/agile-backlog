@@ -1,19 +1,24 @@
 title: Changelog
-status: backlog
+status: done
 priority: P3
 category: docs
-sprint_target: null
+sprint_target: 7
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Create CHANGELOG.md tracking what changed between versions
+complexity: S
+technical_specs:
+- Create CHANGELOG.md at project root
+- Summarize Sprint 1-6 changes under v0.1.0, Sprint 7 under v0.2.0
 description: Maintain a CHANGELOG.md with what changed between versions. Auto-generate
   from git tags/commits or maintain manually.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- CHANGELOG.md exists with entries for v0.1.0 and v0.2.0
+- Format follows Keep a Changelog convention
+test_plan:
+- "No code tests \u2014 document review"
 notes: ''
 phase: null
 design_reviewed: false

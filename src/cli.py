@@ -88,7 +88,7 @@ def move(item_id: str, status: str, phase: str | None):
     item.status = status
     if status == "doing":
         item.phase = phase or item.phase or "plan"
-    else:
+    elif status == "backlog":
         item.phase = None
     item.updated = date.today()
     save_item(item)
@@ -185,11 +185,10 @@ def edit(item_id, **kwargs):
 
 
 @main.command()
-def serve():
+@click.option("--port", default=8501, type=int, help="Port number.")
+@click.option("--host", default="127.0.0.1", help="Host address.")
+def serve(port: int, host: str):
     """Open the Kanban board in the browser."""
-    import subprocess
-    import sys
-    from pathlib import Path
+    from src.app import run_app
 
-    app_path = Path(__file__).parent / "app.py"
-    subprocess.run([sys.executable, "-m", "streamlit", "run", str(app_path)])
+    run_app(host=host, port=port)

@@ -1,25 +1,14 @@
 # src/app.py
-"""Streamlit Kanban board for agile-backlog."""
+"""NiceGUI Kanban board for agile-backlog."""
+
+from nicegui import ui
 
 from src.models import BacklogItem
+from src.tokens import CATEGORY_STYLES, COLUMN_BG, PRIORITY_COLORS, PRIORITY_ORDER
 
-CATEGORY_STYLES: dict[str, tuple[str, str]] = {
-    # category: (text_color, bg_color)
-    "bug": ("#be185d", "#fce7f3"),
-    "feature": ("#1d4ed8", "#dbeafe"),
-    "tech-debt": ("#92400e", "#fef3c7"),
-    "docs": ("#065f46", "#d1fae5"),
-    "security": ("#5b21b6", "#ede9fe"),
-    "infra": ("#155e75", "#cffafe"),
-}
-
-PRIORITY_COLORS: dict[str, tuple[str, str]] = {
-    "P1": ("#dc2626", "#fef2f2"),
-    "P2": ("#2563eb", "#eff6ff"),
-    "P3": ("#d97706", "#fffbeb"),
-}
-
-PRIORITY_ORDER: dict[str, int] = {"P1": 1, "P2": 2, "P3": 3}
+# ---------------------------------------------------------------------------
+# Pure functions — importable, framework-independent, fully tested
+# ---------------------------------------------------------------------------
 
 
 def category_style(category: str) -> tuple[str, str]:
@@ -122,286 +111,200 @@ def _complexity_badge(complexity: str) -> str:
     )
 
 
-def main():
-    """Render the Kanban board."""
-    import streamlit as st
+# ---------------------------------------------------------------------------
+# NiceGUI UI
+# ---------------------------------------------------------------------------
 
+STATUSES = ["backlog", "doing", "done"]
+LABELS = {"backlog": "BACKLOG", "doing": "IN PROGRESS", "done": "DONE"}
+
+
+@ui.page("/")
+def kanban_page():
+    """Render the Kanban board."""
     from src.yaml_store import load_all, save_item
 
-    st.set_page_config(page_title="agile-backlog", layout="wide")
-
-    # --- Custom CSS using design system tokens ---
-    st.markdown(
-        """
+    # --- Custom CSS ---
+    ui.add_head_html("""
     <style>
-        :root {
-            --color-border: #e5e7eb;
-            --color-border-hover: #d1d5db;
-            --color-shadow-default: rgba(0, 0, 0, 0.04);
-            --color-shadow-hover: rgba(0, 0, 0, 0.08);
-            --color-text-primary: #111827;
-            --color-text-secondary: #6b7280;
-            --color-text-muted: #9ca3af;
-        }
-
-        /* Tighter vertical spacing */
-        [data-testid="stVerticalBlock"] > div { gap: 0.25rem; }
-
-        /* Compact move buttons — ghost-style */
-        .stButton > button {
-            padding: 4px 12px;
-            font-size: 11px;
-            font-weight: 500;
-            border: 1px solid var(--color-border);
-            background: transparent;
-            color: var(--color-text-secondary);
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-        .stButton > button:hover {
-            background: #f3f4f6;
-            color: var(--color-text-primary);
-            border-color: var(--color-border-hover);
-        }
-
-        /* Column header — clean, professional */
-        .col-header {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--color-text-secondary);
-            padding: 8px 12px 6px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .col-header .count {
-            background: #e5e7eb;
-            color: #4b5563;
-            padding: 1px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        /* Card containers — 8px radius, design system shadow */
-        [data-testid="stVerticalBlock"] [data-testid="stContainer"] {
-            border: 1px solid var(--color-border) !important;
-            border-radius: 8px !important;
-            box-shadow: 0 1px 2px var(--color-shadow-default) !important;
-            padding: 10px 14px !important;
-            transition: box-shadow 0.15s ease;
-        }
-        [data-testid="stVerticalBlock"] [data-testid="stContainer"]:hover {
-            box-shadow: 0 2px 8px var(--color-shadow-hover) !important;
-        }
-
-        /* Done column dimmed with strikethrough */
-        .done-card { opacity: 0.5; }
-        .done-card:hover { opacity: 1; transition: opacity 0.15s ease; }
+        .done-card { opacity: 0.5; transition: opacity 0.15s ease; }
+        .done-card:hover { opacity: 1; }
         .done-card .card-title {
             text-decoration: line-through;
             color: #9ca3af !important;
         }
-
-        /* Compact expander — subtle trigger text */
-        .streamlit-expanderHeader {
-            font-size: 12px;
-            color: var(--color-text-muted);
-            font-weight: 400;
-        }
-
-        /* Hide default heading spacing */
-        h2 { margin-bottom: 0.1rem !important; }
-
-        /* Filter bar — subtle bottom border */
-        .filter-bar {
-            border-bottom: 1px solid var(--color-border);
-            padding-bottom: 12px;
-            margin-bottom: 10px;
-        }
-
-        /* Column background tints */
-        .col-bg-backlog { background: #f9fafb; border-radius: 8px; padding: 0.4rem; }
-        .col-bg-doing { background: #fffbeb; border-radius: 8px; padding: 0.4rem; }
-        .col-bg-done { background: #f0fdf4; border-radius: 8px; padding: 0.4rem; }
     </style>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    # --- Load data ---
-    all_items = load_all()
+    """)
 
     # --- Header ---
+    all_items = load_all()
     current_sprint = detect_current_sprint(all_items)
-    sprint_text = f" · Sprint {current_sprint}" if current_sprint is not None else ""
-    st.markdown(
-        f'<h2 style="font-weight:700;color:#111827;margin:0.2rem 0 0.1rem;">📋 agile-backlog'
-        f'<span style="font-weight:400;color:#9ca3af;font-size:0.6em;">{sprint_text}</span></h2>',
-        unsafe_allow_html=True,
+    sprint_text = f" \u00b7 Sprint {current_sprint}" if current_sprint is not None else ""
+    ui.html(
+        f'<h2 style="font-weight:700;color:#111827;margin:0.2rem 0 0.1rem;">'
+        f"\U0001f4cb agile-backlog"
+        f'<span style="font-weight:400;color:#9ca3af;font-size:0.6em;">{sprint_text}</span></h2>'
     )
 
-    # --- Filters ---
-    st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-    f1, f2, f3, f4 = st.columns(4)
-    with f1:
-        priority_options = [None, "P1", "P2+", "P3+"]
-        priority_labels = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
-        priority_filter = st.selectbox(
-            "Priority", priority_options, format_func=lambda x: priority_labels.get(x, str(x))
-        )
-    with f2:
-        categories = sorted({i.category for i in all_items})
-        category_filter = st.selectbox(
-            "Category", [None, *categories], format_func=lambda x: "All categories" if x is None else x
-        )
-    with f3:
-        sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
-        sprint_options = [None, "unplanned", *sprints]
-        sprint_labels = {None: "All sprints", "unplanned": "Unplanned"}
-        sprint_filter = st.selectbox(
-            "Sprint",
-            sprint_options,
-            format_func=lambda x: sprint_labels.get(x, f"Sprint {x}"),
-        )
-    with f4:
-        search = st.text_input("Search", placeholder="Filter by title, description, tags...")
-    st.markdown("</div>", unsafe_allow_html=True)
+    # --- Filter widgets ---
+    priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
+    categories = sorted({i.category for i in all_items})
+    category_options = {None: "All categories", **{c: c for c in categories}}
+    sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
+    sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
 
-    # --- Apply filters ---
-    # Sprint filter applies to ALL columns (for sprint review/planning)
-    # Priority/category/search apply to backlog only (don't hide active work)
-    backlog_items = [i for i in all_items if i.status == "backlog"]
-    doing_items = [i for i in all_items if i.status == "doing"]
-    done_items = [i for i in all_items if i.status == "done"]
+    with ui.row().classes("w-full gap-4 pb-3 border-b items-end"):
+        priority_select = ui.select(
+            label="Priority",
+            options=priority_options,
+            value=None,
+        ).classes("w-48")
+        category_select = ui.select(
+            label="Category",
+            options=category_options,
+            value=None,
+        ).classes("w-48")
+        sprint_select = ui.select(
+            label="Sprint",
+            options=sprint_options,
+            value=None,
+        ).classes("w-48")
+        search_input = ui.input(label="Search", placeholder="Filter by title, description, tags...").classes("w-64")
 
-    filtered_backlog = filter_items(
-        backlog_items, priority=priority_filter, category=category_filter, sprint=sprint_filter, search=search
-    )
-    if sprint_filter == "unplanned":
-        doing_items = [i for i in doing_items if i.sprint_target is None]
-        done_items = [i for i in done_items if i.sprint_target is None]
-    elif sprint_filter is not None:
-        doing_items = [i for i in doing_items if i.sprint_target == sprint_filter]
-        done_items = [i for i in done_items if i.sprint_target == sprint_filter]
+    # --- Board ---
+    def move_item(item: BacklogItem, target: str):
+        item.status = target
+        if target == "doing":
+            item.phase = item.phase or "plan"
+        elif target == "backlog":
+            item.phase = None
+        save_item(item)
+        render_board.refresh()
 
-    columns_map = {
-        "backlog": filtered_backlog,
-        "doing": doing_items,
-        "done": done_items,
-    }
+    @ui.refreshable
+    def render_board():
+        items = load_all()
 
-    # --- Render columns ---
-    col_backlog, col_doing, col_done = st.columns(3)
+        # Read filter values from widgets
+        pf = priority_select.value
+        cf = category_select.value
+        sf = sprint_select.value
+        sq = search_input.value or ""
 
-    statuses = ["backlog", "doing", "done"]
-    column_widgets = [col_backlog, col_doing, col_done]
-    labels = ["BACKLOG", "IN PROGRESS", "DONE"]
-    col_bg_classes = ["col-bg-backlog", "col-bg-doing", "col-bg-done"]
+        backlog_items = [i for i in items if i.status == "backlog"]
+        doing_items = [i for i in items if i.status == "doing"]
+        done_items = [i for i in items if i.status == "done"]
 
-    for col_widget, status, label, bg_class in zip(column_widgets, statuses, labels, col_bg_classes):
-        items_in_col = columns_map[status]
-        with col_widget:
-            st.markdown(
-                f'<div class="{bg_class}">'
-                f'<div class="col-header">{label}<span class="count">{len(items_in_col)}</span></div>'
-                f"</div>",
-                unsafe_allow_html=True,
-            )
+        filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
 
-            if not items_in_col:
-                if status == "backlog":
-                    no_items_msg = "No items yet — use `agile-backlog add` to create one."
-                    st.caption("No items match filters." if all_items else no_items_msg)
-                else:
-                    st.caption("No items.")
-                continue
+        if sf == "unplanned":
+            doing_items = [i for i in doing_items if i.sprint_target is None]
+            done_items = [i for i in done_items if i.sprint_target is None]
+        elif sf is not None:
+            doing_items = [i for i in doing_items if i.sprint_target == sf]
+            done_items = [i for i in done_items if i.sprint_target == sf]
 
-            for item in items_in_col:
-                with st.container(border=True):
-                    # Render styled card
-                    card_html = render_card_html(item)
-                    if status == "done":
-                        card_html = f'<div class="done-card">{card_html}</div>'
-                    st.markdown(card_html, unsafe_allow_html=True)
+        columns_map = {
+            "backlog": filtered_backlog,
+            "doing": doing_items,
+            "done": done_items,
+        }
 
-                    # Detail expander — contextual label
-                    expander_label = f"{item.id}"
-                    with st.expander(expander_label):
-                        # Goal prominently at top
-                        if item.goal:
-                            st.markdown(f"**Goal:** {item.goal}")
+        with ui.row().classes("w-full gap-4"):
+            for status in STATUSES:
+                items_in_col = columns_map[status]
+                bg = COLUMN_BG[status]
 
-                        # Complexity badge
-                        if item.complexity:
-                            st.markdown(f"**Complexity:** {_complexity_badge(item.complexity)}", unsafe_allow_html=True)
+                with ui.column().classes("flex-1 min-w-0").style(f"background:{bg};border-radius:8px;padding:0.5rem;"):
+                    # Column header
+                    with ui.row().classes("items-center gap-2 px-3 pt-2 pb-1"):
+                        ui.label(LABELS[status]).classes("text-xs font-bold uppercase tracking-wider text-gray-500")
+                        ui.badge(str(len(items_in_col))).props("rounded").classes("text-xs bg-gray-200 text-gray-600")
 
-                        # Description
-                        if item.description:
-                            st.markdown(item.description)
-
-                        # Acceptance Criteria as bullet list
-                        if item.acceptance_criteria:
-                            st.markdown("**Acceptance Criteria:**")
-                            for ac in item.acceptance_criteria:
-                                st.markdown(f"- {ac}")
-
-                        # Technical Specs as bullet list
-                        if item.technical_specs:
-                            st.markdown("**Technical Specs:**")
-                            for ts in item.technical_specs:
-                                st.markdown(f"- {ts}")
-
-                        # Test Plan
-                        if item.test_plan:
-                            st.markdown("**Test Plan:**")
-                            for tp in item.test_plan:
-                                st.markdown(f"- {tp}")
-
-                        # Notes
-                        if item.notes:
-                            st.markdown(f"**Notes:** {item.notes}")
-
-                        # Tags as small gray pills
-                        if item.tags:
-                            tag_html = " ".join(
-                                f'<span style="display:inline-flex;align-items:center;height:18px;'
-                                f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
-                                f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
-                                for t in item.tags
+                    # Empty state
+                    if not items_in_col:
+                        if status == "backlog":
+                            msg = (
+                                "No items match filters."
+                                if items
+                                else "No items yet \u2014 use `agile-backlog add` to create one."
                             )
-                            st.markdown(f"**Tags:** {tag_html}", unsafe_allow_html=True)
+                            ui.label(msg).classes("text-xs text-gray-400 px-3 py-2")
+                        else:
+                            ui.label("No items.").classes("text-xs text-gray-400 px-3 py-2")
+                        continue
 
-                        # Depends on
-                        if item.depends_on:
-                            st.markdown(f"**Depends on:** {', '.join(item.depends_on)}")
+                    # Cards
+                    for item in items_in_col:
+                        done_class = "done-card" if status == "done" else ""
+                        with ui.card().classes(f"w-full {done_class}").style("padding:10px 14px;"):
+                            ui.html(render_card_html(item))
 
-                        # Footer row: Sprint / Created / Updated
-                        detail_cols = st.columns(3)
-                        with detail_cols[0]:
-                            st.caption(f"Sprint: {item.sprint_target or 'Unplanned'}")
-                        with detail_cols[1]:
-                            st.caption(f"Created: {item.created}")
-                        with detail_cols[2]:
-                            st.caption(f"Updated: {item.updated}")
+                            # Detail expander
+                            with ui.expansion(item.id).classes("w-full text-xs text-gray-400"):
+                                if item.goal:
+                                    ui.html(f"<b>Goal:</b> {item.goal}")
+                                if item.complexity:
+                                    ui.html(f"<b>Complexity:</b> {_complexity_badge(item.complexity)}")
+                                if item.description:
+                                    ui.markdown(item.description)
+                                if item.acceptance_criteria:
+                                    ui.html("<b>Acceptance Criteria:</b>")
+                                    for ac in item.acceptance_criteria:
+                                        ui.markdown(f"- {ac}")
+                                if item.technical_specs:
+                                    ui.html("<b>Technical Specs:</b>")
+                                    for ts in item.technical_specs:
+                                        ui.markdown(f"- {ts}")
+                                if item.test_plan:
+                                    ui.html("<b>Test Plan:</b>")
+                                    for tp in item.test_plan:
+                                        ui.markdown(f"- {tp}")
+                                if item.notes:
+                                    ui.html(f"<b>Notes:</b> {item.notes}")
+                                if item.tags:
+                                    tag_html = " ".join(
+                                        f'<span style="display:inline-flex;align-items:center;height:18px;'
+                                        f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
+                                        f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
+                                        for t in item.tags
+                                    )
+                                    ui.html(f"<b>Tags:</b> {tag_html}")
+                                if item.depends_on:
+                                    ui.html(f"<b>Depends on:</b> {', '.join(item.depends_on)}")
+                                # Footer row
+                                with ui.row().classes("w-full gap-4 mt-2"):
+                                    ui.label(f"Sprint: {item.sprint_target or 'Unplanned'}").classes(
+                                        "text-xs text-gray-400"
+                                    )
+                                    ui.label(f"Created: {item.created}").classes("text-xs text-gray-400")
+                                    ui.label(f"Updated: {item.updated}").classes("text-xs text-gray-400")
 
-                    # Move buttons — compact row
-                    other_statuses = [s for s in statuses if s != status]
-                    btn_cols = st.columns(len(other_statuses))
-                    for btn_col, target in zip(btn_cols, other_statuses):
-                        with btn_col:
-                            arrow = "←" if statuses.index(target) < statuses.index(status) else "→"
-                            if st.button(f"{arrow} {target}", key=f"move_{item.id}_{target}", use_container_width=True):
-                                item.status = target
-                                if target == "doing":
-                                    item.phase = item.phase or "plan"
-                                else:
-                                    item.phase = None
-                                save_item(item)
-                                st.rerun()
+                            # Move buttons
+                            other_statuses = [s for s in STATUSES if s != status]
+                            with ui.row().classes("gap-2 mt-1"):
+                                for target in other_statuses:
+                                    arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
+                                    ui.button(
+                                        f"{arrow} {target}",
+                                        on_click=lambda _e, i=item, t=target: move_item(i, t),
+                                    ).props("flat dense size=sm").classes(
+                                        "text-xs text-gray-500 border border-gray-200"
+                                    )
+
+    # Wire filter changes to board refresh
+    priority_select.on_value_change(lambda _: render_board.refresh())
+    category_select.on_value_change(lambda _: render_board.refresh())
+    sprint_select.on_value_change(lambda _: render_board.refresh())
+    search_input.on_value_change(lambda _: render_board.refresh())
+
+    render_board()
 
 
-if __name__ == "__main__":
-    main()
+def run_app(host: str = "127.0.0.1", port: int = 8501):
+    """Start the NiceGUI Kanban board server."""
+    ui.run(title="agile-backlog", host=host, port=port, reload=False)
+
+
+if __name__ in {"__main__", "__mp_main__"}:
+    run_app()

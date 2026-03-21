@@ -121,13 +121,22 @@ class TestMove:
         data = yaml.safe_load((backlog_dir / "task-phase.yaml").read_text())
         assert data["phase"] == "plan"
 
-    def test_move_clears_phase_when_not_doing(self, runner: CliRunner, backlog_dir: Path):
+    def test_move_to_done_keeps_phase(self, runner: CliRunner, backlog_dir: Path):
         import yaml
 
         runner.invoke(main, ["add", "Task Phase2", "--category", "feature"])
         runner.invoke(main, ["move", "task-phase2", "--status", "doing", "--phase", "build"])
         runner.invoke(main, ["move", "task-phase2", "--status", "done"])
         data = yaml.safe_load((backlog_dir / "task-phase2.yaml").read_text())
+        assert data["phase"] == "build"
+
+    def test_move_to_backlog_clears_phase(self, runner: CliRunner, backlog_dir: Path):
+        import yaml
+
+        runner.invoke(main, ["add", "Task Phase3", "--category", "feature"])
+        runner.invoke(main, ["move", "task-phase3", "--status", "doing", "--phase", "review"])
+        runner.invoke(main, ["move", "task-phase3", "--status", "backlog"])
+        data = yaml.safe_load((backlog_dir / "task-phase3.yaml").read_text())
         assert data["phase"] is None
 
 
@@ -181,14 +190,11 @@ class TestEdit:
 
 
 class TestServe:
-    def test_serve_launches_streamlit(self, runner: CliRunner, monkeypatch):
-        """Verify serve attempts to launch streamlit (we mock subprocess.run)."""
-        import subprocess as sp
-
+    def test_serve_calls_run_app(self, runner: CliRunner, monkeypatch):
+        """Verify serve calls run_app with correct defaults."""
         calls = []
-        monkeypatch.setattr(sp, "run", lambda cmd, **kw: calls.append(cmd))
+        monkeypatch.setattr("src.app.run_app", lambda host, port: calls.append({"host": host, "port": port}))
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
         assert len(calls) == 1
-        assert "streamlit" in str(calls[0])
-        assert "app.py" in str(calls[0])
+        assert calls[0] == {"host": "127.0.0.1", "port": 8501}
