@@ -1,0 +1,31 @@
+[project]
+name = "agile-backlog"
+version = "0.1.0"
+description = "Lightweight Kanban board tool for agentic development"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.30.0",
+    "streamlit-sortables>=0.3.0",
+    "pyyaml>=6.0.0",
+    "click>=8.1.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+agile-backlog = "src.cli:main"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

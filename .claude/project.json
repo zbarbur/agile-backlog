@@ -1,0 +1,16 @@
+{
+	"project": {
+		"name": "agile-backlog",
+		"slug": "agile-backlog"
+	},
+	"tracker": {
+		"type": "none"
+	},
+	"placeholders": {
+		"PROJECT_NAME": "agile-backlog",
+		"PROJECT_SLUG": "agile-backlog",
+		"PROJECT_DESCRIPTION": "Lightweight Kanban board tool for agentic development — CLI + Streamlit + Claude Code plugin",
+		"AUTHOR": "Guy Guzner",
+		"YEAR": "2026"
+	}
+}

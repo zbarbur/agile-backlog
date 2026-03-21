@@ -1,0 +1,1 @@
+Run tests intelligently. Use the test skill to diagnose failures, analyze coverage gaps, run targeted tests, and suggest missing test cases. Arguments: $ARGUMENTS

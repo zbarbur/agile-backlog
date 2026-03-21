@@ -1,0 +1,69 @@
+# Backlog Item Schema
+# Each YAML file in backlog/ must conform to this structure.
+
+required_fields:
+  - title
+  - status
+  - priority
+  - category
+
+fields:
+  id:
+    type: string
+    description: Derived from filename (e.g., fix-auth-leak from fix-auth-leak.yaml)
+
+  title:
+    type: string
+    description: Short descriptive title
+
+  status:
+    type: string
+    enum: [backlog, doing, done]
+    default: backlog
+
+  priority:
+    type: string
+    enum: [P1, P2, P3]
+    description: P1=critical, P2=important, P3=nice-to-have
+
+  category:
+    type: string
+    examples: [security, scanner, api, infra, tech-debt, docs, feature]
+
+  sprint_target:
+    type: integer
+    nullable: true
+    description: Which sprint this is planned for (null = unplanned)
+
+  created:
+    type: date
+    description: When the item was created
+
+  updated:
+    type: date
+    description: Last modification date
+
+  depends_on:
+    type: list
+    items: string
+    description: List of item IDs this depends on
+
+  tags:
+    type: list
+    items: string
+    description: Free-form tags for filtering
+
+  description:
+    type: string
+    multiline: true
+    description: Detailed description of the work
+
+  acceptance_criteria:
+    type: list
+    items: string
+    description: Verifiable completion criteria
+
+  notes:
+    type: string
+    multiline: true
+    description: Additional context, references, discussion
