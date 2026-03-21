@@ -1,5 +1,5 @@
 title: Changelog
-status: doing
+status: done
 priority: P3
 category: docs
 sprint_target: 7
@@ -20,6 +20,6 @@ acceptance_criteria:
 test_plan:
 - "No code tests \u2014 document review"
 notes: ''
-phase: plan
+phase: null
 design_reviewed: false
 code_reviewed: false

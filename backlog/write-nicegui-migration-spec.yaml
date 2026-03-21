@@ -1,5 +1,5 @@
 title: Write NiceGUI migration spec
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 7
@@ -34,6 +34,6 @@ acceptance_criteria:
 test_plan:
 - "No code tests \u2014 spec document + PoC verification"
 notes: ''
-phase: plan
+phase: null
 design_reviewed: false
 code_reviewed: false
