@@ -1,5 +1,5 @@
 title: Make agile-backlog installable and distributable
-status: doing
+status: done
 priority: P1
 category: infra
 sprint_target: null
@@ -7,6 +7,9 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
+goal: ''
+complexity: null
+technical_specs: []
 description: 'Make the tool easy to install across projects:
 
   1. pip install from GitHub (pip install git+https://...)
@@ -20,3 +23,4 @@ description: 'Make the tool easy to install across projects:
   5. Version management strategy'
 acceptance_criteria: []
 notes: ''
+phase: null

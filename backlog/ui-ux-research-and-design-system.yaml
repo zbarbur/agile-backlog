@@ -1,5 +1,5 @@
 title: UI/UX research and design system
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 4
@@ -7,6 +7,9 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
+goal: ''
+complexity: null
+technical_specs: []
 description: "Research task \u2014 study existing Kanban tools (Linear, Notion, Trello,\
   \ GitHub Projects). Define a design system:\n1. Card anatomy \u2014 what goes where,\
   \ sizing, spacing\n2. Color system \u2014 category colors, priority colors, status\
@@ -17,3 +20,4 @@ description: "Research task \u2014 study existing Kanban tools (Linear, Notion, 
   \ not code. This informs card-design-v2 and all future UI work."
 acceptance_criteria: []
 notes: ''
+phase: null
