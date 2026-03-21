@@ -1,0 +1,20 @@
+title: Evaluate frontend alternatives to Streamlit
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Streamlit has design limitations (can't fully style widgets, no JS,\
+  \ spacing issues). Evaluate:\n1. React/Next.js + FastAPI backend \u2014 full control,\
+  \ most work\n2. Streamlit custom components \u2014 React inside Streamlit, moderate\
+  \ effort\n3. Other Python UI frameworks (NiceGUI, Gradio, Panel, Reflex)\nOutput:\
+  \ recommendation doc with pros/cons/effort estimates"
+acceptance_criteria: []
+notes: ''
+phase: null

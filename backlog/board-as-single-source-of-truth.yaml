@@ -1,0 +1,27 @@
+title: Board as single source of truth
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Eliminate TODO.md as task spec location. Changes needed:
+
+  1. Sprint-start skill writes task specs directly into YAML items (goal, complexity,
+  acceptance_criteria, technical_specs)
+
+  2. CLI edit command to update any field on an item
+
+  3. Board expander shows the full task spec (already built in T4.4)
+
+  4. TODO.md becomes auto-generated or deprecated
+
+  5. Sprint-start and sprint-end skills updated to read/write YAML not TODO.md'
+acceptance_criteria: []
+notes: ''
+phase: null
