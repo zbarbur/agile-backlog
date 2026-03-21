@@ -1,0 +1,20 @@
+title: Version tagging and git tags
+status: backlog
+priority: P2
+category: infra
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Create git tags for releases (v0.1.0, v0.2.0 etc). Users can pin: pip
+  install git+...@v0.2.0. Bump version in pyproject.toml and tag on each sprint completion.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
