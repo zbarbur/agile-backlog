@@ -28,6 +28,6 @@ acceptance_criteria:
 test_plan:
 - 'Manual: run sprint workflow and verify phases update'
 notes: ''
-phase: plan
+phase: build
 design_reviewed: false
 code_reviewed: false

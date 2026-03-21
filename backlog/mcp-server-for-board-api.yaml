@@ -1,0 +1,21 @@
+title: MCP server for board API
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Add MCP server so AI agents can interact with the board via structured
+  API instead of CLI. Useful for multi-agent scenarios and remote access. Not needed
+  while CLI works fine.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

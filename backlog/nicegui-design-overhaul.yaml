@@ -28,6 +28,6 @@ test_plan:
 - 'Manual: visual verification in browser'
 - 'Automated: existing pure function tests unchanged'
 notes: ''
-phase: plan
+phase: build
 design_reviewed: false
 code_reviewed: false
