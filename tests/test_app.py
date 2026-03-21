@@ -1,5 +1,5 @@
 # tests/test_app.py
-from src.app import category_style, filter_items, render_card_html
+from src.app import category_style, detect_current_sprint, filter_items, render_card_html
 from src.models import BacklogItem
 
 
@@ -105,6 +105,24 @@ class TestFilterItems:
         items = [_item(id="a", priority="P3")]
         assert filter_items(items, priority="P1") == []
 
+    def test_filter_priority_range_p2_plus(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2"), _item(id="c", priority="P3")]
+        result = filter_items(items, priority="P2+")
+        assert len(result) == 2
+        ids = {i.id for i in result}
+        assert ids == {"a", "b"}
+
+    def test_filter_priority_range_p3_plus(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2"), _item(id="c", priority="P3")]
+        result = filter_items(items, priority="P3+")
+        assert len(result) == 3
+
+    def test_filter_priority_exact_still_works(self):
+        items = [_item(id="a", priority="P1"), _item(id="b", priority="P2")]
+        result = filter_items(items, priority="P1")
+        assert len(result) == 1
+        assert result[0].id == "a"
+
 
 class TestRenderCardHtml:
     def test_contains_title(self):
@@ -125,8 +143,39 @@ class TestRenderCardHtml:
 
     def test_unplanned_sprint(self):
         html = render_card_html(_item(sprint_target=None))
-        assert "Unplanned" in html
+        # Unplanned items don't show a sprint indicator
+        assert "S2" not in html
+        assert "S3" not in html
 
     def test_contains_category_color(self):
         html = render_card_html(_item(category="security"))
         assert "#a78bfa" in html or "a78bfa" in html
+
+
+class TestDetectCurrentSprint:
+    def test_detects_from_doing_items(self):
+        items = [
+            _item(id="a", status="doing", sprint_target=3),
+            _item(id="b", status="doing", sprint_target=3),
+            _item(id="c", status="backlog", sprint_target=4),
+        ]
+        assert detect_current_sprint(items) == 3
+
+    def test_returns_none_when_no_doing(self):
+        items = [_item(id="a", status="backlog", sprint_target=2)]
+        assert detect_current_sprint(items) is None
+
+    def test_returns_none_when_doing_has_no_sprint(self):
+        items = [_item(id="a", status="doing", sprint_target=None)]
+        assert detect_current_sprint(items) is None
+
+    def test_returns_most_common_sprint(self):
+        items = [
+            _item(id="a", status="doing", sprint_target=3),
+            _item(id="b", status="doing", sprint_target=3),
+            _item(id="c", status="doing", sprint_target=2),
+        ]
+        assert detect_current_sprint(items) == 3
+
+    def test_empty_list(self):
+        assert detect_current_sprint([]) is None

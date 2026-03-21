@@ -1,6 +1,6 @@
 # TODO — agile-backlog
 
-> Active sprint tasks only. Backlog lives in `docs/process/KANBAN.md`.
+> Active sprint tasks only. Backlog lives in `backlog/*.yaml`.
 
 ---
 
@@ -19,3 +19,13 @@
 - [x] CLI `serve` command launches Streamlit
 - [x] Full CI green (65 tests, ruff clean)
 - [x] Dogfooding: backlog managed via YAML files
+
+## Sprint 3 — Complete
+
+- [x] T3.1 — Unify card layout (bordered containers + move buttons)
+- [x] T3.2 — Smarter filtering (backlog-only, priority ranges, dimmed done)
+- [x] T3.3 — Polish frontend design (compact layout, styled headers, CSS overhaul)
+- [x] T3.4 — Sprint indicator badge in header
+- [x] T3.5 — Claude Code plugin (/backlog command)
+- [x] Full CI green (73 tests, ruff clean)
+- [x] Professional frontend redesign (light-mode colors, shadows, pills)

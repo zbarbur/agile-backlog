@@ -1,0 +1,19 @@
+title: Sprint planning and task specs in UI
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: 'Board should support sprint planning workflow:
+
+  1. View/select candidate items for next sprint from backlog
+
+  2. See task specs/definitions before starting development
+
+  3. Possibly a sprint planning view that shows task breakdown with DoD and technical
+  specs'
+acceptance_criteria: []
+notes: ''

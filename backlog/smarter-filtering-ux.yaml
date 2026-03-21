@@ -1,0 +1,21 @@
+title: Smarter filtering UX
+status: done
+priority: P1
+category: feature
+sprint_target: 3
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: 'Multiple filter issues to address:
+
+  1. Filters should only apply to Backlog column - Doing and Done should always be
+  visible
+
+  2. Priority filter should support ranges (P2+ means P1 and P2)
+
+  3. Filters should persist across moves (not reset on st.rerun)
+
+  4. Done column could be visually dimmed/distinct'
+acceptance_criteria: []
+notes: ''

@@ -1,0 +1,24 @@
+title: Polish frontend design
+status: done
+priority: P1
+category: feature
+sprint_target: 3
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: 'Overall visual polish for the Kanban board:
+
+  1. More compact card layout - less whitespace between elements
+
+  2. Better visual hierarchy - headers, columns, cards
+
+  3. Dark theme consistency
+
+  4. Professional look and feel
+
+  5. Column spacing and alignment
+
+  6. Typography and sizing refinements'
+acceptance_criteria: []
+notes: ''

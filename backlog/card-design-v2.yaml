@@ -1,0 +1,20 @@
+title: Card design v2
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: 'Card design improvements for next sprint:
+
+  1. Title, category badge, and priority indicator all on one line
+
+  2. Better styled move buttons (smaller, more integrated)
+
+  3. Improved details expander design (better layout, typography)
+
+  4. Overall more polished card appearance'
+acceptance_criteria: []
+notes: ''
