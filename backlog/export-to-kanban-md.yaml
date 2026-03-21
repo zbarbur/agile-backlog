@@ -1,0 +1,12 @@
+title: Export to KANBAN.md
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Generate KANBAN.md from YAML items for repos that still want markdown.
+acceptance_criteria: []
+notes: ''

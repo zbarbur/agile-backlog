@@ -1,0 +1,12 @@
+title: Full-text search
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Search across title, description, and tags fields.
+acceptance_criteria: []
+notes: ''

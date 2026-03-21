@@ -1,0 +1,13 @@
+title: Drag-and-drop between columns
+status: doing
+priority: P2
+category: feature
+sprint_target: 2
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: streamlit-sortables integration for moving cards between Kanban columns.
+  Updates YAML status on drop.
+acceptance_criteria: []
+notes: ''

@@ -1,0 +1,13 @@
+title: Claude Code plugin
+status: backlog
+priority: P2
+category: feature
+sprint_target: 3
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: plugin/ directory with plugin.json, /backlog command that wraps CLI.
+  Agent can also read/write YAML directly.
+acceptance_criteria: []
+notes: ''

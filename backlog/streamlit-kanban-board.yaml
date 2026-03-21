@@ -1,0 +1,14 @@
+title: Streamlit Kanban board
+status: doing
+priority: P1
+category: feature
+sprint_target: 2
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: 3-column board (Backlog, Doing, Done) in src/app.py. Cards with title/priority
+  badge/category tag. Filter bar for category, sprint, priority, search. Click card
+  to expand details.
+acceptance_criteria: []
+notes: ''
