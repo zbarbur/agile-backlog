@@ -108,4 +108,5 @@ Tests use `tmp_path` fixture for isolated backlog directories. Git root detectio
 - Streamlit web UI
 - Drag-and-drop
 - Claude Code plugin
+- `sprint show` / `sprint candidates` subcommands (can be added as filtered views over `list`)
 - Search, import/export
