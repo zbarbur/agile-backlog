@@ -1,31 +1,30 @@
 # KANBAN — agile-backlog
 
-> Backlog for the backlog tool. Items flow: **Backlog** → **Doing** → **Done**
+> **Deprecated:** This file is kept for reference. The source of truth is now `backlog/*.yaml` files, viewable via `agile-backlog serve` or `agile-backlog list`.
 
 ---
 
 ## Backlog
 
-### Core
+See `agile-backlog list --status backlog` or the board UI.
 
-- **Drag-and-drop** — explore alternatives to `streamlit-sortables` for rich card drag-and-drop.
-- **Claude Code plugin** — `plugin/` directory with plugin.json, /backlog command, wraps CLI.
-- **Sprint subcommands** — `sprint show`, `sprint candidates` CLI subcommands.
-- **Inline editing** — click card to edit fields in the UI.
+## Done (Sprint 1-5)
 
-### Polish
-
-- **Export** — generate KANBAN.md from YAML items (for repos that still want markdown)
-- **Import** — parse existing KANBAN.md into YAML items (migration tool)
-
----
-
-## Done
-
-- **YAML schema + BacklogItem model** — Pydantic model with Literal validation, slugify, to_yaml_dict. 12 tests.
-- **YAML store (read/write)** — Git-root auto-detection, load/save/list YAML files, resilient to bad files. 13 tests.
-- **CLI basics** — Click CLI: `add`, `list` (with filters), `move`, `show`, `serve`. Slug collision handling. 16 tests.
-- **Streamlit Kanban board** — 3-column board with styled cards (category headers, priority badges), filters (priority/category/sprint/search), move-via-dropdown, inline detail expanders. 24 tests.
-- **Category colors** — visual badges on cards with emoji + colored header strips.
+- **YAML schema + BacklogItem model** — Pydantic model with Literal validation, slugify, to_yaml_dict.
+- **YAML store (read/write)** — Git-root auto-detection, load/save/list YAML files, resilient to bad files.
+- **CLI basics** — Click CLI: add, list, move, show, serve, edit. Slug collision handling.
+- **Streamlit Kanban board** — 3-column board with design system, filters, move buttons, detail expanders.
+- **Category colors** — pastel badge pills per category.
 - **Search** — full-text search across title, description, and tags.
-- **Sprint view** — filter by sprint number in both CLI and UI.
+- **Sprint view** — filter by sprint in CLI and UI.
+- **Smart filtering** — backlog-only filters, priority ranges, dimmed done column.
+- **Claude Code plugin** — /backlog command wrapping CLI.
+- **Sprint indicator** — auto-detected from doing items.
+- **Design system** — research-based spec (Linear/Notion/Trello patterns).
+- **Phase field** — workflow tracking (scoping → coding → testing).
+- **Task definition fields** — goal, complexity, acceptance_criteria, technical_specs.
+- **Formatted task details** — structured rendering in card expander.
+- **Card design v2** — design system colors, P1 accent, done strikethrough.
+- **pip/pipx install** — README with installation instructions.
+- **CLI edit command** — update any field on a backlog item.
+- **Board as single source of truth** — YAML items replace TODO.md for task specs.
