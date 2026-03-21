@@ -238,7 +238,8 @@ def main():
                     btn_cols = st.columns(len(other_statuses))
                     for btn_col, target in zip(btn_cols, other_statuses):
                         with btn_col:
-                            if st.button(f"→ {target}", key=f"move_{item.id}_{target}", use_container_width=True):
+                            arrow = "←" if statuses.index(target) < statuses.index(status) else "→"
+                            if st.button(f"{arrow} {target}", key=f"move_{item.id}_{target}", use_container_width=True):
                                 item.status = target
                                 save_item(item)
                                 st.rerun()
