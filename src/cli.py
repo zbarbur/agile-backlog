@@ -87,7 +87,7 @@ def move(item_id: str, status: str, phase: str | None):
         raise SystemExit(f"Error: item '{item_id}' not found.")
     item.status = status
     if status == "doing":
-        item.phase = phase
+        item.phase = phase or item.phase or "plan"
     else:
         item.phase = None
     item.updated = date.today()
