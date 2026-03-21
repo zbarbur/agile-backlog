@@ -149,39 +149,39 @@ def main():
 
     # --- Header with sprint indicator ---
     current_sprint = detect_current_sprint(all_items)
-    sprint_badge = ""
-    if current_sprint is not None:
-        sprint_badge = (
-            f' <span style="font-size:0.6em;background:#2563eb;color:white;'
-            f'padding:2px 10px;border-radius:12px;vertical-align:middle;">Sprint {current_sprint}</span>'
-        )
-    st.markdown(
-        f'<h3 style="margin:0 0 0.3rem 0;padding:0;">📋 agile-backlog{sprint_badge}</h3>',
-        unsafe_allow_html=True,
-    )
+    sprint_text = f"  ·  Sprint {current_sprint}" if current_sprint is not None else ""
 
-    filter_cols = st.columns(4)
+    header_cols = st.columns([2, 1, 1, 1, 2])
+    with header_cols[0]:
+        st.markdown(f"**📋 agile-backlog**{sprint_text}")
 
-    with filter_cols[0]:
+    with header_cols[1]:
         priority_options = [None, "P1", "P2+", "P3+"]
-        priority_labels = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
+        priority_labels = {None: "All", "P1": "P1", "P2+": "P1+P2", "P3+": "All pri"}
         priority_filter = st.selectbox(
             "Priority",
             priority_options,
             format_func=lambda x: priority_labels.get(x, str(x)),
+            label_visibility="collapsed",
         )
-    with filter_cols[1]:
+    with header_cols[2]:
         categories = sorted({i.category for i in all_items})
         category_filter = st.selectbox(
-            "Category", [None, *categories], format_func=lambda x: "All categories" if x is None else x
+            "Category",
+            [None, *categories],
+            format_func=lambda x: "All cat" if x is None else x,
+            label_visibility="collapsed",
         )
-    with filter_cols[2]:
+    with header_cols[3]:
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_filter = st.selectbox(
-            "Sprint", [None, *sprints], format_func=lambda x: "All sprints" if x is None else f"Sprint {x}"
+            "Sprint",
+            [None, *sprints],
+            format_func=lambda x: "All sprints" if x is None else f"S{x}",
+            label_visibility="collapsed",
         )
-    with filter_cols[3]:
-        search = st.text_input("Search", placeholder="Filter by title, description, tags...")
+    with header_cols[4]:
+        search = st.text_input("Search", placeholder="Search...", label_visibility="collapsed")
 
     # --- Apply filters only to backlog ---
     backlog_items = [i for i in all_items if i.status == "backlog"]
