@@ -1,0 +1,14 @@
+title: Show current sprint indicator
+status: doing
+priority: P2
+category: feature
+sprint_target: 3
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Board should clearly show which sprint is active. Header or badge showing
+  'Sprint 3' so users know the context. Could also highlight items tagged for the
+  current sprint.
+acceptance_criteria: []
+notes: ''

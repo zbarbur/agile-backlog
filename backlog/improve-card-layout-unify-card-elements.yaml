@@ -1,0 +1,14 @@
+title: Improve card layout - unify card elements
+status: doing
+priority: P1
+category: feature
+sprint_target: 3
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+description: Move dropdown and details expander should be visually inside the card
+  border, not floating below it. All card elements (header, title, move control, details)
+  should be within one unified container.
+acceptance_criteria: []
+notes: ''
