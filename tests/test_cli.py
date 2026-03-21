@@ -110,6 +110,26 @@ class TestMove:
         result = runner.invoke(main, ["move", "nope", "--status", "doing"])
         assert result.exit_code != 0
 
+    def test_move_with_phase(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Task Phase", "--category", "feature"])
+        result = runner.invoke(main, ["move", "task-phase", "--status", "doing", "--phase", "coding"])
+        assert result.exit_code == 0
+        assert "doing" in result.output
+        # Verify phase is persisted in the YAML file
+        import yaml
+
+        data = yaml.safe_load((backlog_dir / "task-phase.yaml").read_text())
+        assert data["phase"] == "coding"
+
+    def test_move_clears_phase_when_not_doing(self, runner: CliRunner, backlog_dir: Path):
+        import yaml
+
+        runner.invoke(main, ["add", "Task Phase2", "--category", "feature"])
+        runner.invoke(main, ["move", "task-phase2", "--status", "doing", "--phase", "spec"])
+        runner.invoke(main, ["move", "task-phase2", "--status", "done"])
+        data = yaml.safe_load((backlog_dir / "task-phase2.yaml").read_text())
+        assert data["phase"] is None
+
 
 class TestShow:
     def test_show_item(self, runner: CliRunner):

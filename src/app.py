@@ -75,6 +75,13 @@ def render_card_html(item: BacklogItem) -> str:
         else ""
     )
 
+    phase_html = (
+        f'<span style="font-size:10px;color:#7c3aed;background:#f5f3ff;'
+        f'padding:1px 6px;border-radius:3px;font-weight:500;">{item.phase}</span>'
+        if item.phase
+        else ""
+    )
+
     return (
         f'<div style="margin:0;padding:2px 0;">\n'
         f'  <div style="font-size:13px;font-weight:600;color:#1f2937;line-height:1.3;'
@@ -86,6 +93,7 @@ def render_card_html(item: BacklogItem) -> str:
         f'    <span style="font-size:10px;color:{pri_color};font-weight:700;'
         f'background:{pri_color}18;padding:1px 6px;border-radius:3px;">{item.priority}</span>\n'
         f"    {sprint_html}\n"
+        f"    {phase_html}\n"
         f"  </div>\n"
         f"</div>"
     )

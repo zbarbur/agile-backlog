@@ -32,6 +32,9 @@ class BacklogItem(BaseModel):
     description: str = ""
     acceptance_criteria: list[str] = Field(default_factory=list)
     notes: str = ""
+    phase: (
+        Literal["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"] | None
+    ) = None
 
     def to_yaml_dict(self) -> dict:
         """Serialize to dict for YAML output, excluding id (derived from filename)."""

@@ -151,6 +151,15 @@ class TestRenderCardHtml:
         html = render_card_html(_item(category="security"))
         assert "#a78bfa" in html or "a78bfa" in html
 
+    def test_render_card_with_phase(self):
+        html = render_card_html(_item(phase="coding"))
+        assert "coding" in html
+
+    def test_render_card_without_phase(self):
+        html = render_card_html(_item(phase=None))
+        # Phase badge should not appear when phase is None
+        assert "7c3aed" not in html
+
 
 class TestDetectCurrentSprint:
     def test_detects_from_doing_items(self):

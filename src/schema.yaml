@@ -67,3 +67,9 @@ fields:
     type: string
     multiline: true
     description: Additional context, references, discussion
+
+  phase:
+    type: string
+    enum: [scoping, spec, spec-review, design, design-review, coding, code-review, testing]
+    nullable: true
+    description: Workflow phase for items in 'doing' status

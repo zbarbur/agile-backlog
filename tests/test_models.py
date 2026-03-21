@@ -64,6 +64,20 @@ class TestBacklogItem:
             BacklogItem(id="bad", title="Bad", priority="P0", category="x")
 
 
+class TestPhaseField:
+    def test_phase_default_none(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.phase is None
+
+    def test_phase_valid_value(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="coding")
+        assert item.phase == "coding"
+
+    def test_phase_invalid_rejected(self):
+        with pytest.raises(ValueError):
+            BacklogItem(id="test", title="Test", priority="P2", category="feature", phase="invalid-phase")
+
+
 class TestToYamlDict:
     def test_excludes_id(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
