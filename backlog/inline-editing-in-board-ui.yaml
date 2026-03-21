@@ -1,20 +1,19 @@
 title: Inline editing in board UI
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: 8
+sprint_target: 9
 created: 2026-03-21
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: "Edit item fields directly from the board via dialog \u2014 disabled for done\
-  \ items"
+goal: "Edit item fields from a modal dialog \u2014 click card to open, edit fields,\
+  \ save to YAML"
 complexity: M
 technical_specs:
-- Use ui.dialog() with form fields
-- 'Fields: title, priority, category, sprint, goal, complexity, acceptance_criteria,
-  technical_specs, test_plan, description, notes'
-- Call save_item() on save, render_board.refresh() after
+- Use ui.dialog() with form fields (input, select, textarea)
+- Save calls save_item() and render_board.refresh()
+- Reuse modal from frontend polish (same component)
 description: 'Edit item fields directly from the board:
 
   1. Edit button on each card (disabled for done items)
@@ -29,13 +28,14 @@ description: 'Edit item fields directly from the board:
 
   5. Only editable when status is backlog or doing'
 acceptance_criteria:
-- Edit button on each card (hidden for done items)
-- Dialog opens with editable fields
+- Click card opens detail/edit modal
+- Modal shows all fields as editable inputs
 - Save persists to YAML and refreshes board
-- Tests pass (pytest tests/ -v)
+- Edit disabled for done items
+- Tests pass
 test_plan:
-- 'Manual: edit an item, verify YAML updated'
+- 'Manual: edit an item from modal, verify YAML updated'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
