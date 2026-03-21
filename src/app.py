@@ -259,7 +259,9 @@ def main():
         search = st.text_input("Search", placeholder="Filter by title, description, tags...")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- Apply filters only to backlog ---
+    # --- Apply filters ---
+    # Sprint filter applies to ALL columns (for sprint review/planning)
+    # Priority/category/search apply to backlog only (don't hide active work)
     backlog_items = [i for i in all_items if i.status == "backlog"]
     doing_items = [i for i in all_items if i.status == "doing"]
     done_items = [i for i in all_items if i.status == "done"]
@@ -267,6 +269,9 @@ def main():
     filtered_backlog = filter_items(
         backlog_items, priority=priority_filter, category=category_filter, sprint=sprint_filter, search=search
     )
+    if sprint_filter is not None:
+        doing_items = [i for i in doing_items if i.sprint_target == sprint_filter]
+        done_items = [i for i in done_items if i.sprint_target == sprint_filter]
 
     columns_map = {
         "backlog": filtered_backlog,
