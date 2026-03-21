@@ -156,11 +156,11 @@ def main():
             f'padding:2px 10px;border-radius:12px;vertical-align:middle;">Sprint {current_sprint}</span>'
         )
     st.markdown(
-        f'<h2 style="margin:0;padding:0;">📋 agile-backlog{sprint_badge}</h2>',
+        f'<div style="font-size:1.2rem;font-weight:700;margin:0 0 0.5rem 0;">📋 agile-backlog{sprint_badge}</div>',
         unsafe_allow_html=True,
     )
 
-    filter_cols = st.columns([1, 1, 1, 2])
+    filter_cols = st.columns(4)
 
     with filter_cols[0]:
         priority_options = [None, "P1", "P2+", "P3+"]
