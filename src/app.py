@@ -106,8 +106,7 @@ def main():
     st.markdown(
         """
     <style>
-        /* Reduce top padding */
-        .block-container { padding-top: 1rem; }
+        /* Keep default padding */
         /* Tighter spacing between elements */
         [data-testid="stVerticalBlock"] > div { gap: 0.3rem; }
         /* Compact buttons */
@@ -147,41 +146,31 @@ def main():
     # --- Load data ---
     all_items = load_all()
 
-    # --- Header with sprint indicator ---
+    # --- Header ---
     current_sprint = detect_current_sprint(all_items)
-    sprint_text = f"  ·  Sprint {current_sprint}" if current_sprint is not None else ""
+    sprint_text = f" · Sprint {current_sprint}" if current_sprint is not None else ""
+    st.title(f"📋 agile-backlog{sprint_text}")
 
-    header_cols = st.columns([2, 1, 1, 1, 2])
-    with header_cols[0]:
-        st.markdown(f"**📋 agile-backlog**{sprint_text}")
-
-    with header_cols[1]:
+    # --- Filters ---
+    f1, f2, f3, f4 = st.columns(4)
+    with f1:
         priority_options = [None, "P1", "P2+", "P3+"]
-        priority_labels = {None: "All", "P1": "P1", "P2+": "P1+P2", "P3+": "All pri"}
+        priority_labels = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
         priority_filter = st.selectbox(
-            "Priority",
-            priority_options,
-            format_func=lambda x: priority_labels.get(x, str(x)),
-            label_visibility="collapsed",
+            "Priority", priority_options, format_func=lambda x: priority_labels.get(x, str(x))
         )
-    with header_cols[2]:
+    with f2:
         categories = sorted({i.category for i in all_items})
         category_filter = st.selectbox(
-            "Category",
-            [None, *categories],
-            format_func=lambda x: "All cat" if x is None else x,
-            label_visibility="collapsed",
+            "Category", [None, *categories], format_func=lambda x: "All categories" if x is None else x
         )
-    with header_cols[3]:
+    with f3:
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_filter = st.selectbox(
-            "Sprint",
-            [None, *sprints],
-            format_func=lambda x: "All sprints" if x is None else f"S{x}",
-            label_visibility="collapsed",
+            "Sprint", [None, *sprints], format_func=lambda x: "All sprints" if x is None else f"Sprint {x}"
         )
-    with header_cols[4]:
-        search = st.text_input("Search", placeholder="Search...", label_visibility="collapsed")
+    with f4:
+        search = st.text_input("Search", placeholder="Filter by title, description, tags...")
 
     # --- Apply filters only to backlog ---
     backlog_items = [i for i in all_items if i.status == "backlog"]
