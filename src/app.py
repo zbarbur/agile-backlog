@@ -64,26 +64,23 @@ def filter_items(
 
 def render_card_html(item: BacklogItem) -> str:
     """Generate the HTML string for a styled card."""
-    emoji, cat_color, cat_bg = category_style(item.category)
+    emoji, cat_color, _ = category_style(item.category)
     pri_color = PRIORITY_COLORS.get(item.priority, "#888")
-    sprint_text = f"S{item.sprint_target}" if item.sprint_target is not None else "Unplanned"
+    sprint_text = f"S{item.sprint_target}" if item.sprint_target is not None else ""
 
-    pri_badge_style = (
-        f"margin-left:auto;font-size:11px;background:rgba(0,0,0,0.3);"
-        f"color:{pri_color};padding:2px 8px;border-radius:4px;font-weight:700;"
-    )
+    sprint_html = f' · <span style="color:#888;">{sprint_text}</span>' if sprint_text else ""
+
     return (
-        f'<div style="border-radius:6px;overflow:hidden;margin-bottom:0;">\n'
-        f'  <div style="background:{cat_bg};padding:3px 8px;display:flex;align-items:center;gap:6px;">\n'
+        f'<div style="margin-bottom:0;padding:6px 0 2px 0;">\n'
+        f'  <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">\n'
         f"    <span>{emoji}</span>\n"
-        f'    <span style="font-size:12px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
+        f'    <span style="font-size:11px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
         f"{item.category}</span>\n"
-        f'    <span style="{pri_badge_style}">{item.priority}</span>\n'
+        f'    <span style="font-size:11px;color:{pri_color};font-weight:700;">{item.priority}</span>\n'
+        f"{sprint_html}\n"
         f"  </div>\n"
-        f'  <div style="padding:4px 8px;">\n'
-        f'    <div style="font-size:13px;font-weight:500;">{item.title}</div>\n'
-        f'    <div style="font-size:11px;color:#888;margin-top:2px;">{sprint_text}</div>\n'
-        f"  </div>\n"
+        f'  <div style="font-size:13px;font-weight:500;word-wrap:break-word;overflow-wrap:break-word;">'
+        f"{item.title}</div>\n"
         f"</div>"
     )
 
@@ -233,19 +230,8 @@ def main():
                         card_html = f'<div class="done-card">{card_html}</div>'
                     st.markdown(card_html, unsafe_allow_html=True)
 
-                    # Move buttons
-                    other_statuses = [s for s in statuses if s != status]
-                    btn_cols = st.columns(len(other_statuses))
-                    for btn_col, target in zip(btn_cols, other_statuses):
-                        with btn_col:
-                            arrow = "←" if statuses.index(target) < statuses.index(status) else "→"
-                            if st.button(f"{arrow} {target}", key=f"move_{item.id}_{target}", use_container_width=True):
-                                item.status = target
-                                save_item(item)
-                                st.rerun()
-
                     # Detail expander
-                    with st.expander(f"Details: {item.title}"):
+                    with st.expander("details"):
                         if item.description:
                             st.markdown(item.description)
                         if item.acceptance_criteria:
@@ -265,6 +251,17 @@ def main():
                             st.caption(f"Created: {item.created}")
                         with detail_cols[2]:
                             st.caption(f"Updated: {item.updated}")
+
+                    # Move buttons at bottom
+                    other_statuses = [s for s in statuses if s != status]
+                    btn_cols = st.columns(len(other_statuses))
+                    for btn_col, target in zip(btn_cols, other_statuses):
+                        with btn_col:
+                            arrow = "←" if statuses.index(target) < statuses.index(status) else "→"
+                            if st.button(f"{arrow} {target}", key=f"move_{item.id}_{target}", use_container_width=True):
+                                item.status = target
+                                save_item(item)
+                                st.rerun()
 
 
 if __name__ == "__main__":

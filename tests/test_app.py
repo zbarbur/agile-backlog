@@ -143,7 +143,9 @@ class TestRenderCardHtml:
 
     def test_unplanned_sprint(self):
         html = render_card_html(_item(sprint_target=None))
-        assert "Unplanned" in html
+        # Unplanned items don't show a sprint indicator
+        assert "S2" not in html
+        assert "S3" not in html
 
     def test_contains_category_color(self):
         html = render_card_html(_item(category="security"))
