@@ -189,6 +189,46 @@ class TestEdit:
         assert result.exit_code != 0
 
 
+class TestNote:
+    def test_note_add(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Task A", "--category", "feature"])
+        result = runner.invoke(main, ["note", "task-a", "Focus on filters first"])
+        assert result.exit_code == 0
+        assert "Note added to task-a" in result.output
+        show = runner.invoke(main, ["show", "task-a"])
+        assert "Focus on filters first" in show.output
+
+    def test_note_flagged(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Task B", "--category", "feature"])
+        result = runner.invoke(main, ["note", "task-b", "Needs review", "--flag"])
+        assert result.exit_code == 0
+        assert "[FLAGGED]" in result.output
+        flagged_result = runner.invoke(main, ["flagged"])
+        assert "task-b" in flagged_result.output
+        assert "Needs review" in flagged_result.output
+
+    def test_flagged_empty(self, runner: CliRunner):
+        result = runner.invoke(main, ["flagged"])
+        assert result.exit_code == 0
+        assert "No flagged notes." in result.output
+
+    def test_note_nonexistent_item(self, runner: CliRunner):
+        result = runner.invoke(main, ["note", "nope", "some note"])
+        assert result.exit_code != 0
+
+    def test_resolve_notes(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Task C", "--category", "feature"])
+        runner.invoke(main, ["note", "task-c", "Flagged note", "--flag"])
+        # Verify it appears in flagged list before resolving
+        flagged_result = runner.invoke(main, ["flagged"])
+        assert "task-c" in flagged_result.output
+        # Resolve notes
+        runner.invoke(main, ["edit", "task-c", "--resolve-notes"])
+        # Should no longer appear in flagged list
+        flagged_after = runner.invoke(main, ["flagged"])
+        assert "task-c" not in flagged_after.output
+
+
 class TestServe:
     def test_serve_calls_run_app(self, runner: CliRunner, monkeypatch):
         """Verify serve calls run_app with correct defaults."""

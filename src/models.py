@@ -39,6 +39,7 @@ class BacklogItem(BaseModel):
     phase: Literal["plan", "build", "review"] | None = None
     design_reviewed: bool = False
     code_reviewed: bool = False
+    agent_notes: list[dict] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod

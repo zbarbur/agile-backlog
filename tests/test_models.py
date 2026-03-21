@@ -122,6 +122,19 @@ class TestTaskDefinitionFields:
         assert item.technical_specs == []
 
 
+class TestAgentNotes:
+    def test_agent_notes_default_empty(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        assert item.agent_notes == []
+
+    def test_agent_notes_round_trip(self):
+        item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
+        note = {"text": "Focus on filters first", "flagged": True, "resolved": False, "created": "2026-03-22"}
+        item.agent_notes.append(note)
+        d = item.to_yaml_dict()
+        assert d["agent_notes"] == [note]
+
+
 class TestToYamlDict:
     def test_excludes_id(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
