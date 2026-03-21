@@ -1,5 +1,5 @@
 title: Backlog management mode
-status: doing
+status: backlog
 priority: P1
 category: feature
 sprint_target: 8
@@ -28,6 +28,6 @@ acceptance_criteria:
 test_plan:
 - 'Manual: verify backlog view renders and staging works'
 notes: ''
-phase: plan
+phase: null
 design_reviewed: false
 code_reviewed: false

@@ -1,5 +1,5 @@
 title: Auto-update item phase during sprint execution
-status: doing
+status: backlog
 priority: P1
 category: feature
 sprint_target: 8
@@ -28,6 +28,6 @@ acceptance_criteria:
 test_plan:
 - 'Manual: run sprint workflow and verify phases update'
 notes: ''
-phase: build
+phase: null
 design_reviewed: false
 code_reviewed: false

@@ -1,5 +1,5 @@
 title: Inline editing in board UI
-status: doing
+status: backlog
 priority: P1
 category: feature
 sprint_target: 8
@@ -36,6 +36,6 @@ acceptance_criteria:
 test_plan:
 - 'Manual: edit an item, verify YAML updated'
 notes: ''
-phase: plan
+phase: null
 design_reviewed: false
 code_reviewed: false
