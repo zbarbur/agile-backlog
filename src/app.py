@@ -127,7 +127,7 @@ COLUMN_STYLES = {
 # Global CSS injected into the page head
 GOOGLE_FONTS_URL = (
     "https://fonts.googleapis.com/css2"
-    "?family=JetBrains+Mono:wght@400;500;600;700"
+    "?family=IBM+Plex+Mono:wght@400;500;600;700"
     "&family=DM+Sans:wght@400;500;600;700&display=swap"
 )
 GLOBAL_CSS = (
@@ -145,23 +145,41 @@ body {
 .q-card {
     box-shadow: none !important;
 }
-.q-expansion-item .q-item {
-    min-height: 0 !important;
-    padding: 0 !important;
+/* Dark dropdown menus */
+.q-menu {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
 }
-.q-expansion-item .q-item__section {
-    padding: 0 !important;
+.q-item {
+    color: #e4e4e7 !important;
 }
-.q-expansion-item .q-expansion-item__content {
-    padding: 0 !important;
+.q-item:hover, .q-item--active {
+    background: #27272a !important;
+}
+.q-item__label {
+    color: #e4e4e7 !important;
+}
+/* Dark select field text */
+.q-field__native, .q-field__input {
+    color: #e4e4e7 !important;
+}
+/* Multi-select chips dark styling */
+.mc-select .q-chip {
+    background: rgba(59,130,246,0.12) !important;
+    color: #93c5fd !important;
+    font-size: 10px !important;
+    height: 20px !important;
+}
+.mc-select .q-chip__icon {
+    color: #93c5fd !important;
 }
 .mc-search .q-field__control {
     background: #18181b !important;
     border: 1px solid #27272a !important;
     border-radius: 6px !important;
     color: #d4d4d8 !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    height: 32px !important;
+    min-height: 32px !important;
 }
 .mc-search .q-field__control:focus-within {
     border-color: #3b82f6 !important;
@@ -184,8 +202,7 @@ body {
     border: 1px solid #27272a !important;
     border-radius: 6px !important;
     color: #a1a1aa !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    min-height: 32px !important;
 }
 .mc-select .q-field__native,
 .mc-select .q-select__dropdown-icon {
@@ -214,7 +231,7 @@ body {
     padding: 8px 10px;
     margin-bottom: 4px;
     transition: all 0.15s;
-    cursor: default;
+    cursor: pointer;
 }
 .mc-card:hover {
     border-color: #3f3f46;
@@ -230,7 +247,7 @@ body {
     opacity: 0.8;
 }
 .mc-move-btn {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'IBM Plex Mono', monospace !important;
     font-size: 9px !important;
     font-weight: 500 !important;
     padding: 2px 7px !important;
@@ -249,6 +266,26 @@ body {
     color: #a1a1aa !important;
     background: #1e1e23 !important;
 }
+/* Detail modal dark styling */
+.mc-detail-dialog .q-card {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    color: #e4e4e7 !important;
+    max-width: 640px !important;
+    width: 640px !important;
+}
+/* Active filter chip styling */
+.mc-filter-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+}
+.mc-filter-chip .q-chip__content {
+    color: #93c5fd !important;
+}
+.mc-filter-chip .q-chip__icon--remove {
+    color: #93c5fd !important;
+    opacity: 0.7;
+}
 </style>
 """
 )
@@ -258,7 +295,7 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     """Render a small badge pill using ui.html with inline styles."""
     style = (
         "display:inline-flex;align-items:center;height:18px;"
-        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.03em;"
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.03em;"
         f"padding:1px 5px;border-radius:3px;white-space:nowrap;color:{text_color};"
     )
     if outlined:
@@ -273,7 +310,7 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
 
 
 def _render_card(item: BacklogItem, status: str, move_fn) -> None:
-    """Render a single Kanban card with Mission Control dark theme."""
+    """Render a single Kanban card with Mission Control dark theme — click opens detail modal."""
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
     is_done = status == "done"
@@ -284,7 +321,24 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
     if is_done:
         card_css += " mc-done"
 
-    with ui.element("div").classes(card_css):
+    # Build the detail dialog
+    detail_dialog = ui.dialog().classes("mc-detail-dialog")
+    with (
+        detail_dialog,
+        ui.card().style(
+            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+        ),
+    ):
+        _render_detail_modal_content(item, is_done)
+        ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
+            "margin-top:12px;color:#a1a1aa;font-size:11px;"
+        )
+
+    card_el = ui.element("div").classes(card_css)
+    card_el.on("click", lambda _e, d=detail_dialog: d.open())
+
+    with card_el:
         # Row 1: title + badges inline
         with ui.element("div").style("display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"):
             title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
@@ -296,7 +350,7 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
 
             opacity = "opacity:0.5;" if is_done else ""
             pill_base = (
-                "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+                "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
                 "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
             )
             # Category
@@ -336,7 +390,7 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
                     f"S{item.sprint_target}</span>"
                 )
 
-        # Row 2: move buttons + details (not for done cards)
+        # Row 2: move buttons (not for done cards) — no details link
         if not is_done:
             with ui.element("div").style("display:flex;align-items:center;gap:4px;margin-top:5px;"):
                 other_statuses = [s for s in STATUSES if s != status]
@@ -347,45 +401,132 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
                         on_click=lambda _e, i=item, t=target: move_fn(i, t),
                     ).classes("mc-move-btn").props("flat dense unelevated no-caps")
 
-                # Details toggle
-                detail_visible = {"v": False}
-                detail_container = ui.element("div").style("display:none;")
-                details_label = ui.label("\u25be details").style(
-                    "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                    "font-size:9px;color:#3f3f46;cursor:pointer;"
-                )
 
-            # Detail panel (outside row2 but inside card)
-            with detail_container:
-                _render_detail_panel(item)
+def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
+    """Render the content inside the detail modal dialog."""
+    cat_color, cat_bg = category_style(item.category)
+    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
 
-            def make_toggle(lbl, container, state):
-                def toggle(_e):
-                    state["v"] = not state["v"]
-                    if state["v"]:
-                        container.style("display:block;")
-                        lbl.text = "\u25b4 details"
-                        lbl.style(
-                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                            "font-size:9px;color:#71717a;cursor:pointer;"
-                        )
-                    else:
-                        container.style("display:none;")
-                        lbl.text = "\u25be details"
-                        lbl.style(
-                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                            "font-size:9px;color:#3f3f46;cursor:pointer;"
-                        )
+    label_style = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
+        "margin-top:10px;margin-bottom:3px;"
+    )
+    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
 
-                return toggle
+    # Title
+    title_style = "font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;font-family:'DM Sans',sans-serif;"
+    if is_done:
+        title_style += "text-decoration:line-through;color:#52525b;"
+    ui.html(f'<div style="{title_style}">{item.title}</div>')
 
-            details_label.on("click", make_toggle(details_label, detail_container, detail_visible))
+    # Badges row
+    pill_base = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+    )
+    badges_html = (
+        f'<span style="{pill_base}text-transform:uppercase;color:{cat_color};background:{cat_bg}">'
+        f"{item.category}</span> "
+        f'<span style="{pill_base}text-transform:uppercase;color:{pri_color};background:{pri_bg}">'
+        f"{item.priority}</span>"
+    )
+    if item.phase:
+        badges_html += (
+            f' <span style="{pill_base}font-style:italic;text-transform:none;'
+            f'color:#71717a;background:#1e1e23;">{item.phase}</span>'
+        )
+    if item.design_reviewed:
+        badges_html += (
+            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
+            f'background:rgba(74,222,128,0.1);">&#10003; design</span>'
+        )
+    if item.code_reviewed:
+        badges_html += (
+            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
+            f'background:rgba(74,222,128,0.1);">&#10003; code</span>'
+        )
+    if item.sprint_target is not None:
+        badges_html += (
+            f' <span style="{pill_base}font-weight:500;text-transform:none;'
+            f'color:#52525b;background:transparent;border:1px solid #27272a;">'
+            f"S{item.sprint_target}</span>"
+        )
+    ui.html(f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">{badges_html}</div>')
+
+    # Detail fields
+    if item.goal:
+        ui.html(f'<div style="{label_style}">Goal</div>')
+        ui.html(f'<div style="{value_style}">{item.goal}</div>')
+
+    if item.complexity:
+        ui.html(f'<div style="{label_style}">Complexity</div>')
+        ui.html(
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
+            f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
+            f"{item.complexity}</span>"
+        )
+
+    if item.description:
+        ui.html(f'<div style="{label_style}">Description</div>')
+        ui.html(f'<div style="{value_style}">{item.description}</div>')
+
+    if item.acceptance_criteria:
+        ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>' for ac in item.acceptance_criteria
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.technical_specs:
+        ui.html(f'<div style="{label_style}">Technical Specs</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.test_plan:
+        ui.html(f'<div style="{label_style}">Test Plan</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{tp}</li>' for tp in item.test_plan
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.notes:
+        ui.html(f'<div style="{label_style}">Notes</div>')
+        ui.html(f'<div style="{value_style}">{item.notes}</div>')
+
+    if item.tags:
+        ui.html(f'<div style="{label_style}">Tags</div>')
+        tag_html = " ".join(
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+            f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
+            f'border-radius:3px;margin-right:2px;">{t}</span>'
+            for t in item.tags
+        )
+        ui.html(tag_html)
+
+    if item.depends_on:
+        ui.html(f'<div style="{label_style}">Depends on</div>')
+        ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
+
+    # Footer
+    ui.html(
+        '<div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #1e1e23;">'
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Created: {item.created}</span>"
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Updated: {item.updated}</span>"
+        "</div>"
+    )
 
 
 def _render_detail_panel(item: BacklogItem) -> None:
     """Render the expandable details section of a card."""
     label_style = (
-        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
         "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
         "margin-top:6px;margin-bottom:2px;"
     )
@@ -401,7 +542,7 @@ def _render_detail_panel(item: BacklogItem) -> None:
         if item.complexity:
             ui.html(f'<div style="{label_style}">Complexity</div>')
             ui.html(
-                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;"
+                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
                 f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
                 f"{item.complexity}</span>"
             )
@@ -439,7 +580,7 @@ def _render_detail_panel(item: BacklogItem) -> None:
         if item.tags:
             ui.html(f'<div style="{label_style}">Tags</div>')
             tag_html = " ".join(
-                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
+                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
                 f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
                 f'border-radius:3px;margin-right:2px;">{t}</span>'
                 for t in item.tags
@@ -453,11 +594,11 @@ def _render_detail_panel(item: BacklogItem) -> None:
         # Footer
         ui.html(
             '<div style="display:flex;gap:12px;margin-top:8px;padding-top:6px;border-top:1px solid #1e1e23;">'
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Created: {item.created}</span>"
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Updated: {item.updated}</span>"
             "</div>"
         )
@@ -485,7 +626,7 @@ def kanban_page():
             )
             if current_sprint is not None:
                 ui.html(
-                    f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;"
+                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;"
                     f"color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);"
                     f'padding:2px 10px;border-radius:4px;letter-spacing:0.05em;">'
                     f"SPRINT {current_sprint}</span>"
@@ -510,9 +651,9 @@ def kanban_page():
             )
 
         # === Filter Row 2 ===
-        priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
+        priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
         categories = sorted({i.category for i in all_items})
-        category_options = {None: "All categories", **{c: c for c in categories}}
+        category_options = {c: c for c in categories}
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
         phases = sorted({i.phase for i in all_items if i.phase})
@@ -520,19 +661,19 @@ def kanban_page():
 
         with ui.element("div").style(
             "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
-            "margin-bottom:14px;align-items:flex-end;"
+            "margin-bottom:4px;align-items:end;"
         ):
             priority_select = (
-                ui.select(label="Priority", options=priority_options, value=None)
-                .props("dense outlined")
+                ui.select(label="Priority", options=priority_options, multiple=True, value=[])
+                .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:130px;")
             )
             category_select = (
-                ui.select(label="Category", options=category_options, value=None)
-                .props("dense outlined")
+                ui.select(label="Category", options=category_options, multiple=True, value=[])
+                .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:130px;")
             )
             sprint_select = (
                 ui.select(label="Sprint", options=sprint_options, value=None)
@@ -550,8 +691,57 @@ def kanban_page():
                 ui.input(placeholder="Search by title, description, tags...")
                 .props("dense outlined")
                 .classes("mc-search")
-                .style("flex:1;")
+                .style("flex:1;min-height:32px;")
             )
+
+        # === Active Filter Chips ===
+        filter_chips_row = ui.row().classes("gap-1 flex-wrap").style("margin-bottom:10px;")
+
+        def _refresh_chips():
+            filter_chips_row.clear()
+            with filter_chips_row:
+                pvals = priority_select.value or []
+                for pv in pvals:
+                    chip = ui.chip(f"Priority: {pv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e, v=pv: (
+                            priority_select.set_value([x for x in (priority_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
+                    )
+                cvals = category_select.value or []
+                for cv in cvals:
+                    chip = ui.chip(f"Category: {cv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e, v=cv: (
+                            category_select.set_value([x for x in (category_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
+                    )
+                if sprint_select.value is not None:
+                    sv = sprint_options.get(sprint_select.value, str(sprint_select.value))
+                    chip = ui.chip(f"Sprint: {sv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e: (sprint_select.set_value(None), render_board.refresh()),
+                    )
+                if phase_select.value is not None:
+                    chip = ui.chip(f"Phase: {phase_select.value}", removable=True, color="blue-grey-9").classes(
+                        "mc-filter-chip"
+                    )
+                    chip.on(
+                        "remove",
+                        lambda _e: (phase_select.set_value(None), render_board.refresh()),
+                    )
+                sq = search_input.value or ""
+                if sq:
+                    chip = ui.chip(f'Search: "{sq}"', removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e: (search_input.set_value(""), render_board.refresh()),
+                    )
 
         # === Board ===
         def move_item(item: BacklogItem, target: str):
@@ -565,10 +755,11 @@ def kanban_page():
 
         @ui.refreshable
         def render_board():
+            _refresh_chips()
             items = load_all()
 
-            pf = priority_select.value
-            cf = category_select.value
+            pf_list = priority_select.value or []
+            cf_list = category_select.value or []
             sf = sprint_select.value
             phf = phase_select.value
             sq = search_input.value or ""
@@ -578,21 +769,48 @@ def kanban_page():
             doing_items = [i for i in items if i.status == "doing"]
             done_items = [i for i in items if i.status == "done"]
 
-            filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
+            # Apply filters — multi-select priority/category handled here, rest via filter_items
+            filtered_backlog = filter_items(backlog_items, sprint=sf, search=sq)
             filtered_doing = doing_items
             filtered_done = done_items
 
+            # Multi-select priority filter
+            if pf_list:
+                filtered_backlog = [i for i in filtered_backlog if i.priority in pf_list]
+                filtered_doing = [i for i in filtered_doing if i.priority in pf_list]
+                filtered_done = [i for i in filtered_done if i.priority in pf_list]
+
+            # Multi-select category filter
+            if cf_list:
+                filtered_backlog = [i for i in filtered_backlog if i.category in cf_list]
+                filtered_doing = [i for i in filtered_doing if i.category in cf_list]
+                filtered_done = [i for i in filtered_done if i.category in cf_list]
+
             if sf == "unplanned":
-                filtered_doing = [i for i in doing_items if i.sprint_target is None]
-                filtered_done = [i for i in done_items if i.sprint_target is None]
+                filtered_doing = [i for i in filtered_doing if i.sprint_target is None]
+                filtered_done = [i for i in filtered_done if i.sprint_target is None]
             elif sf is not None:
-                filtered_doing = [i for i in doing_items if i.sprint_target == sf]
-                filtered_done = [i for i in done_items if i.sprint_target == sf]
+                filtered_doing = [i for i in filtered_doing if i.sprint_target == sf]
+                filtered_done = [i for i in filtered_done if i.sprint_target == sf]
 
             if phf is not None:
                 filtered_backlog = [i for i in filtered_backlog if i.phase == phf]
                 filtered_doing = [i for i in filtered_doing if i.phase == phf]
                 filtered_done = [i for i in filtered_done if i.phase == phf]
+
+            # Apply search to doing/done too
+            if sq:
+                q = sq.lower()
+                filtered_doing = [
+                    i
+                    for i in filtered_doing
+                    if q in i.title.lower() or q in i.description.lower() or any(q in t.lower() for t in i.tags)
+                ]
+                filtered_done = [
+                    i
+                    for i in filtered_done
+                    if q in i.title.lower() or q in i.description.lower() or any(q in t.lower() for t in i.tags)
+                ]
 
             columns_map = {
                 "backlog": filtered_backlog,
@@ -608,12 +826,12 @@ def kanban_page():
                     with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
                         with ui.element("div").style("display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"):
                             ui.html(
-                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;"
+                                f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
                                 f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
                                 f'color:{label_color};">{LABELS[col_status]}</span>'
                             )
                             ui.html(
-                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
+                                f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
                                 f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
                                 f'border-radius:4px;">{len(items_in_col)}</span>'
                             )
