@@ -1,5 +1,5 @@
 # tests/test_app.py
-from src.app import category_style, filter_items, render_card_html
+from src.app import category_style, detect_current_sprint, filter_items, render_card_html
 from src.models import BacklogItem
 
 
@@ -148,3 +148,32 @@ class TestRenderCardHtml:
     def test_contains_category_color(self):
         html = render_card_html(_item(category="security"))
         assert "#a78bfa" in html or "a78bfa" in html
+
+
+class TestDetectCurrentSprint:
+    def test_detects_from_doing_items(self):
+        items = [
+            _item(id="a", status="doing", sprint_target=3),
+            _item(id="b", status="doing", sprint_target=3),
+            _item(id="c", status="backlog", sprint_target=4),
+        ]
+        assert detect_current_sprint(items) == 3
+
+    def test_returns_none_when_no_doing(self):
+        items = [_item(id="a", status="backlog", sprint_target=2)]
+        assert detect_current_sprint(items) is None
+
+    def test_returns_none_when_doing_has_no_sprint(self):
+        items = [_item(id="a", status="doing", sprint_target=None)]
+        assert detect_current_sprint(items) is None
+
+    def test_returns_most_common_sprint(self):
+        items = [
+            _item(id="a", status="doing", sprint_target=3),
+            _item(id="b", status="doing", sprint_target=3),
+            _item(id="c", status="doing", sprint_target=2),
+        ]
+        assert detect_current_sprint(items) == 3
+
+    def test_empty_list(self):
+        assert detect_current_sprint([]) is None

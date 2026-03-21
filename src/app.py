@@ -88,6 +88,16 @@ def render_card_html(item: BacklogItem) -> str:
     )
 
 
+def detect_current_sprint(items: list[BacklogItem]) -> int | None:
+    """Detect the current sprint from items in 'doing' status. Returns the most common sprint_target."""
+    doing_sprints = [i.sprint_target for i in items if i.status == "doing" and i.sprint_target is not None]
+    if not doing_sprints:
+        return None
+    from collections import Counter
+
+    return Counter(doing_sprints).most_common(1)[0][0]
+
+
 def main():
     """Render the Kanban board."""
     import streamlit as st
@@ -141,9 +151,16 @@ def main():
     # --- Load data ---
     all_items = load_all()
 
-    # --- Filter bar ---
+    # --- Header with sprint indicator ---
+    current_sprint = detect_current_sprint(all_items)
+    sprint_badge = ""
+    if current_sprint is not None:
+        sprint_badge = (
+            f' <span style="font-size:0.6em;background:#2563eb;color:white;'
+            f'padding:2px 10px;border-radius:12px;vertical-align:middle;">Sprint {current_sprint}</span>'
+        )
     st.markdown(
-        '<h2 style="margin:0;padding:0;">📋 agile-backlog</h2>',
+        f'<h2 style="margin:0;padding:0;">📋 agile-backlog{sprint_badge}</h2>',
         unsafe_allow_html=True,
     )
 
