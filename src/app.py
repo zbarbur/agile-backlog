@@ -74,14 +74,14 @@ def render_card_html(item: BacklogItem) -> str:
     )
     return (
         f'<div style="border-radius:6px;overflow:hidden;margin-bottom:0;">\n'
-        f'  <div style="background:{cat_bg};padding:4px 10px;display:flex;align-items:center;gap:6px;">\n'
+        f'  <div style="background:{cat_bg};padding:3px 8px;display:flex;align-items:center;gap:6px;">\n'
         f"    <span>{emoji}</span>\n"
         f'    <span style="font-size:12px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
         f"{item.category}</span>\n"
         f'    <span style="{pri_badge_style}">{item.priority}</span>\n'
         f"  </div>\n"
-        f'  <div style="padding:8px 10px;">\n'
-        f'    <div style="font-size:14px;font-weight:500;">{item.title}</div>\n'
+        f'  <div style="padding:4px 8px;">\n'
+        f'    <div style="font-size:13px;font-weight:500;">{item.title}</div>\n'
         f'    <div style="font-size:11px;color:#888;margin-top:2px;">{sprint_text}</div>\n'
         f"  </div>\n"
         f"</div>"
@@ -96,11 +96,56 @@ def main():
 
     st.set_page_config(page_title="agile-backlog", layout="wide")
 
+    # --- Custom CSS ---
+    st.markdown(
+        """
+    <style>
+        /* Reduce top padding */
+        .block-container { padding-top: 1rem; }
+        /* Tighter spacing between elements */
+        [data-testid="stVerticalBlock"] > div { gap: 0.3rem; }
+        /* Compact buttons */
+        .stButton > button { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
+        /* Column header styling */
+        .col-header {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.3rem 0;
+            border-bottom: 2px solid #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .col-header .count {
+            background: rgba(255,255,255,0.1);
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 400;
+        }
+        /* Done column dimmed */
+        .done-card { opacity: 0.6; }
+        .done-card:hover { opacity: 1; }
+        /* Hide default streamlit header spacing */
+        h2 { margin-bottom: 0.2rem !important; }
+        /* Compact expander */
+        .streamlit-expanderHeader { font-size: 0.8rem; }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
     # --- Load data ---
     all_items = load_all()
 
     # --- Filter bar ---
-    st.markdown("## agile-backlog")
+    st.markdown(
+        '<h2 style="margin:0;padding:0;">📋 agile-backlog</h2>',
+        unsafe_allow_html=True,
+    )
 
     filter_cols = st.columns([1, 1, 1, 2])
 
@@ -150,8 +195,10 @@ def main():
     for col_widget, status, label in zip(column_widgets, statuses, labels):
         items_in_col = columns_map[status]
         with col_widget:
-            st.markdown(f"### {label} ({len(items_in_col)})")
-            st.divider()
+            st.markdown(
+                f'<div class="col-header">{label}<span class="count">{len(items_in_col)}</span></div>',
+                unsafe_allow_html=True,
+            )
 
             if not items_in_col:
                 if status == "backlog":
@@ -164,7 +211,10 @@ def main():
             for item in items_in_col:
                 with st.container(border=True):
                     # Render styled card
-                    st.markdown(render_card_html(item), unsafe_allow_html=True)
+                    card_html = render_card_html(item)
+                    if status == "done":
+                        card_html = f'<div class="done-card">{card_html}</div>'
+                    st.markdown(card_html, unsafe_allow_html=True)
 
                     # Move buttons
                     other_statuses = [s for s in statuses if s != status]
