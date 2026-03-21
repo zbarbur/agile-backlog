@@ -119,4 +119,9 @@ def show(item_id: str):
 @main.command()
 def serve():
     """Open the Kanban board in the browser."""
-    click.echo("Streamlit Kanban board — coming in Sprint 2.")
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    app_path = Path(__file__).parent / "app.py"
+    subprocess.run([sys.executable, "-m", "streamlit", "run", str(app_path)])

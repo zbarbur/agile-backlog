@@ -126,7 +126,14 @@ class TestShow:
 
 
 class TestServe:
-    def test_serve_placeholder(self, runner: CliRunner):
+    def test_serve_launches_streamlit(self, runner: CliRunner, monkeypatch):
+        """Verify serve attempts to launch streamlit (we mock subprocess.run)."""
+        import subprocess as sp
+
+        calls = []
+        monkeypatch.setattr(sp, "run", lambda cmd, **kw: calls.append(cmd))
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
-        assert "Sprint 2" in result.output
+        assert len(calls) == 1
+        assert "streamlit" in str(calls[0])
+        assert "app.py" in str(calls[0])
