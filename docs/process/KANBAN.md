@@ -8,12 +8,10 @@
 
 ### Core
 
-- **YAML schema + BacklogItem model** — Define the canonical YAML structure for backlog items. Pydantic model for validation. Schema file at `src/schema.yaml`.
-- **YAML store (read/write)** — `src/yaml_store.py` — read all items from `backlog/` dir, write item to YAML, update status. Handles file naming, dedup, validation.
-- **CLI basics** — `src/cli.py` using Click: `add`, `list`, `move`, `show`, `sprint show`, `sprint candidates`. Entry point: `agile-backlog`.
 - **Streamlit Kanban board** — `src/app.py` — 3-column board (Backlog, Doing, Done), cards with title/priority/category, filter bar, click to expand.
 - **Drag-and-drop** — `streamlit-sortables` integration for moving cards between columns.
 - **Claude Code plugin** — `plugin/` directory with plugin.json, /backlog command, wraps CLI.
+- **Sprint subcommands** — `sprint show`, `sprint candidates` CLI subcommands.
 
 ### Polish
 
@@ -27,4 +25,6 @@
 
 ## Done
 
-_(empty)_
+- **YAML schema + BacklogItem model** — Pydantic model with Literal validation, slugify, to_yaml_dict. 12 tests.
+- **YAML store (read/write)** — Git-root auto-detection, load/save/list YAML files, resilient to bad files. 13 tests.
+- **CLI basics** — Click CLI: `add`, `list` (with filters), `move`, `show`, `serve` placeholder. Slug collision handling. 16 tests.
