@@ -64,7 +64,7 @@ def render_card_html(item: BacklogItem) -> str:
         f"color:{pri_color};padding:2px 8px;border-radius:4px;font-weight:700;"
     )
     return (
-        f'<div style="border-radius:8px;overflow:hidden;margin-bottom:8px;border:1px solid #333;">\n'
+        f'<div style="border-radius:6px;overflow:hidden;margin-bottom:0;">\n'
         f'  <div style="background:{cat_bg};padding:4px 10px;display:flex;align-items:center;gap:6px;">\n'
         f"    <span>{emoji}</span>\n"
         f'    <span style="font-size:12px;color:{cat_color};font-weight:600;text-transform:uppercase;">'
@@ -140,45 +140,46 @@ def main():
                 continue
 
             for item in items_in_col:
-                # Render styled card
-                st.markdown(render_card_html(item), unsafe_allow_html=True)
+                with st.container(border=True):
+                    # Render styled card
+                    st.markdown(render_card_html(item), unsafe_allow_html=True)
 
-                # Move selectbox
-                other_statuses = [s for s in statuses if s != status]
-                move_key = f"move_{item.id}"
-                new_status = st.selectbox(
-                    "Move to",
-                    [status, *other_statuses],
-                    key=move_key,
-                    label_visibility="collapsed",
-                    format_func=lambda s, current=status: f"Move to → {s}" if s != current else f"📍 {current}",
-                )
-                if new_status != status:
-                    item.status = new_status
-                    save_item(item)
-                    st.rerun()
+                    # Move selectbox
+                    other_statuses = [s for s in statuses if s != status]
+                    move_key = f"move_{item.id}"
+                    new_status = st.selectbox(
+                        "Move to",
+                        [status, *other_statuses],
+                        key=move_key,
+                        label_visibility="collapsed",
+                        format_func=lambda s, current=status: f"Move to → {s}" if s != current else f"📍 {current}",
+                    )
+                    if new_status != status:
+                        item.status = new_status
+                        save_item(item)
+                        st.rerun()
 
-                # Detail expander
-                with st.expander(f"Details: {item.title}"):
-                    if item.description:
-                        st.markdown(item.description)
-                    if item.acceptance_criteria:
-                        st.markdown("**Acceptance Criteria:**")
-                        for ac in item.acceptance_criteria:
-                            st.markdown(f"- {ac}")
-                    if item.notes:
-                        st.markdown(f"**Notes:** {item.notes}")
-                    if item.tags:
-                        st.markdown(f"**Tags:** {', '.join(item.tags)}")
-                    if item.depends_on:
-                        st.markdown(f"**Depends on:** {', '.join(item.depends_on)}")
-                    detail_cols = st.columns(3)
-                    with detail_cols[0]:
-                        st.caption(f"Sprint: {item.sprint_target or 'Unplanned'}")
-                    with detail_cols[1]:
-                        st.caption(f"Created: {item.created}")
-                    with detail_cols[2]:
-                        st.caption(f"Updated: {item.updated}")
+                    # Detail expander
+                    with st.expander(f"Details: {item.title}"):
+                        if item.description:
+                            st.markdown(item.description)
+                        if item.acceptance_criteria:
+                            st.markdown("**Acceptance Criteria:**")
+                            for ac in item.acceptance_criteria:
+                                st.markdown(f"- {ac}")
+                        if item.notes:
+                            st.markdown(f"**Notes:** {item.notes}")
+                        if item.tags:
+                            st.markdown(f"**Tags:** {', '.join(item.tags)}")
+                        if item.depends_on:
+                            st.markdown(f"**Depends on:** {', '.join(item.depends_on)}")
+                        detail_cols = st.columns(3)
+                        with detail_cols[0]:
+                            st.caption(f"Sprint: {item.sprint_target or 'Unplanned'}")
+                        with detail_cols[1]:
+                            st.caption(f"Created: {item.created}")
+                        with detail_cols[2]:
+                            st.caption(f"Updated: {item.updated}")
 
 
 if __name__ == "__main__":
