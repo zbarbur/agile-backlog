@@ -520,7 +520,7 @@ def kanban_page():
 
         with ui.element("div").style(
             "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
-            "margin-bottom:14px;align-items:center;"
+            "margin-bottom:14px;align-items:flex-end;"
         ):
             priority_select = (
                 ui.select(label="Priority", options=priority_options, value=None)
