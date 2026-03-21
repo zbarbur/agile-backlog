@@ -1,5 +1,5 @@
 title: Sprint planning and task specs in UI
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: null
@@ -7,6 +7,11 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
+goal: View and manage task specs directly in the board UI
+complexity: M
+technical_specs:
+- Verify expander renders all new fields from T4.4
+- Test with populated items
 description: 'Board should support sprint planning workflow:
 
   1. View/select candidate items for next sprint from backlog
@@ -15,5 +20,8 @@ description: 'Board should support sprint planning workflow:
 
   3. Possibly a sprint planning view that shows task breakdown with DoD and technical
   specs'
-acceptance_criteria: []
+acceptance_criteria:
+- Board expander shows goal, complexity badge, acceptance criteria, tech specs
+- Task definition fields visible in expanded card view
 notes: ''
+phase: null

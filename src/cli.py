@@ -139,6 +139,38 @@ def show(item_id: str):
 
 
 @main.command()
+@click.argument("item_id")
+@click.option("--title", default=None)
+@click.option("--priority", type=click.Choice(["P1", "P2", "P3"]), default=None)
+@click.option("--category", default=None)
+@click.option("--description", default=None)
+@click.option("--sprint", "sprint_target", type=int, default=None)
+@click.option("--goal", default=None)
+@click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None)
+@click.option("--technical-specs", "technical_specs", multiple=True, help="Technical spec (repeatable).")
+@click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
+@click.option("--tags", multiple=True)
+@click.option("--depends-on", "depends_on", multiple=True)
+@click.option("--notes", default=None)
+def edit(item_id, **kwargs):
+    """Edit fields on a backlog item."""
+    try:
+        item = load_item(item_id)
+    except FileNotFoundError:
+        raise SystemExit(f"Error: item '{item_id}' not found.")
+
+    for field, value in kwargs.items():
+        if value is not None and value != ():
+            if isinstance(value, tuple):
+                setattr(item, field, list(value))
+            else:
+                setattr(item, field, value)
+
+    save_item(item)
+    click.echo(f"Updated: {item_id}")
+
+
+@main.command()
 def serve():
     """Open the Kanban board in the browser."""
     import subprocess
