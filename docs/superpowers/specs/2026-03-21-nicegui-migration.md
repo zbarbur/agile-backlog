@@ -149,9 +149,9 @@ Every behavior in the current `src/app.py` that must be preserved in the NiceGUI
 
 NiceGUI runs a persistent Python process (FastAPI + uvicorn). Unlike Streamlit, the entire script does **not** re-execute on every interaction. Instead:
 
-- The page function runs once per client connection.
+- The page function runs **once per client connection**. Each browser tab gets its own invocation of `kanban_page()`, with its own local variables and widget instances. This means filter state is inherently per-client — no cross-user state collision.
 - UI updates happen through **event callbacks** (e.g., `on_click`, `on_change`).
-- State is normal Python variables — no `st.session_state` needed.
+- State is normal Python variables — no `st.session_state` needed. **Important:** Use local variables inside `kanban_page()`, not module-level state, to avoid shared mutable state between connections.
 - To re-render a section of the UI, use `@ui.refreshable` decorator and call `.refresh()`.
 
 ### App Structure
@@ -347,6 +347,8 @@ These functions produce strings and lists — they do not depend on Streamlit or
 
 The current `tests/test_app.py` tests pure functions only — there are no Streamlit integration tests. This means **no test rewriting is needed** for the migration. The test file stays as-is.
 
+**Import side effects:** The `@ui.page('/')` decorator in `src/app.py` registers a route at import time. However, NiceGUI's page registration is inert without `ui.run()` being called — it merely stores the route in a registry. This means `from src.app import category_style` in tests will not trigger a server or cause side effects. If this assumption breaks in a future NiceGUI version, extract pure functions to `src/board_logic.py` and import from there in tests.
+
 If we add UI integration tests (new), they would use NiceGUI's testing framework:
 
 ### NiceGUI Testing Options
@@ -365,7 +367,7 @@ async def test_board_renders_columns(user: User):
     await user.should_see('DONE')
 ```
 
-Requires: `pytest-asyncio` in dev dependencies.
+Requires: `pytest-asyncio` in dev dependencies. Add `asyncio_mode = "auto"` to `[tool.pytest.ini_options]` in `pyproject.toml`.
 
 **Option B: `nicegui.testing` Screen fixture (browser-based)**
 
@@ -517,6 +519,12 @@ For NiceGUI components styled via Tailwind (not inline HTML), map tokens to Tail
 |---|---|
 | `.streamlit/config.toml` | Streamlit config no longer needed. (Check if it exists first.) |
 
+### Modify
+
+| File | Change |
+|---|---|
+| `tests/test_cli.py` | Update the serve test — mock `run_app()` instead of `subprocess.run` |
+
 ### Unchanged
 
 | File | Reason |
@@ -525,7 +533,6 @@ For NiceGUI components styled via Tailwind (not inline HTML), map tokens to Tail
 | `src/yaml_store.py` | Data layer — no UI dependency |
 | `tests/test_models.py` | Tests pure model logic |
 | `tests/test_yaml_store.py` | Tests YAML I/O |
-| `tests/test_cli.py` | Update only the serve test (if it exists) |
 | `backlog/*.yaml` | Data files |
 | `plugin/` | Claude Code plugin — no changes |
 

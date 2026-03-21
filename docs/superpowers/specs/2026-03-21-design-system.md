@@ -143,9 +143,9 @@ All colors are defined as CSS custom properties for consistency and future themi
     --color-phase-active-text: #4b5563;
     --color-phase-active-bg: #e5e7eb;
 
-    /* --- Sprint indicator --- */
+    /* --- Sprint indicator (outlined style — no background fill) --- */
     --color-sprint-text: #6b7280;
-    --color-sprint-bg: #f9fafb;
+    --color-sprint-bg: transparent;
     --color-sprint-border: #e5e7eb;
 
     /* --- Column backgrounds --- */
