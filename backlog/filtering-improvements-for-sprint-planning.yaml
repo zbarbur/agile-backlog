@@ -7,9 +7,12 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Better filtering for sprint planning \u2014 easily find unplanned items and\
+  \ candidates"
+complexity: S
+technical_specs:
+- 'Modify src/app.py: add Unplanned to sprint filter options'
+- filter_items handles sprint=0 or special value for unplanned
 description: 'Improve filter UX for sprint planning workflow:
 
   1. Easy way to view unplanned backlog items (no sprint assigned)
@@ -17,6 +20,8 @@ description: 'Improve filter UX for sprint planning workflow:
   2. Filter combinations that help pick candidates for next sprint
 
   3. Consider adding an ''Unplanned'' option to sprint filter'
-acceptance_criteria: []
+acceptance_criteria:
+- Sprint filter has an Unplanned option to show items with no sprint_target
+- Unplanned filter helps identify candidates for next sprint
 notes: ''
-phase: scoping
+phase: spec

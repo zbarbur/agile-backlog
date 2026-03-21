@@ -1,0 +1,29 @@
+title: Simplify phases to plan/build/review with review flags
+status: doing
+priority: P1
+category: feature
+sprint_target: 6
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: Replace 8 phases with 3 simple ones and add review gate flags
+complexity: M
+technical_specs:
+- 'Modify src/models.py: phase Literal to plan|build|review, add design_reviewed:
+  bool = False, code_reviewed: bool = False'
+- 'Modify src/cli.py: update --phase choices, add --design-reviewed/--code-reviewed
+  to edit'
+- 'Modify src/app.py: render review flags as small checkmark badges on card'
+- Update src/schema.yaml with new fields
+description: 'Replace 8 phases with 3: plan, build, review. Add boolean flags for
+  review gates: design_reviewed, code_reviewed. Phase tracks workflow stage, flags
+  track quality gates passed. Update model, CLI, and board UI.'
+acceptance_criteria:
+- Phase Literal changed to plan, build, review in models.py
+- design_reviewed and code_reviewed boolean fields added to BacklogItem
+- CLI edit supports --design-reviewed and --code-reviewed flags
+- Board card shows review flags as checkmark badges
+- Existing items with old phases migrated gracefully
+notes: ''
+phase: spec

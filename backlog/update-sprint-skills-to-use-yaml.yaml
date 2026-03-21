@@ -7,9 +7,12 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Sprint-start and sprint-end skills read/write YAML items instead of TODO.md
+complexity: M
+technical_specs:
+- Modify .claude/skills/sprint-start/SKILL.md to use agile-backlog CLI
+- Modify .claude/skills/sprint-end/SKILL.md to use agile-backlog CLI
+- Add .agile-backlog.yaml config for current sprint number
 description: 'Sprint-start and sprint-end skills currently read/write TODO.md. Update
   them to:
 
@@ -23,6 +26,10 @@ description: 'Sprint-start and sprint-end skills currently read/write TODO.md. U
   4. Add current sprint config so new items auto-tag
 
   5. Moving to doing should set sprint_target if unset'
-acceptance_criteria: []
+acceptance_criteria:
+- sprint-start skill tags items with sprint_target via agile-backlog edit
+- sprint-start skill writes goal, complexity, acceptance_criteria to YAML items
+- sprint-end skill reads item status from YAML not TODO.md
+- Current sprint number stored in config
 notes: ''
-phase: scoping
+phase: spec
