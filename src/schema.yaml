@@ -53,6 +53,21 @@ fields:
     items: string
     description: Free-form tags for filtering
 
+  goal:
+    type: string
+    description: One-sentence goal — what this task delivers and why
+
+  complexity:
+    type: string
+    enum: [S, M, L]
+    nullable: true
+    description: Task complexity — S(mall), M(edium), L(arge)
+
+  technical_specs:
+    type: list
+    items: string
+    description: Concrete implementation details — file paths, endpoints, schemas
+
   description:
     type: string
     multiline: true
@@ -67,3 +82,9 @@ fields:
     type: string
     multiline: true
     description: Additional context, references, discussion
+
+  phase:
+    type: string
+    enum: [scoping, spec, spec-review, design, design-review, coding, code-review, testing]
+    nullable: true
+    description: Workflow phase for items in 'doing' status

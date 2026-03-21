@@ -15,8 +15,9 @@ build/
 # OS
 .DS_Store
 
-# Streamlit
-.streamlit/
+# Streamlit (keep config.toml, ignore user cache)
+.streamlit/cache/
+.streamlit/credentials.toml
 
 # Superpowers
 .superpowers/

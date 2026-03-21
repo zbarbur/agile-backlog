@@ -73,13 +73,25 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
 @main.command()
 @click.argument("item_id")
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), required=True)
-def move(item_id: str, status: str):
+@click.option(
+    "--phase",
+    type=click.Choice(
+        ["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"]
+    ),
+    default=None,
+    help="Workflow phase.",
+)
+def move(item_id: str, status: str, phase: str | None):
     """Change an item's status."""
     try:
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
     item.status = status
+    if status == "doing":
+        item.phase = phase
+    else:
+        item.phase = None
     item.updated = date.today()
     save_item(item)
     click.echo(f"Moved {item_id} → {status}")
@@ -102,10 +114,20 @@ def show(item_id: str):
     click.echo(f"Sprint:      {item.sprint_target or 'unplanned'}")
     click.echo(f"Created:     {item.created}")
     click.echo(f"Updated:     {item.updated}")
+    if item.phase:
+        click.echo(f"Phase:       {item.phase}")
     if item.tags:
         click.echo(f"Tags:        {', '.join(item.tags)}")
     if item.depends_on:
         click.echo(f"Depends on:  {', '.join(item.depends_on)}")
+    if item.goal:
+        click.echo(f"Goal:        {item.goal}")
+    if item.complexity:
+        click.echo(f"Complexity:  {item.complexity}")
+    if item.technical_specs:
+        click.echo("\nTechnical Specs:")
+        for spec in item.technical_specs:
+            click.echo(f"  - {spec}")
     if item.description:
         click.echo(f"\n{item.description}")
     if item.acceptance_criteria:

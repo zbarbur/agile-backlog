@@ -1,0 +1,19 @@
+title: Task definition per backlog item
+status: done
+priority: P1
+category: feature
+sprint_target: 4
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Each backlog item should have a structured task definition following
+  the task template (docs/process/TASK_TEMPLATE.md): Goal, Specialist, Complexity,
+  DoD checklist, Technical Specs, Test Plan. Store in the YAML item (new fields or
+  in description/notes). Required before moving to coding phase.'
+acceptance_criteria: []
+notes: ''
+phase: null

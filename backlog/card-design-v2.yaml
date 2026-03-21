@@ -1,5 +1,5 @@
 title: Card design v2
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: null
@@ -7,6 +7,9 @@ created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
 tags: []
+goal: ''
+complexity: null
+technical_specs: []
 description: 'Card design improvements for next sprint:
 
   1. Title, category badge, and priority indicator all on one line
@@ -18,3 +21,4 @@ description: 'Card design improvements for next sprint:
   4. Overall more polished card appearance'
 acceptance_criteria: []
 notes: ''
+phase: null

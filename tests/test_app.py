@@ -11,34 +11,39 @@ def _item(**overrides) -> BacklogItem:
 
 class TestCategoryStyle:
     def test_known_category_feature(self):
-        emoji, color, bg = category_style("feature")
-        assert emoji == "✨"
-        assert "#60a5fa" in color
+        color, bg = category_style("feature")
+        assert color == "#1d4ed8"
+        assert bg == "#dbeafe"
 
     def test_known_category_bug(self):
-        emoji, color, bg = category_style("bug")
-        assert emoji == "🐛"
+        color, bg = category_style("bug")
+        assert color == "#be185d"
+        assert bg == "#fce7f3"
 
     def test_known_category_security(self):
-        emoji, color, bg = category_style("security")
-        assert emoji == "🔒"
+        color, bg = category_style("security")
+        assert color == "#5b21b6"
+        assert bg == "#ede9fe"
 
     def test_known_category_tech_debt(self):
-        emoji, color, bg = category_style("tech-debt")
-        assert emoji == "🔧"
+        color, bg = category_style("tech-debt")
+        assert color == "#92400e"
+        assert bg == "#fef3c7"
 
     def test_known_category_docs(self):
-        emoji, color, bg = category_style("docs")
-        assert emoji == "📚"
+        color, bg = category_style("docs")
+        assert color == "#065f46"
+        assert bg == "#d1fae5"
 
     def test_known_category_infra(self):
-        emoji, color, bg = category_style("infra")
-        assert emoji == "🏗️"
+        color, bg = category_style("infra")
+        assert color == "#155e75"
+        assert bg == "#cffafe"
 
     def test_unknown_category_fallback(self):
-        emoji, color, bg = category_style("random-thing")
-        assert emoji == "📋"
-        assert "#9ca3af" in color
+        color, bg = category_style("random-thing")
+        assert color == "#4b5563"
+        assert bg == "#f3f4f6"
 
 
 class TestFilterItems:
@@ -129,9 +134,11 @@ class TestRenderCardHtml:
         html = render_card_html(_item(title="Fix auth leak"))
         assert "Fix auth leak" in html
 
-    def test_contains_category_emoji(self):
+    def test_contains_category_text_no_emoji(self):
         html = render_card_html(_item(category="bug"))
-        assert "🐛" in html
+        assert "bug" in html
+        # No emoji in category pills
+        assert "\U0001f41b" not in html
 
     def test_contains_priority_badge(self):
         html = render_card_html(_item(priority="P1"))
@@ -149,7 +156,45 @@ class TestRenderCardHtml:
 
     def test_contains_category_color(self):
         html = render_card_html(_item(category="security"))
-        assert "#a78bfa" in html or "a78bfa" in html
+        assert "#5b21b6" in html
+
+    def test_render_card_with_phase(self):
+        html = render_card_html(_item(phase="coding"))
+        assert "coding" in html
+        # Phase uses italic style
+        assert "italic" in html
+
+    def test_render_card_without_phase(self):
+        html = render_card_html(_item(phase=None))
+        # Phase badge should not appear when phase is None
+        assert "italic" not in html
+
+    def test_p1_card_has_red_left_border(self):
+        html = render_card_html(_item(priority="P1"))
+        assert "border-left:3px solid #ef4444" in html
+
+    def test_p2_card_no_left_border(self):
+        html = render_card_html(_item(priority="P2"))
+        assert "border-left" not in html
+
+    def test_card_title_14px(self):
+        html = render_card_html(_item(title="Some title"))
+        assert "14px" in html
+
+    def test_badge_uses_design_system_colors(self):
+        html = render_card_html(_item(category="feature"))
+        assert "#1d4ed8" in html
+        assert "#dbeafe" in html
+
+    def test_sprint_badge_outlined_style(self):
+        html = render_card_html(_item(sprint_target=3))
+        assert "background:none" in html
+        assert "border:1px solid #e5e7eb" in html
+
+    def test_priority_badge_has_bg_color(self):
+        html = render_card_html(_item(priority="P1"))
+        assert "#dc2626" in html
+        assert "#fef2f2" in html
 
 
 class TestDetectCurrentSprint:
