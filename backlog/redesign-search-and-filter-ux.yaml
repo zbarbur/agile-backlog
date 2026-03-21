@@ -1,0 +1,33 @@
+title: Redesign search and filter UX
+status: doing
+priority: P1
+category: feature
+sprint_target: 9
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Redesign the entire filter/search bar based on research findings:
+
+  1. Multi-select dropdowns with use-chips (Linear-style)
+
+  2. Same field multiple values = OR, different fields = AND
+
+  3. Active filters shown as dismissible chips below filter bar
+
+  4. Clear all button
+
+  5. Dark theme styling for all dropdowns and menus
+
+  6. Search combines with filters (AND logic)
+
+  7. Consider filter presets (e.g., ''My sprint items'', ''Unplanned P1s'')'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
