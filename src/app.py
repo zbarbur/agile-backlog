@@ -4,7 +4,7 @@
 from nicegui import ui
 
 from src.models import BacklogItem
-from src.tokens import CATEGORY_STYLES, COLUMN_BG, PRIORITY_COLORS, PRIORITY_ORDER
+from src.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
 
 # ---------------------------------------------------------------------------
 # Pure functions — importable, framework-independent, fully tested
@@ -119,186 +119,275 @@ STATUSES = ["backlog", "doing", "done"]
 LABELS = {"backlog": "BACKLOG", "doing": "IN PROGRESS", "done": "DONE"}
 
 
+COLUMN_TAILWIND = {
+    "backlog": "bg-slate-50",
+    "doing": "bg-amber-50",
+    "done": "bg-green-50",
+}
+
+
+def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = False, outlined: bool = False) -> None:
+    """Render a small badge pill using ui.html with inline styles."""
+    style = (
+        "display:inline-flex;align-items:center;height:20px;"
+        "font-size:11px;font-weight:600;letter-spacing:0.02em;"
+        f"padding:2px 8px;border-radius:4px;white-space:nowrap;color:{text_color};"
+    )
+    if outlined:
+        style += f"background:transparent;border:1px solid {bg_color};"
+    else:
+        style += f"background:{bg_color};"
+    if italic:
+        style += "font-style:italic;text-transform:none;"
+    else:
+        style += "text-transform:uppercase;"
+    ui.html(f'<span style="{style}">{text}</span>')
+
+
+def _render_card(item: BacklogItem, status: str, move_fn) -> None:
+    """Render a single Kanban card with NiceGUI components."""
+    cat_color, cat_bg = category_style(item.category)
+    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+
+    # Card classes
+    card_classes = "w-full bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-3"
+    if item.priority == "P1":
+        card_classes += " border-l-4 border-l-red-500"
+    if status == "done":
+        card_classes += " opacity-50 hover:opacity-100"
+
+    with ui.card().classes(card_classes).style("padding:10px 14px;"):
+        # Title
+        title_classes = "text-sm font-semibold leading-snug m-0"
+        if status == "done":
+            title_classes += " line-through text-gray-400"
+        else:
+            title_classes += " text-gray-900"
+        ui.label(item.title).classes(title_classes)
+
+        # Badge row
+        with ui.row().classes("items-center gap-1.5 flex-wrap mt-1.5"):
+            _render_pill(item.category, cat_color, cat_bg)
+            _render_pill(item.priority, pri_color, pri_bg)
+            if item.phase:
+                _render_pill(item.phase, "#6b7280", "#f3f4f6", italic=True)
+            if item.design_reviewed:
+                ui.html(
+                    '<span style="font-size:10px;color:#059669;background:#d1fae5;'
+                    'padding:1px 6px;border-radius:3px;">&#10003; design</span>'
+                )
+            if item.code_reviewed:
+                ui.html(
+                    '<span style="font-size:10px;color:#059669;background:#d1fae5;'
+                    'padding:1px 6px;border-radius:3px;">&#10003; code</span>'
+                )
+            if item.sprint_target is not None:
+                _render_pill(f"S{item.sprint_target}", "#6b7280", "#e5e7eb", outlined=True)
+
+        # Detail expander
+        with ui.expansion(item.id).classes("w-full text-xs text-gray-400 mt-1"):
+            with ui.column().classes("gap-2 text-xs text-gray-600"):
+                if item.goal:
+                    ui.html(
+                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Goal:</span>'
+                        f' <span style="font-size:13px;color:#111827;">{item.goal}</span>'
+                    )
+                if item.complexity:
+                    ui.html(
+                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Complexity:</span>'
+                        f" {_complexity_badge(item.complexity)}"
+                    )
+                if item.description:
+                    ui.markdown(item.description).classes("text-sm text-gray-700")
+                if item.acceptance_criteria:
+                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Acceptance Criteria:</span>')
+                    for ac in item.acceptance_criteria:
+                        ui.markdown(f"- {ac}").classes("text-sm text-gray-700 ml-2")
+                if item.technical_specs:
+                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Technical Specs:</span>')
+                    for ts in item.technical_specs:
+                        ui.markdown(f"- {ts}").classes("text-sm text-gray-700 ml-2")
+                if item.test_plan:
+                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Test Plan:</span>')
+                    for tp in item.test_plan:
+                        ui.markdown(f"- {tp}").classes("text-sm text-gray-700 ml-2")
+                if item.notes:
+                    ui.html(
+                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Notes:</span>'
+                        f' <span style="font-size:13px;color:#111827;">{item.notes}</span>'
+                    )
+                if item.tags:
+                    tag_html = " ".join(
+                        f'<span style="display:inline-flex;align-items:center;height:18px;'
+                        f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
+                        f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
+                        for t in item.tags
+                    )
+                    ui.html(f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Tags:</span> {tag_html}')
+                if item.depends_on:
+                    ui.html(
+                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Depends on:</span>'
+                        f' <span style="font-size:13px;color:#6b7280;">{", ".join(item.depends_on)}</span>'
+                    )
+                # Metadata footer
+                with ui.row().classes("w-full gap-4 mt-2 pt-2 border-t border-gray-100"):
+                    ui.label(f"Sprint: {item.sprint_target or 'Unplanned'}").classes("text-xs text-gray-400")
+                    ui.label(f"Created: {item.created}").classes("text-xs text-gray-400")
+                    ui.label(f"Updated: {item.updated}").classes("text-xs text-gray-400")
+
+        # Move buttons
+        other_statuses = [s for s in STATUSES if s != status]
+        with ui.row().classes("gap-2 mt-1"):
+            for target in other_statuses:
+                arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
+                ui.button(
+                    f"{arrow} {target}",
+                    on_click=lambda _e, i=item, t=target: move_fn(i, t),
+                ).props("flat dense size=sm no-caps").classes(
+                    "text-xs text-gray-500 border border-gray-200 hover:bg-gray-50"
+                )
+
+
 @ui.page("/")
 def kanban_page():
     """Render the Kanban board."""
     from src.yaml_store import load_all, save_item
 
-    # --- Custom CSS ---
-    ui.add_head_html("""
-    <style>
-        .done-card { opacity: 0.5; transition: opacity 0.15s ease; }
-        .done-card:hover { opacity: 1; }
-        .done-card .card-title {
-            text-decoration: line-through;
-            color: #9ca3af !important;
-        }
-    </style>
-    """)
+    # --- Page background ---
+    ui.query("body").classes("bg-gray-50")
 
     # --- Header ---
     all_items = load_all()
     current_sprint = detect_current_sprint(all_items)
-    sprint_text = f" \u00b7 Sprint {current_sprint}" if current_sprint is not None else ""
-    ui.html(
-        f'<h2 style="font-weight:700;color:#111827;margin:0.2rem 0 0.1rem;">'
-        f"\U0001f4cb agile-backlog"
-        f'<span style="font-weight:400;color:#9ca3af;font-size:0.6em;">{sprint_text}</span></h2>'
-    )
 
-    # --- Filter widgets ---
-    priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
-    categories = sorted({i.category for i in all_items})
-    category_options = {None: "All categories", **{c: c for c in categories}}
-    sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
-    sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
+    with ui.column().classes("w-full max-w-7xl mx-auto px-4 py-3 gap-3"):
+        # Title row
+        with ui.row().classes("items-center gap-3"):
+            ui.label("agile-backlog").classes("text-xl font-bold text-gray-900")
+            if current_sprint is not None:
+                ui.badge(f"Sprint {current_sprint}").props("rounded outline").classes(
+                    "text-xs text-gray-500 border-gray-300"
+                )
 
-    with ui.row().classes("w-full gap-4 pb-3 border-b items-end"):
-        priority_select = ui.select(
-            label="Priority",
-            options=priority_options,
-            value=None,
-        ).classes("w-48")
-        category_select = ui.select(
-            label="Category",
-            options=category_options,
-            value=None,
-        ).classes("w-48")
-        sprint_select = ui.select(
-            label="Sprint",
-            options=sprint_options,
-            value=None,
-        ).classes("w-48")
-        search_input = ui.input(label="Search", placeholder="Filter by title, description, tags...").classes("w-64")
+        # --- Filter bar ---
+        priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
+        categories = sorted({i.category for i in all_items})
+        category_options = {None: "All categories", **{c: c for c in categories}}
+        sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
+        sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
 
-    # --- Board ---
-    def move_item(item: BacklogItem, target: str):
-        item.status = target
-        if target == "doing":
-            item.phase = item.phase or "plan"
-        elif target == "backlog":
-            item.phase = None
-        save_item(item)
-        render_board.refresh()
+        with ui.row().classes("w-full gap-3 pb-3 border-b border-gray-200 items-end"):
+            priority_select = (
+                ui.select(
+                    label="Priority",
+                    options=priority_options,
+                    value=None,
+                )
+                .props("dense outlined")
+                .classes("w-40")
+            )
+            category_select = (
+                ui.select(
+                    label="Category",
+                    options=category_options,
+                    value=None,
+                )
+                .props("dense outlined")
+                .classes("w-40")
+            )
+            sprint_select = (
+                ui.select(
+                    label="Sprint",
+                    options=sprint_options,
+                    value=None,
+                )
+                .props("dense outlined")
+                .classes("w-40")
+            )
+            search_input = (
+                ui.input(label="Search", placeholder="Filter by title, description, tags...")
+                .props("dense outlined")
+                .classes("w-56")
+            )
 
-    @ui.refreshable
-    def render_board():
-        items = load_all()
+        # --- Board ---
+        def move_item(item: BacklogItem, target: str):
+            item.status = target
+            if target == "doing":
+                item.phase = item.phase or "plan"
+            elif target == "backlog":
+                item.phase = None
+            save_item(item)
+            render_board.refresh()
 
-        # Read filter values from widgets
-        pf = priority_select.value
-        cf = category_select.value
-        sf = sprint_select.value
-        sq = search_input.value or ""
+        @ui.refreshable
+        def render_board():
+            items = load_all()
 
-        backlog_items = [i for i in items if i.status == "backlog"]
-        doing_items = [i for i in items if i.status == "doing"]
-        done_items = [i for i in items if i.status == "done"]
+            # Read filter values from widgets
+            pf = priority_select.value
+            cf = category_select.value
+            sf = sprint_select.value
+            sq = search_input.value or ""
 
-        filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
+            backlog_items = [i for i in items if i.status == "backlog"]
+            doing_items = [i for i in items if i.status == "doing"]
+            done_items = [i for i in items if i.status == "done"]
 
-        if sf == "unplanned":
-            doing_items = [i for i in doing_items if i.sprint_target is None]
-            done_items = [i for i in done_items if i.sprint_target is None]
-        elif sf is not None:
-            doing_items = [i for i in doing_items if i.sprint_target == sf]
-            done_items = [i for i in done_items if i.sprint_target == sf]
+            filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
 
-        columns_map = {
-            "backlog": filtered_backlog,
-            "doing": doing_items,
-            "done": done_items,
-        }
+            if sf == "unplanned":
+                doing_items = [i for i in doing_items if i.sprint_target is None]
+                done_items = [i for i in done_items if i.sprint_target is None]
+            elif sf is not None:
+                doing_items = [i for i in doing_items if i.sprint_target == sf]
+                done_items = [i for i in done_items if i.sprint_target == sf]
 
-        with ui.row().classes("w-full gap-4"):
-            for status in STATUSES:
-                items_in_col = columns_map[status]
-                bg = COLUMN_BG[status]
+            columns_map = {
+                "backlog": filtered_backlog,
+                "doing": doing_items,
+                "done": done_items,
+            }
 
-                with ui.column().classes("flex-1 min-w-0").style(f"background:{bg};border-radius:8px;padding:0.5rem;"):
-                    # Column header
-                    with ui.row().classes("items-center gap-2 px-3 pt-2 pb-1"):
-                        ui.label(LABELS[status]).classes("text-xs font-bold uppercase tracking-wider text-gray-500")
-                        ui.badge(str(len(items_in_col))).props("rounded").classes("text-xs bg-gray-200 text-gray-600")
+            with ui.row().classes("w-full gap-3 items-start"):
+                for status in STATUSES:
+                    items_in_col = columns_map[status]
+                    col_tw = COLUMN_TAILWIND[status]
 
-                    # Empty state
-                    if not items_in_col:
-                        if status == "backlog":
-                            msg = (
-                                "No items match filters."
-                                if items
-                                else "No items yet \u2014 use `agile-backlog add` to create one."
+                    with ui.column().classes(f"flex-1 min-w-0 {col_tw} rounded-lg p-2 gap-2"):
+                        # Column header
+                        with ui.row().classes("items-center gap-2 px-2 pt-1 pb-1"):
+                            ui.label(LABELS[status]).classes(
+                                "text-xs font-bold uppercase tracking-widest text-gray-500"
                             )
-                            ui.label(msg).classes("text-xs text-gray-400 px-3 py-2")
-                        else:
-                            ui.label("No items.").classes("text-xs text-gray-400 px-3 py-2")
-                        continue
+                            ui.badge(str(len(items_in_col))).props("rounded").classes(
+                                "text-xs bg-gray-200 text-gray-600"
+                            )
 
-                    # Cards
-                    for item in items_in_col:
-                        done_class = "done-card" if status == "done" else ""
-                        with ui.card().classes(f"w-full {done_class}").style("padding:10px 14px;"):
-                            ui.html(render_card_html(item))
+                        # Empty state
+                        if not items_in_col:
+                            if status == "backlog":
+                                msg = (
+                                    "No items match filters."
+                                    if items
+                                    else "No items yet \u2014 use `agile-backlog add` to create one."
+                                )
+                                ui.label(msg).classes("text-xs text-gray-400 px-2 py-4 italic")
+                            else:
+                                ui.label("No items.").classes("text-xs text-gray-400 px-2 py-4 italic")
+                            continue
 
-                            # Detail expander
-                            with ui.expansion(item.id).classes("w-full text-xs text-gray-400"):
-                                if item.goal:
-                                    ui.html(f"<b>Goal:</b> {item.goal}")
-                                if item.complexity:
-                                    ui.html(f"<b>Complexity:</b> {_complexity_badge(item.complexity)}")
-                                if item.description:
-                                    ui.markdown(item.description)
-                                if item.acceptance_criteria:
-                                    ui.html("<b>Acceptance Criteria:</b>")
-                                    for ac in item.acceptance_criteria:
-                                        ui.markdown(f"- {ac}")
-                                if item.technical_specs:
-                                    ui.html("<b>Technical Specs:</b>")
-                                    for ts in item.technical_specs:
-                                        ui.markdown(f"- {ts}")
-                                if item.test_plan:
-                                    ui.html("<b>Test Plan:</b>")
-                                    for tp in item.test_plan:
-                                        ui.markdown(f"- {tp}")
-                                if item.notes:
-                                    ui.html(f"<b>Notes:</b> {item.notes}")
-                                if item.tags:
-                                    tag_html = " ".join(
-                                        f'<span style="display:inline-flex;align-items:center;height:18px;'
-                                        f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
-                                        f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
-                                        for t in item.tags
-                                    )
-                                    ui.html(f"<b>Tags:</b> {tag_html}")
-                                if item.depends_on:
-                                    ui.html(f"<b>Depends on:</b> {', '.join(item.depends_on)}")
-                                # Footer row
-                                with ui.row().classes("w-full gap-4 mt-2"):
-                                    ui.label(f"Sprint: {item.sprint_target or 'Unplanned'}").classes(
-                                        "text-xs text-gray-400"
-                                    )
-                                    ui.label(f"Created: {item.created}").classes("text-xs text-gray-400")
-                                    ui.label(f"Updated: {item.updated}").classes("text-xs text-gray-400")
+                        # Cards
+                        for item in items_in_col:
+                            _render_card(item, status, move_item)
 
-                            # Move buttons
-                            other_statuses = [s for s in STATUSES if s != status]
-                            with ui.row().classes("gap-2 mt-1"):
-                                for target in other_statuses:
-                                    arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
-                                    ui.button(
-                                        f"{arrow} {target}",
-                                        on_click=lambda _e, i=item, t=target: move_item(i, t),
-                                    ).props("flat dense size=sm").classes(
-                                        "text-xs text-gray-500 border border-gray-200"
-                                    )
+        # Wire filter changes to board refresh
+        priority_select.on_value_change(lambda _: render_board.refresh())
+        category_select.on_value_change(lambda _: render_board.refresh())
+        sprint_select.on_value_change(lambda _: render_board.refresh())
+        search_input.on_value_change(lambda _: render_board.refresh())
 
-    # Wire filter changes to board refresh
-    priority_select.on_value_change(lambda _: render_board.refresh())
-    category_select.on_value_change(lambda _: render_board.refresh())
-    sprint_select.on_value_change(lambda _: render_board.refresh())
-    search_input.on_value_change(lambda _: render_board.refresh())
-
-    render_board()
+        render_board()
 
 
 def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = True):
