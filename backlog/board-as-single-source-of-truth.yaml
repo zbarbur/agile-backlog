@@ -2,7 +2,7 @@ title: Board as single source of truth
 status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 5
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []

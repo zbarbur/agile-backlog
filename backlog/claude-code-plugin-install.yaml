@@ -2,7 +2,7 @@ title: Claude Code plugin install
 status: done
 priority: P3
 category: infra
-sprint_target: null
+sprint_target: 5
 created: 2026-03-21
 updated: 2026-03-21
 depends_on: []
