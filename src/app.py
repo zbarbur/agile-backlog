@@ -1,5 +1,5 @@
 # src/app.py
-"""NiceGUI Kanban board for agile-backlog."""
+"""NiceGUI Kanban board for agile-backlog — Mission Control dark theme."""
 
 from nicegui import ui
 
@@ -66,23 +66,23 @@ def render_card_html(item: BacklogItem) -> str:
         f'<span style="{pill};text-transform:uppercase;color:{pri_color};background:{pri_bg}">{item.priority}</span>',
     ]
     if item.phase:
-        badges.append(f'<span style="{pill};font-style:italic;color:#6b7280;background:#f3f4f6">{item.phase}</span>')
-    review_badge = "font-size:10px;color:#059669;background:#d1fae5;padding:1px 6px;border-radius:3px"
+        badges.append(f'<span style="{pill};font-style:italic;color:#71717a;background:#1e1e23">{item.phase}</span>')
+    review_badge = "font-size:10px;color:#4ade80;background:rgba(74,222,128,0.1);padding:1px 6px;border-radius:3px"
     if item.design_reviewed:
         badges.append(f'<span style="{review_badge}">&#10003; design</span>')
     if item.code_reviewed:
         badges.append(f'<span style="{review_badge}">&#10003; code</span>')
     if item.sprint_target is not None:
         badges.append(
-            f'<span style="{pill};font-weight:500;color:#6b7280;background:none;'
-            f'border:1px solid #e5e7eb">S{item.sprint_target}</span>'
+            f'<span style="{pill};font-weight:500;color:#52525b;background:none;'
+            f'border:1px solid #27272a">S{item.sprint_target}</span>'
         )
 
     badge_row = " ".join(badges)
 
     return (
         f'<div style="margin:0;padding:2px 0;{p1_style}">'
-        f'<div style="font-size:14px;font-weight:600;color:#111827;line-height:1.35;'
+        f'<div style="font-size:14px;font-weight:600;color:#e4e4e7;line-height:1.35;'
         f'margin-bottom:6px">{item.title}</div>'
         f'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
         f"{badge_row}</div></div>"
@@ -112,26 +112,154 @@ def _complexity_badge(complexity: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# NiceGUI UI
+# NiceGUI UI — Mission Control dark theme
 # ---------------------------------------------------------------------------
 
 STATUSES = ["backlog", "doing", "done"]
 LABELS = {"backlog": "BACKLOG", "doing": "IN PROGRESS", "done": "DONE"}
 
-
-COLUMN_TAILWIND = {
-    "backlog": "bg-slate-50",
-    "doing": "bg-amber-50",
-    "done": "bg-green-50",
+COLUMN_STYLES = {
+    "backlog": ("background:#111116;border-radius:8px;padding:8px;", "#71717a"),
+    "doing": ("background:#14130e;border:1px solid #2a2618;border-radius:8px;padding:8px;", "#ca8a04"),
+    "done": ("background:#0f1210;border-radius:8px;padding:8px;", "#22c55e"),
 }
+
+# Global CSS injected into the page head
+GOOGLE_FONTS_URL = (
+    "https://fonts.googleapis.com/css2"
+    "?family=JetBrains+Mono:wght@400;500;600;700"
+    "&family=DM+Sans:wght@400;500;600;700&display=swap"
+)
+GLOBAL_CSS = (
+    f'<link href="{GOOGLE_FONTS_URL}" rel="stylesheet">'
+    + """
+<style>
+body {
+    background: #0a0a0f !important;
+    color: #e4e4e7;
+    font-family: 'DM Sans', sans-serif !important;
+}
+.nicegui-content {
+    padding: 0 !important;
+}
+.q-card {
+    box-shadow: none !important;
+}
+.q-expansion-item .q-item {
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+.q-expansion-item .q-item__section {
+    padding: 0 !important;
+}
+.q-expansion-item .q-expansion-item__content {
+    padding: 0 !important;
+}
+.mc-search .q-field__control {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    border-radius: 6px !important;
+    color: #d4d4d8 !important;
+    height: 28px !important;
+    min-height: 28px !important;
+}
+.mc-search .q-field__control:focus-within {
+    border-color: #3b82f6 !important;
+}
+.mc-search .q-field__native {
+    color: #d4d4d8 !important;
+    font-size: 11px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    padding: 0 10px !important;
+}
+.mc-search .q-field__label {
+    display: none !important;
+}
+.mc-search .q-field__control::before,
+.mc-search .q-field__control::after {
+    display: none !important;
+}
+.mc-select .q-field__control {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    border-radius: 6px !important;
+    color: #a1a1aa !important;
+    height: 28px !important;
+    min-height: 28px !important;
+}
+.mc-select .q-field__native,
+.mc-select .q-select__dropdown-icon {
+    color: #a1a1aa !important;
+    font-size: 11px !important;
+}
+.mc-select .q-field__label {
+    color: #52525b !important;
+    font-size: 11px !important;
+}
+.mc-select .q-field__control::before,
+.mc-select .q-field__control::after {
+    display: none !important;
+}
+.mc-done-check .q-checkbox__label {
+    font-size: 11px !important;
+    color: #71717a !important;
+}
+.mc-done-check .q-checkbox__inner {
+    color: #3b82f6 !important;
+}
+.mc-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    transition: all 0.15s;
+    cursor: default;
+}
+.mc-card:hover {
+    border-color: #3f3f46;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.mc-card.mc-p1 {
+    border-left: 3px solid #ef4444;
+}
+.mc-card.mc-done {
+    opacity: 0.4;
+}
+.mc-card.mc-done:hover {
+    opacity: 0.8;
+}
+.mc-move-btn {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    padding: 2px 7px !important;
+    border: 1px solid #27272a !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    color: #52525b !important;
+    cursor: pointer !important;
+    transition: all 0.12s !important;
+    text-transform: none !important;
+    min-height: 0 !important;
+    line-height: 1.2 !important;
+}
+.mc-move-btn:hover {
+    border-color: #3f3f46 !important;
+    color: #a1a1aa !important;
+    background: #1e1e23 !important;
+}
+</style>
+"""
+)
 
 
 def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = False, outlined: bool = False) -> None:
     """Render a small badge pill using ui.html with inline styles."""
     style = (
-        "display:inline-flex;align-items:center;height:20px;"
-        "font-size:11px;font-weight:600;letter-spacing:0.02em;"
-        f"padding:2px 8px;border-radius:4px;white-space:nowrap;color:{text_color};"
+        "display:inline-flex;align-items:center;height:18px;"
+        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.03em;"
+        f"padding:1px 5px;border-radius:3px;white-space:nowrap;color:{text_color};"
     )
     if outlined:
         style += f"background:transparent;border:1px solid {bg_color};"
@@ -145,172 +273,287 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
 
 
 def _render_card(item: BacklogItem, status: str, move_fn) -> None:
-    """Render a single Kanban card with NiceGUI components."""
+    """Render a single Kanban card with Mission Control dark theme."""
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+    is_done = status == "done"
 
-    # Card classes
-    card_classes = "w-full bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-3"
+    card_css = "mc-card"
     if item.priority == "P1":
-        card_classes += " border-l-4 border-l-red-500"
-    if status == "done":
-        card_classes += " opacity-50 hover:opacity-100"
+        card_css += " mc-p1"
+    if is_done:
+        card_css += " mc-done"
 
-    with ui.card().classes(card_classes).style("padding:10px 14px;"):
-        # Title
-        title_classes = "text-sm font-semibold leading-snug m-0"
-        if status == "done":
-            title_classes += " line-through text-gray-400"
-        else:
-            title_classes += " text-gray-900"
-        ui.label(item.title).classes(title_classes)
+    with ui.element("div").classes(card_css):
+        # Row 1: title + badges inline
+        with ui.element("div").style("display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"):
+            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
+            if is_done:
+                title_style += "text-decoration:line-through;color:#52525b;"
+            else:
+                title_style += "color:#e4e4e7;"
+            ui.html(f'<span style="{title_style}">{item.title}</span>')
 
-        # Badge row
-        with ui.row().classes("items-center gap-1.5 flex-wrap mt-1.5"):
-            _render_pill(item.category, cat_color, cat_bg)
-            _render_pill(item.priority, pri_color, pri_bg)
+            opacity = "opacity:0.5;" if is_done else ""
+            pill_base = (
+                "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+                "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+            )
+            # Category
+            ui.html(
+                f'<span style="{pill_base}text-transform:uppercase;'
+                f'color:{cat_color};background:{cat_bg};{opacity}">{item.category}</span>'
+            )
+            # Priority
+            ui.html(
+                f'<span style="{pill_base}text-transform:uppercase;'
+                f'color:{pri_color};background:{pri_bg};{opacity}">{item.priority}</span>'
+            )
+            # Phase
             if item.phase:
-                _render_pill(item.phase, "#6b7280", "#f3f4f6", italic=True)
+                ui.html(
+                    f'<span style="{pill_base}'
+                    f'font-style:italic;text-transform:none;color:#71717a;background:#1e1e23;">'
+                    f"{item.phase}</span>"
+                )
+            # Review badges
             if item.design_reviewed:
                 ui.html(
-                    '<span style="font-size:10px;color:#059669;background:#d1fae5;'
-                    'padding:1px 6px;border-radius:3px;">&#10003; design</span>'
+                    f'<span style="{pill_base}font-size:8px;'
+                    f'color:#4ade80;background:rgba(74,222,128,0.1);">&#10003; design</span>'
                 )
             if item.code_reviewed:
                 ui.html(
-                    '<span style="font-size:10px;color:#059669;background:#d1fae5;'
-                    'padding:1px 6px;border-radius:3px;">&#10003; code</span>'
+                    f'<span style="{pill_base}font-size:8px;'
+                    f'color:#4ade80;background:rgba(74,222,128,0.1);">&#10003; code</span>'
                 )
+            # Sprint
             if item.sprint_target is not None:
-                _render_pill(f"S{item.sprint_target}", "#6b7280", "#e5e7eb", outlined=True)
-
-        # Detail expander
-        with ui.expansion(item.id).classes("w-full text-xs text-gray-400 mt-1"):
-            with ui.column().classes("gap-2 text-xs text-gray-600"):
-                if item.goal:
-                    ui.html(
-                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Goal:</span>'
-                        f' <span style="font-size:13px;color:#111827;">{item.goal}</span>'
-                    )
-                if item.complexity:
-                    ui.html(
-                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Complexity:</span>'
-                        f" {_complexity_badge(item.complexity)}"
-                    )
-                if item.description:
-                    ui.markdown(item.description).classes("text-sm text-gray-700")
-                if item.acceptance_criteria:
-                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Acceptance Criteria:</span>')
-                    for ac in item.acceptance_criteria:
-                        ui.markdown(f"- {ac}").classes("text-sm text-gray-700 ml-2")
-                if item.technical_specs:
-                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Technical Specs:</span>')
-                    for ts in item.technical_specs:
-                        ui.markdown(f"- {ts}").classes("text-sm text-gray-700 ml-2")
-                if item.test_plan:
-                    ui.html('<span style="font-size:11px;font-weight:600;color:#4b5563;">Test Plan:</span>')
-                    for tp in item.test_plan:
-                        ui.markdown(f"- {tp}").classes("text-sm text-gray-700 ml-2")
-                if item.notes:
-                    ui.html(
-                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Notes:</span>'
-                        f' <span style="font-size:13px;color:#111827;">{item.notes}</span>'
-                    )
-                if item.tags:
-                    tag_html = " ".join(
-                        f'<span style="display:inline-flex;align-items:center;height:18px;'
-                        f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
-                        f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
-                        for t in item.tags
-                    )
-                    ui.html(f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Tags:</span> {tag_html}')
-                if item.depends_on:
-                    ui.html(
-                        f'<span style="font-size:11px;font-weight:600;color:#4b5563;">Depends on:</span>'
-                        f' <span style="font-size:13px;color:#6b7280;">{", ".join(item.depends_on)}</span>'
-                    )
-                # Metadata footer
-                with ui.row().classes("w-full gap-4 mt-2 pt-2 border-t border-gray-100"):
-                    ui.label(f"Sprint: {item.sprint_target or 'Unplanned'}").classes("text-xs text-gray-400")
-                    ui.label(f"Created: {item.created}").classes("text-xs text-gray-400")
-                    ui.label(f"Updated: {item.updated}").classes("text-xs text-gray-400")
-
-        # Move buttons
-        other_statuses = [s for s in STATUSES if s != status]
-        with ui.row().classes("gap-2 mt-1"):
-            for target in other_statuses:
-                arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
-                ui.button(
-                    f"{arrow} {target}",
-                    on_click=lambda _e, i=item, t=target: move_fn(i, t),
-                ).props("flat dense size=sm no-caps").classes(
-                    "text-xs text-gray-500 border border-gray-200 hover:bg-gray-50"
+                sprint_opacity = "opacity:0.4;" if is_done else ""
+                ui.html(
+                    f'<span style="{pill_base}font-weight:500;text-transform:none;'
+                    f'color:#52525b;background:transparent;border:1px solid #27272a;{sprint_opacity}">'
+                    f"S{item.sprint_target}</span>"
                 )
+
+        # Row 2: move buttons + details (not for done cards)
+        if not is_done:
+            with ui.element("div").style("display:flex;align-items:center;gap:4px;margin-top:5px;"):
+                other_statuses = [s for s in STATUSES if s != status]
+                for target in other_statuses:
+                    arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
+                    ui.button(
+                        f"{arrow} {target}",
+                        on_click=lambda _e, i=item, t=target: move_fn(i, t),
+                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+
+                # Details toggle
+                detail_visible = {"v": False}
+                detail_container = ui.element("div").style("display:none;")
+                details_label = ui.label("\u25be details").style(
+                    "margin-left:auto;font-family:'JetBrains Mono',monospace;"
+                    "font-size:9px;color:#3f3f46;cursor:pointer;"
+                )
+
+            # Detail panel (outside row2 but inside card)
+            with detail_container:
+                _render_detail_panel(item)
+
+            def make_toggle(lbl, container, state):
+                def toggle(_e):
+                    state["v"] = not state["v"]
+                    if state["v"]:
+                        container.style("display:block;")
+                        lbl.text = "\u25b4 details"
+                        lbl.style(
+                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
+                            "font-size:9px;color:#71717a;cursor:pointer;"
+                        )
+                    else:
+                        container.style("display:none;")
+                        lbl.text = "\u25be details"
+                        lbl.style(
+                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
+                            "font-size:9px;color:#3f3f46;cursor:pointer;"
+                        )
+
+                return toggle
+
+            details_label.on("click", make_toggle(details_label, detail_container, detail_visible))
+
+
+def _render_detail_panel(item: BacklogItem) -> None:
+    """Render the expandable details section of a card."""
+    label_style = (
+        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
+        "margin-top:6px;margin-bottom:2px;"
+    )
+    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
+
+    with ui.element("div").style(
+        "margin-top:8px;padding-top:8px;border-top:1px solid #1e1e23;font-size:11px;color:#a1a1aa;line-height:1.6;"
+    ):
+        if item.goal:
+            ui.html(f'<div style="{label_style}">Goal</div>')
+            ui.html(f'<div style="{value_style}">{item.goal}</div>')
+
+        if item.complexity:
+            ui.html(f'<div style="{label_style}">Complexity</div>')
+            ui.html(
+                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;"
+                f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
+                f"{item.complexity}</span>"
+            )
+
+        if item.description:
+            ui.html(f'<div style="{label_style}">Description</div>')
+            ui.html(f'<div style="{value_style}">{item.description}</div>')
+
+        if item.acceptance_criteria:
+            ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
+            li_items = "".join(
+                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>'
+                for ac in item.acceptance_criteria
+            )
+            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+        if item.technical_specs:
+            ui.html(f'<div style="{label_style}">Technical Specs</div>')
+            li_items = "".join(
+                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
+            )
+            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+        if item.test_plan:
+            ui.html(f'<div style="{label_style}">Test Plan</div>')
+            li_items = "".join(
+                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{tp}</li>' for tp in item.test_plan
+            )
+            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+        if item.notes:
+            ui.html(f'<div style="{label_style}">Notes</div>')
+            ui.html(f'<div style="{value_style}">{item.notes}</div>')
+
+        if item.tags:
+            ui.html(f'<div style="{label_style}">Tags</div>')
+            tag_html = " ".join(
+                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
+                f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
+                f'border-radius:3px;margin-right:2px;">{t}</span>'
+                for t in item.tags
+            )
+            ui.html(tag_html)
+
+        if item.depends_on:
+            ui.html(f'<div style="{label_style}">Depends on</div>')
+            ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
+
+        # Footer
+        ui.html(
+            '<div style="display:flex;gap:12px;margin-top:8px;padding-top:6px;border-top:1px solid #1e1e23;">'
+            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
+            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            f"Created: {item.created}</span>"
+            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            f"Updated: {item.updated}</span>"
+            "</div>"
+        )
 
 
 @ui.page("/")
 def kanban_page():
-    """Render the Kanban board."""
+    """Render the Kanban board — Mission Control dark theme."""
     from src.yaml_store import load_all, save_item
 
-    # --- Page background ---
-    ui.query("body").classes("bg-gray-50")
+    # --- Inject global styles ---
+    ui.add_head_html(GLOBAL_CSS)
 
-    # --- Header ---
+    # --- Load data ---
     all_items = load_all()
     current_sprint = detect_current_sprint(all_items)
 
-    with ui.column().classes("w-full max-w-7xl mx-auto px-4 py-3 gap-3"):
-        # Title row
-        with ui.row().classes("items-center gap-3"):
-            ui.label("agile-backlog").classes("text-xl font-bold text-gray-900")
+    with ui.element("div").style("max-width:1400px;margin:0 auto;padding:16px 20px;"):
+        # === Header Row 1 ===
+        with ui.element("div").style("display:flex;align-items:center;gap:12px;margin-bottom:12px;"):
+            ui.html(
+                '<span style="font-size:16px;font-weight:700;color:#fafafa;'
+                "letter-spacing:-0.02em;font-family:'DM Sans',sans-serif;"
+                '">agile-backlog</span>'
+            )
             if current_sprint is not None:
-                ui.badge(f"Sprint {current_sprint}").props("rounded outline").classes(
-                    "text-xs text-gray-500 border-gray-300"
+                ui.html(
+                    f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;"
+                    f"color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);"
+                    f'padding:2px 10px;border-radius:4px;letter-spacing:0.05em;">'
+                    f"SPRINT {current_sprint}</span>"
                 )
 
-        # --- Filter bar ---
+            ui.element("div").style("flex:1;")
+
+            # View toggle
+            with ui.element("div").style(
+                "display:flex;background:#18181b;border:1px solid #27272a;border-radius:6px;overflow:hidden;"
+            ):
+                ui.html(
+                    '<span style="font-size:11px;font-weight:600;padding:4px 14px;'
+                    'background:#fafafa;color:#09090b;cursor:pointer;">Board</span>'
+                    '<span style="font-size:11px;font-weight:600;padding:4px 14px;'
+                    'color:#71717a;cursor:pointer;">Backlog</span>'
+                )
+
+            # Show done checkbox
+            done_check = (
+                ui.checkbox("Show done", value=True).classes("mc-done-check").style("font-size:11px;color:#71717a;")
+            )
+
+        # === Filter Row 2 ===
         priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
         categories = sorted({i.category for i in all_items})
         category_options = {None: "All categories", **{c: c for c in categories}}
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
+        phases = sorted({i.phase for i in all_items if i.phase})
+        phase_options = {None: "All phases", **{p: p for p in phases}}
 
-        with ui.row().classes("w-full gap-3 pb-3 border-b border-gray-200 items-end"):
+        with ui.element("div").style(
+            "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
+            "margin-bottom:14px;align-items:center;"
+        ):
             priority_select = (
-                ui.select(
-                    label="Priority",
-                    options=priority_options,
-                    value=None,
-                )
+                ui.select(label="Priority", options=priority_options, value=None)
                 .props("dense outlined")
-                .classes("w-40")
+                .classes("mc-select")
+                .style("width:130px;")
             )
             category_select = (
-                ui.select(
-                    label="Category",
-                    options=category_options,
-                    value=None,
-                )
+                ui.select(label="Category", options=category_options, value=None)
                 .props("dense outlined")
-                .classes("w-40")
+                .classes("mc-select")
+                .style("width:130px;")
             )
             sprint_select = (
-                ui.select(
-                    label="Sprint",
-                    options=sprint_options,
-                    value=None,
-                )
+                ui.select(label="Sprint", options=sprint_options, value=None)
                 .props("dense outlined")
-                .classes("w-40")
+                .classes("mc-select")
+                .style("width:130px;")
+            )
+            phase_select = (
+                ui.select(label="Phase", options=phase_options, value=None)
+                .props("dense outlined")
+                .classes("mc-select")
+                .style("width:130px;")
             )
             search_input = (
-                ui.input(label="Search", placeholder="Filter by title, description, tags...")
+                ui.input(placeholder="Search by title, description, tags...")
                 .props("dense outlined")
-                .classes("w-56")
+                .classes("mc-search")
+                .style("flex:1;")
             )
 
-        # --- Board ---
+        # === Board ===
         def move_item(item: BacklogItem, target: str):
             item.status = target
             if target == "doing":
@@ -324,68 +567,83 @@ def kanban_page():
         def render_board():
             items = load_all()
 
-            # Read filter values from widgets
             pf = priority_select.value
             cf = category_select.value
             sf = sprint_select.value
+            phf = phase_select.value
             sq = search_input.value or ""
+            sd = done_check.value
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
             done_items = [i for i in items if i.status == "done"]
 
             filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
+            filtered_doing = doing_items
+            filtered_done = done_items
 
             if sf == "unplanned":
-                doing_items = [i for i in doing_items if i.sprint_target is None]
-                done_items = [i for i in done_items if i.sprint_target is None]
+                filtered_doing = [i for i in doing_items if i.sprint_target is None]
+                filtered_done = [i for i in done_items if i.sprint_target is None]
             elif sf is not None:
-                doing_items = [i for i in doing_items if i.sprint_target == sf]
-                done_items = [i for i in done_items if i.sprint_target == sf]
+                filtered_doing = [i for i in doing_items if i.sprint_target == sf]
+                filtered_done = [i for i in done_items if i.sprint_target == sf]
+
+            if phf is not None:
+                filtered_backlog = [i for i in filtered_backlog if i.phase == phf]
+                filtered_doing = [i for i in filtered_doing if i.phase == phf]
+                filtered_done = [i for i in filtered_done if i.phase == phf]
 
             columns_map = {
                 "backlog": filtered_backlog,
-                "doing": doing_items,
-                "done": done_items,
+                "doing": filtered_doing,
+                "done": filtered_done if sd else [],
             }
 
-            with ui.row().classes("w-full gap-3 items-start"):
-                for status in STATUSES:
-                    items_in_col = columns_map[status]
-                    col_tw = COLUMN_TAILWIND[status]
+            with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;"):
+                for col_status in STATUSES:
+                    items_in_col = columns_map[col_status]
+                    col_style, label_color = COLUMN_STYLES[col_status]
 
-                    with ui.column().classes(f"flex-1 min-w-0 {col_tw} rounded-lg p-2 gap-2"):
-                        # Column header
-                        with ui.row().classes("items-center gap-2 px-2 pt-1 pb-1"):
-                            ui.label(LABELS[status]).classes(
-                                "text-xs font-bold uppercase tracking-widest text-gray-500"
+                    with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
+                        with ui.element("div").style("display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"):
+                            ui.html(
+                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;"
+                                f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+                                f'color:{label_color};">{LABELS[col_status]}</span>'
                             )
-                            ui.badge(str(len(items_in_col))).props("rounded").classes(
-                                "text-xs bg-gray-200 text-gray-600"
+                            ui.html(
+                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
+                                f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+                                f'border-radius:4px;">{len(items_in_col)}</span>'
                             )
 
-                        # Empty state
                         if not items_in_col:
-                            if status == "backlog":
+                            if col_status == "backlog":
                                 msg = (
                                     "No items match filters."
                                     if items
                                     else "No items yet \u2014 use `agile-backlog add` to create one."
                                 )
-                                ui.label(msg).classes("text-xs text-gray-400 px-2 py-4 italic")
+                            elif col_status == "done" and not sd:
+                                msg = "Done items hidden."
                             else:
-                                ui.label("No items.").classes("text-xs text-gray-400 px-2 py-4 italic")
+                                msg = "No items."
+                            ui.html(
+                                f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
+                                f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
+                            )
                             continue
 
-                        # Cards
-                        for item in items_in_col:
-                            _render_card(item, status, move_item)
+                        for card_item in items_in_col:
+                            _render_card(card_item, col_status, move_item)
 
-        # Wire filter changes to board refresh
         priority_select.on_value_change(lambda _: render_board.refresh())
         category_select.on_value_change(lambda _: render_board.refresh())
         sprint_select.on_value_change(lambda _: render_board.refresh())
+        phase_select.on_value_change(lambda _: render_board.refresh())
         search_input.on_value_change(lambda _: render_board.refresh())
+        done_check.on_value_change(lambda _: render_board.refresh())
 
         render_board()
 

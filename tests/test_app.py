@@ -12,33 +12,33 @@ def _item(**overrides) -> BacklogItem:
 class TestCategoryStyle:
     def test_known_category_feature(self):
         color, bg = category_style("feature")
-        assert color == "#1d4ed8"
-        assert bg == "#dbeafe"
+        assert color == "#60a5fa"
+        assert bg == "rgba(59,130,246,0.15)"
 
     def test_known_category_bug(self):
         color, bg = category_style("bug")
-        assert color == "#be185d"
-        assert bg == "#fce7f3"
+        assert color == "#f472b6"
+        assert bg == "rgba(244,114,182,0.12)"
 
     def test_known_category_security(self):
         color, bg = category_style("security")
-        assert color == "#5b21b6"
-        assert bg == "#ede9fe"
+        assert color == "#a78bfa"
+        assert bg == "rgba(167,139,250,0.12)"
 
     def test_known_category_tech_debt(self):
         color, bg = category_style("tech-debt")
-        assert color == "#92400e"
-        assert bg == "#fef3c7"
+        assert color == "#fbbf24"
+        assert bg == "rgba(251,191,36,0.12)"
 
     def test_known_category_docs(self):
         color, bg = category_style("docs")
-        assert color == "#065f46"
-        assert bg == "#d1fae5"
+        assert color == "#34d399"
+        assert bg == "rgba(52,211,153,0.12)"
 
     def test_known_category_infra(self):
         color, bg = category_style("infra")
-        assert color == "#155e75"
-        assert bg == "#cffafe"
+        assert color == "#22d3ee"
+        assert bg == "rgba(34,211,238,0.12)"
 
     def test_unknown_category_fallback(self):
         color, bg = category_style("random-thing")
@@ -156,7 +156,7 @@ class TestRenderCardHtml:
 
     def test_contains_category_color(self):
         html = render_card_html(_item(category="security"))
-        assert "#5b21b6" in html
+        assert "#a78bfa" in html
 
     def test_render_card_with_phase(self):
         html = render_card_html(_item(phase="build"))
@@ -183,32 +183,32 @@ class TestRenderCardHtml:
 
     def test_badge_uses_design_system_colors(self):
         html = render_card_html(_item(category="feature"))
-        assert "#1d4ed8" in html
-        assert "#dbeafe" in html
+        assert "#60a5fa" in html
+        assert "rgba(59,130,246,0.15)" in html
 
     def test_sprint_badge_outlined_style(self):
         html = render_card_html(_item(sprint_target=3))
         assert "background:none" in html
-        assert "border:1px solid #e5e7eb" in html
+        assert "border:1px solid #27272a" in html
 
     def test_priority_badge_has_bg_color(self):
         html = render_card_html(_item(priority="P1"))
-        assert "#dc2626" in html
-        assert "#fef2f2" in html
+        assert "#f87171" in html
+        assert "rgba(248,113,113,0.15)" in html
 
     def test_design_reviewed_badge_shown_when_true(self):
         html = render_card_html(_item(design_reviewed=True))
         assert "design" in html
-        assert "#059669" in html
+        assert "#4ade80" in html
 
     def test_code_reviewed_badge_shown_when_true(self):
         html = render_card_html(_item(code_reviewed=True))
         assert "code" in html
-        assert "#059669" in html
+        assert "#4ade80" in html
 
     def test_review_badges_not_shown_by_default(self):
         html = render_card_html(_item())
-        assert "#d1fae5" not in html
+        assert "rgba(74,222,128,0.1)" not in html
 
 
 class TestDetectCurrentSprint:
