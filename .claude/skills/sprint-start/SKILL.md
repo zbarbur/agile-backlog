@@ -19,8 +19,15 @@ git status                   # should be: clean working tree
 - [ ] On `main` branch
 - [ ] Working tree clean
 - [ ] Previous sprint items are done (`agile-backlog list --status doing` should be empty)
+- [ ] CI passing on main (`gh run list --limit 1` should show success)
 
-Run `ruff check . && ruff format --check . && pytest tests/ -v` and report pass/fail.
+Run `ruff check . && ruff format --check . && pytest tests/ -v` and report pass/fail. Also check GitHub CI:
+
+```bash
+gh run list --limit 1
+```
+
+If CI is failing, diagnose and fix before proceeding.
 
 ## Step 2: Bug Triage
 
