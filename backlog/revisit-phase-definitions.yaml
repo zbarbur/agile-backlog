@@ -1,0 +1,18 @@
+title: Revisit phase definitions
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Current 8 phases may be too granular. Consider simplifying to 3-4 phases
+  (e.g., plan, build, review, test). Evaluate what's actually useful for tracking
+  progress vs overhead.
+acceptance_criteria: []
+notes: ''
+phase: null

@@ -1,0 +1,19 @@
+title: Auto-set phase when moving to doing
+status: doing
+priority: P1
+category: feature
+sprint_target: 6
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'When moving an item to ''doing'' status without specifying --phase,
+  auto-default to ''scoping''. This ensures every doing item has a visible phase badge
+  on the card. Also: board move buttons should set phase to scoping when moving to
+  doing.'
+acceptance_criteria: []
+notes: ''
+phase: scoping

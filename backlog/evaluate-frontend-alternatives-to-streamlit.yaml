@@ -17,4 +17,4 @@ description: "Streamlit has design limitations (can't fully style widgets, no JS
   \ recommendation doc with pros/cons/effort estimates"
 acceptance_criteria: []
 notes: ''
-phase: null
+phase: scoping

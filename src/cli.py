@@ -149,6 +149,13 @@ def show(item_id: str):
 @click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None)
 @click.option("--technical-specs", "technical_specs", multiple=True, help="Technical spec (repeatable).")
 @click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
+@click.option(
+    "--phase",
+    type=click.Choice(
+        ["scoping", "spec", "spec-review", "design", "design-review", "coding", "code-review", "testing"]
+    ),
+    default=None,
+)
 @click.option("--tags", multiple=True)
 @click.option("--depends-on", "depends_on", multiple=True)
 @click.option("--notes", default=None)

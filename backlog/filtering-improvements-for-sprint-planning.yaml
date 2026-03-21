@@ -1,0 +1,22 @@
+title: Filtering improvements for sprint planning
+status: doing
+priority: P2
+category: feature
+sprint_target: 6
+created: 2026-03-21
+updated: 2026-03-21
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Improve filter UX for sprint planning workflow:
+
+  1. Easy way to view unplanned backlog items (no sprint assigned)
+
+  2. Filter combinations that help pick candidates for next sprint
+
+  3. Consider adding an ''Unplanned'' option to sprint filter'
+acceptance_criteria: []
+notes: ''
+phase: scoping

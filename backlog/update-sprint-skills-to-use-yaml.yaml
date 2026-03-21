@@ -25,4 +25,4 @@ description: 'Sprint-start and sprint-end skills currently read/write TODO.md. U
   5. Moving to doing should set sprint_target if unset'
 acceptance_criteria: []
 notes: ''
-phase: null
+phase: scoping
