@@ -3,28 +3,28 @@
 
 from src.models import BacklogItem
 
-CATEGORY_STYLES: dict[str, tuple[str, str, str]] = {
-    # category: (emoji, text_color, bg_color) — light-mode friendly
-    "bug": ("🐛", "#f472b6", "#fdf2f8"),
-    "feature": ("✨", "#60a5fa", "#eff6ff"),
-    "tech-debt": ("🔧", "#fbbf24", "#fefce8"),
-    "docs": ("📚", "#34d399", "#ecfdf5"),
-    "security": ("🔒", "#a78bfa", "#f5f3ff"),
-    "infra": ("🏗️", "#22d3ee", "#ecfeff"),
+CATEGORY_STYLES: dict[str, tuple[str, str]] = {
+    # category: (text_color, bg_color)
+    "bug": ("#be185d", "#fce7f3"),
+    "feature": ("#1d4ed8", "#dbeafe"),
+    "tech-debt": ("#92400e", "#fef3c7"),
+    "docs": ("#065f46", "#d1fae5"),
+    "security": ("#5b21b6", "#ede9fe"),
+    "infra": ("#155e75", "#cffafe"),
 }
 
-PRIORITY_COLORS: dict[str, str] = {
-    "P1": "#ef4444",
-    "P2": "#3b82f6",
-    "P3": "#f59e0b",
+PRIORITY_COLORS: dict[str, tuple[str, str]] = {
+    "P1": ("#dc2626", "#fef2f2"),
+    "P2": ("#2563eb", "#eff6ff"),
+    "P3": ("#d97706", "#fffbeb"),
 }
 
 PRIORITY_ORDER: dict[str, int] = {"P1": 1, "P2": 2, "P3": 3}
 
 
-def category_style(category: str) -> tuple[str, str, str]:
-    """Return (emoji, text_color, bg_color) for a category."""
-    return CATEGORY_STYLES.get(category, ("📋", "#9ca3af", "#f3f4f6"))
+def category_style(category: str) -> tuple[str, str]:
+    """Return (text_color, bg_color) for a category."""
+    return CATEGORY_STYLES.get(category, ("#4b5563", "#f3f4f6"))
 
 
 def filter_items(
@@ -63,37 +63,62 @@ def filter_items(
 
 
 def render_card_html(item: BacklogItem) -> str:
-    """Generate the HTML string for a styled card."""
-    emoji, cat_color, cat_bg = category_style(item.category)
-    pri_color = PRIORITY_COLORS.get(item.priority, "#888")
-    sprint_text = f"S{item.sprint_target}" if item.sprint_target is not None else ""
+    """Generate the HTML string for a styled card (two-row design)."""
+    cat_color, cat_bg = category_style(item.category)
+    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
 
-    sprint_html = (
-        f'<span style="font-size:10px;color:#6b7280;background:#f3f4f6;'
-        f'padding:1px 6px;border-radius:3px;font-weight:500;">{sprint_text}</span>'
-        if sprint_text
-        else ""
+    # P1 left border accent
+    p1_border = "border-left:3px solid #ef4444;" if item.priority == "P1" else ""
+
+    # Category pill — uppercase, no emoji
+    category_html = (
+        f'<span style="display:inline-flex;align-items:center;height:20px;'
+        f"font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;"
+        f"color:{cat_color};background:{cat_bg};"
+        f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
+        f"{item.category}</span>"
     )
 
-    phase_html = (
-        f'<span style="font-size:10px;color:#7c3aed;background:#f5f3ff;'
-        f'padding:1px 6px;border-radius:3px;font-weight:500;">{item.phase}</span>'
-        if item.phase
-        else ""
+    # Priority pill
+    priority_html = (
+        f'<span style="display:inline-flex;align-items:center;height:20px;'
+        f"font-size:11px;font-weight:600;text-transform:uppercase;"
+        f"color:{pri_color};background:{pri_bg};"
+        f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
+        f"{item.priority}</span>"
     )
+
+    # Phase pill — lowercase italic, gray
+    phase_html = ""
+    if item.phase:
+        phase_html = (
+            f'<span style="display:inline-flex;align-items:center;height:20px;'
+            f"font-size:11px;font-weight:600;font-style:italic;text-transform:none;"
+            f"color:#6b7280;background:#f3f4f6;"
+            f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
+            f"{item.phase}</span>"
+        )
+
+    # Sprint pill — outlined style
+    sprint_html = ""
+    if item.sprint_target is not None:
+        sprint_html = (
+            f'<span style="display:inline-flex;align-items:center;height:20px;'
+            f"font-size:11px;font-weight:500;"
+            f"color:#6b7280;background:transparent;border:1px solid #e5e7eb;"
+            f'padding:2px 8px;border-radius:4px;white-space:nowrap;">'
+            f"S{item.sprint_target}</span>"
+        )
 
     return (
-        f'<div style="margin:0;padding:2px 0;">\n'
-        f'  <div style="font-size:13px;font-weight:600;color:#1f2937;line-height:1.3;'
-        f'margin-bottom:4px;">{item.title}</div>\n'
+        f'<div style="margin:0;padding:2px 0;{p1_border}">\n'
+        f'  <div style="font-size:14px;font-weight:600;color:#111827;line-height:1.35;'
+        f'margin-bottom:6px;">{item.title}</div>\n'
         f'  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">\n'
-        f'    <span style="font-size:10px;color:{cat_color};background:{cat_bg};'
-        f"padding:1px 6px;border-radius:3px;font-weight:600;text-transform:uppercase;"
-        f'letter-spacing:0.02em;">{emoji} {item.category}</span>\n'
-        f'    <span style="font-size:10px;color:{pri_color};font-weight:700;'
-        f'background:{pri_color}18;padding:1px 6px;border-radius:3px;">{item.priority}</span>\n'
-        f"    {sprint_html}\n"
+        f"    {category_html}\n"
+        f"    {priority_html}\n"
         f"    {phase_html}\n"
+        f"    {sprint_html}\n"
         f"  </div>\n"
         f"</div>"
     )
@@ -109,6 +134,18 @@ def detect_current_sprint(items: list[BacklogItem]) -> int | None:
     return Counter(doing_sprints).most_common(1)[0][0]
 
 
+def _complexity_badge(complexity: str) -> str:
+    """Return an HTML badge for complexity (S/M/L)."""
+    colors = {"S": ("#065f46", "#d1fae5"), "M": ("#92400e", "#fef3c7"), "L": ("#dc2626", "#fef2f2")}
+    text_color, bg_color = colors.get(complexity, ("#4b5563", "#f3f4f6"))
+    return (
+        f'<span style="display:inline-flex;align-items:center;height:20px;'
+        f"font-size:11px;font-weight:600;text-transform:uppercase;"
+        f"color:{text_color};background:{bg_color};"
+        f'padding:2px 8px;border-radius:4px;">{complexity}</span>'
+    )
+
+
 def main():
     """Render the Kanban board."""
     import streamlit as st
@@ -117,71 +154,86 @@ def main():
 
     st.set_page_config(page_title="agile-backlog", layout="wide")
 
-    # --- Custom CSS ---
+    # --- Custom CSS using design system tokens ---
     st.markdown(
         """
     <style>
+        :root {
+            --color-border: #e5e7eb;
+            --color-border-hover: #d1d5db;
+            --color-shadow-default: rgba(0, 0, 0, 0.04);
+            --color-shadow-hover: rgba(0, 0, 0, 0.08);
+            --color-text-primary: #111827;
+            --color-text-secondary: #6b7280;
+            --color-text-muted: #9ca3af;
+        }
+
         /* Tighter vertical spacing */
         [data-testid="stVerticalBlock"] > div { gap: 0.25rem; }
 
-        /* Compact move buttons — small, ghost-style */
+        /* Compact move buttons — ghost-style */
         .stButton > button {
-            padding: 0.1rem 0.6rem;
-            font-size: 0.7rem;
-            border: 1px solid #e5e7eb;
-            background: #fafafa;
-            color: #6b7280;
-            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid var(--color-border);
+            background: transparent;
+            color: var(--color-text-secondary);
+            border-radius: 6px;
             transition: all 0.15s ease;
         }
         .stButton > button:hover {
             background: #f3f4f6;
-            color: #374151;
-            border-color: #d1d5db;
+            color: var(--color-text-primary);
+            border-color: var(--color-border-hover);
         }
 
         /* Column header — clean, professional */
         .col-header {
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: #6b7280;
-            padding: 0.5rem 0.6rem 0.4rem;
-            margin-bottom: 0.3rem;
+            color: var(--color-text-secondary);
+            padding: 8px 12px 6px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
         .col-header .count {
             background: #e5e7eb;
             color: #4b5563;
-            padding: 0.05rem 0.5rem;
+            padding: 1px 8px;
             border-radius: 10px;
-            font-size: 0.7rem;
+            font-size: 11px;
             font-weight: 600;
         }
 
-        /* Card containers — subtle shadow, tighter padding */
+        /* Card containers — 8px radius, design system shadow */
         [data-testid="stVerticalBlock"] [data-testid="stContainer"] {
-            border: 1px solid #e5e7eb !important;
-            border-radius: 6px !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-            padding: 0.4rem 0.6rem !important;
+            border: 1px solid var(--color-border) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 2px var(--color-shadow-default) !important;
+            padding: 10px 14px !important;
             transition: box-shadow 0.15s ease;
         }
         [data-testid="stVerticalBlock"] [data-testid="stContainer"]:hover {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+            box-shadow: 0 2px 8px var(--color-shadow-hover) !important;
         }
 
-        /* Done column dimmed */
-        .done-card { opacity: 0.55; }
+        /* Done column dimmed with strikethrough */
+        .done-card { opacity: 0.5; }
         .done-card:hover { opacity: 1; transition: opacity 0.15s ease; }
+        .done-card .card-title {
+            text-decoration: line-through;
+            color: #9ca3af !important;
+        }
 
         /* Compact expander — subtle trigger text */
         .streamlit-expanderHeader {
-            font-size: 0.75rem;
-            color: #9ca3af;
+            font-size: 12px;
+            color: var(--color-text-muted);
+            font-weight: 400;
         }
 
         /* Hide default heading spacing */
@@ -189,15 +241,15 @@ def main():
 
         /* Filter bar — subtle bottom border */
         .filter-bar {
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 0.8rem;
-            margin-bottom: 0.6rem;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         /* Column background tints */
-        .col-bg-backlog { background: #fafbfc; border-radius: 8px; padding: 0.4rem; }
-        .col-bg-doing { background: #fefdf6; border-radius: 8px; padding: 0.4rem; }
-        .col-bg-done { background: #f6fdf8; border-radius: 8px; padding: 0.4rem; }
+        .col-bg-backlog { background: #f9fafb; border-radius: 8px; padding: 0.4rem; }
+        .col-bg-doing { background: #fffbeb; border-radius: 8px; padding: 0.4rem; }
+        .col-bg-done { background: #f0fdf4; border-radius: 8px; padding: 0.4rem; }
     </style>
     """,
         unsafe_allow_html=True,
@@ -290,23 +342,49 @@ def main():
                     # Detail expander — contextual label
                     expander_label = f"{item.id}"
                     with st.expander(expander_label):
+                        # Goal prominently at top
+                        if item.goal:
+                            st.markdown(f"**Goal:** {item.goal}")
+
+                        # Complexity badge
+                        if item.complexity:
+                            st.markdown(f"**Complexity:** {_complexity_badge(item.complexity)}", unsafe_allow_html=True)
+
+                        # Description
                         if item.description:
                             st.markdown(item.description)
+
+                        # Acceptance Criteria as bullet list
                         if item.acceptance_criteria:
                             st.markdown("**Acceptance Criteria:**")
                             for ac in item.acceptance_criteria:
                                 st.markdown(f"- {ac}")
+
+                        # Technical Specs as bullet list
+                        if item.technical_specs:
+                            st.markdown("**Technical Specs:**")
+                            for ts in item.technical_specs:
+                                st.markdown(f"- {ts}")
+
+                        # Notes
                         if item.notes:
                             st.markdown(f"**Notes:** {item.notes}")
+
+                        # Tags as small gray pills
                         if item.tags:
                             tag_html = " ".join(
-                                f'<span style="background:#f3f4f6;color:#4b5563;padding:1px 8px;'
-                                f'border-radius:3px;font-size:11px;margin-right:2px;">{t}</span>'
+                                f'<span style="display:inline-flex;align-items:center;height:18px;'
+                                f"background:#f3f4f6;color:#4b5563;padding:1px 8px;"
+                                f'border-radius:4px;font-size:11px;margin-right:2px;">{t}</span>'
                                 for t in item.tags
                             )
                             st.markdown(f"**Tags:** {tag_html}", unsafe_allow_html=True)
+
+                        # Depends on
                         if item.depends_on:
                             st.markdown(f"**Depends on:** {', '.join(item.depends_on)}")
+
+                        # Footer row: Sprint / Created / Updated
                         detail_cols = st.columns(3)
                         with detail_cols[0]:
                             st.caption(f"Sprint: {item.sprint_target or 'Unplanned'}")
