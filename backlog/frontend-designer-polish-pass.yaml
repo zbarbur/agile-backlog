@@ -1,0 +1,21 @@
+title: Frontend designer polish pass
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Use the frontend-design skill for a final polish pass on the Mission
+  Control theme. Ensure the design is distinctive, not generic AI aesthetic. Refine
+  typography pairing, micro-interactions, spatial composition.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

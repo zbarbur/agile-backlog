@@ -1,0 +1,33 @@
+title: Backlog management mode
+status: backlog
+priority: P1
+category: feature
+sprint_target: 8
+created: 2026-03-21
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: "Dedicated view for backlog grooming \u2014 review, prioritize, stage items\
+  \ for next sprint"
+complexity: M
+technical_specs:
+- Add @ui.page('/backlog') or tab/toggle in kanban_page()
+- Use ui.table or card list for backlog items
+- Add sprint staging controls
+description: "A dedicated view for backlog grooming:\n1. Show only backlog items (no\
+  \ doing/done columns)\n2. Sort/group by priority, category, or sprint candidate\n\
+  3. Bulk actions \u2014 tag items for next sprint, change priority\n4. Review item\
+  \ details inline\n5. Stage items as sprint candidates (mark with sprint_target)\n\
+  6. Toggle between Kanban view and Backlog view"
+acceptance_criteria:
+- Toggle between Kanban view and Backlog view
+- Backlog view shows only backlog items in a list/table format
+- Sort by priority, category, or sprint candidate
+- Stage items for next sprint (set sprint_target)
+- Tests pass (pytest tests/ -v)
+test_plan:
+- 'Manual: verify backlog view renders and staging works'
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

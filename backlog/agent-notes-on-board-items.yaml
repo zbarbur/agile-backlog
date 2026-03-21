@@ -1,0 +1,31 @@
+title: Agent notes on board items
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add a notes/comments system on board items for human-to-agent communication:
+
+  1. Add a note with a text area in the card detail view
+
+  2. Flag a note for agent attention (e.g., a checkbox or tag)
+
+  3. Agent reads flagged notes via CLI (agile-backlog list --flagged or similar)
+
+  4. Agent acts on the note and marks it resolved
+
+  5. Notes history preserved in the YAML item
+
+  This enables async communication between human and AI agent via the board.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

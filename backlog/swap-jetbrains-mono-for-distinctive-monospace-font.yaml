@@ -1,0 +1,20 @@
+title: Swap JetBrains Mono for distinctive monospace font
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: JetBrains Mono is overused. Swap to IBM Plex Mono, Iosevka, or another
+  distinctive monospace font. Update Google Fonts import and all CSS references.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false

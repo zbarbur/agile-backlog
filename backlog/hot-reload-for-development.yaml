@@ -1,0 +1,25 @@
+title: Hot reload for development
+status: done
+priority: P2
+category: feature
+sprint_target: 8
+created: 2026-03-21
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: Enable hot reload so code changes reflect immediately without restart
+complexity: S
+technical_specs:
+- Set reload=True in ui.run() for dev mode
+- Add --reload flag to CLI serve command
+description: Enable NiceGUI hot reload so code changes reflect immediately in the
+  browser without manual restart. NiceGUI supports reload=True in ui.run().
+acceptance_criteria:
+- Changing src/app.py auto-reloads the board in browser
+- No manual restart needed during development
+test_plan:
+- 'Manual: change a label in app.py, verify browser updates'
+notes: ''
+phase: build
+design_reviewed: false
+code_reviewed: false
