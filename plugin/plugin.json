@@ -1,0 +1,7 @@
+{
+  "name": "agile-backlog",
+  "version": "0.1.0",
+  "description": "Kanban board management for agentic development. List, add, move, and show backlog items.",
+  "commands": "commands",
+  "skills": "skills"
+}
