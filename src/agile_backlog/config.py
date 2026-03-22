@@ -6,7 +6,7 @@ import yaml
 
 
 def _config_path() -> Path:
-    from src.yaml_store import _git_root
+    from agile_backlog.yaml_store import _git_root
 
     return _git_root() / ".agile-backlog.yaml"
 

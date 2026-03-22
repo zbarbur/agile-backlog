@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backlog View Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #222632;
+    --border: #2a2e3a;
+    --text: #e2e4ea;
+    --text-muted: #8b8fa3;
+    --accent: #6c7bf0;
+
+    --p1: #f87171;
+    --p2: #fbbf24;
+    --p3: #6b7280;
+
+    --cat-bug: #f87171;
+    --cat-feature: #6c7bf0;
+    --cat-docs: #34d399;
+    --cat-chore: #a78bfa;
+
+    --tag-ui: #f472b6;
+    --tag-cli: #38bdf8;
+    --tag-packaging: #fb923c;
+    --tag-planning: #a78bfa;
+    --tag-data: #34d399;
+    --tag-comments: #fbbf24;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    padding: 40px;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 64px;
+  }
+
+  /* ─── SECTION HEADER (shared) ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-header:hover { background: var(--surface-hover); }
+
+  .section-title {
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .section-count {
+    background: var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .chevron {
+    color: var(--text-muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+
+  /* ─── OPTION A: STYLED TABLE ─── */
+  .styled-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+
+  .styled-table th {
+    background: #14161e;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .styled-table td {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid #1e2130;
+    vertical-align: middle;
+  }
+
+  .styled-table tr:hover td {
+    background: var(--surface-hover);
+  }
+
+  .styled-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .styled-table .pri-cell {
+    width: 36px;
+    text-align: center;
+  }
+
+  .pri-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .pri-dot.p1 { background: var(--p1); box-shadow: 0 0 6px var(--p1); }
+  .pri-dot.p2 { background: var(--p2); }
+  .pri-dot.p3 { background: var(--p3); }
+
+  .cat-pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    display: inline-block;
+  }
+
+  .cat-pill.bug { background: rgba(248,113,113,0.15); color: var(--cat-bug); }
+  .cat-pill.feature { background: rgba(108,123,240,0.15); color: var(--cat-feature); }
+  .cat-pill.docs { background: rgba(52,211,153,0.15); color: var(--cat-docs); }
+  .cat-pill.chore { background: rgba(167,139,250,0.15); color: var(--cat-chore); }
+
+  .tag-chip {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    display: inline-block;
+    margin-right: 4px;
+    border: 1px solid;
+  }
+
+  .tag-chip.ui { border-color: rgba(244,114,182,0.4); color: var(--tag-ui); }
+  .tag-chip.cli { border-color: rgba(56,189,248,0.4); color: var(--tag-cli); }
+  .tag-chip.packaging { border-color: rgba(251,146,60,0.4); color: var(--tag-packaging); }
+  .tag-chip.planning { border-color: rgba(167,139,250,0.4); color: var(--tag-planning); }
+  .tag-chip.data { border-color: rgba(52,211,153,0.4); color: var(--tag-data); }
+  .tag-chip.comments { border-color: rgba(251,191,36,0.4); color: var(--tag-comments); }
+
+  .comment-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    color: #fff;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    display: inline-block;
+  }
+
+  .comment-badge.red { background: var(--p1); }
+  .comment-badge.blue { background: #3b82f6; }
+
+  .complexity-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .title-cell {
+    font-weight: 500;
+  }
+
+  .meta-muted {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ─── OPTION B: CARD LIST ─── */
+  .card-list {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+
+  .card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #1e2130;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .card-row:hover {
+    background: var(--surface-hover);
+  }
+
+  .card-row:last-child {
+    border-bottom: none;
+  }
+
+  .card-pri-bar {
+    width: 3px;
+    height: 32px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .card-pri-bar.p1 { background: var(--p1); }
+  .card-pri-bar.p2 { background: var(--p2); }
+  .card-pri-bar.p3 { background: transparent; }
+
+  .card-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ─── LABEL ─── */
+  .option-label {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+
+  .option-label.a { background: rgba(108,123,240,0.15); color: var(--accent); }
+  .option-label.b { background: rgba(52,211,153,0.15); color: var(--cat-docs); }
+</style>
+</head>
+<body>
+
+<h1>Backlog View — Two Options</h1>
+<p class="subtitle">Same data, different presentation. Which feels right?</p>
+
+<div class="comparison">
+
+  <!-- ═══ OPTION A: POLISHED TABLE ═══ -->
+  <div>
+    <span class="option-label a">Option A — Polished Table</span>
+    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+      Structured columns. Information-dense. Every field has its place. Like Azure DevOps or a refined spreadsheet.
+    </p>
+
+    <div class="section-header">
+      <span class="chevron">&#9660;</span>
+      <span class="section-title">Backlog</span>
+      <span class="section-count">6</span>
+    </div>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th class="pri-cell"></th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Tags</th>
+          <th style="width:50px"></th>
+          <th>Cpx</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p2"></span></td>
+          <td class="title-cell">Drag-and-drop between columns</td>
+          <td><span class="cat-pill feature">feature</span></td>
+          <td><span class="tag-chip ui">ui</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p2"></span></td>
+          <td class="title-cell">Expand priority levels — add P0 and P4</td>
+          <td><span class="cat-pill feature">feature</span></td>
+          <td><span class="tag-chip planning">planning</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p2"></span></td>
+          <td class="title-cell">show done checkbox doesn't make sense</td>
+          <td><span class="cat-pill bug">bug</span></td>
+          <td><span class="tag-chip ui">ui</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p2"></span></td>
+          <td class="title-cell">GitHub Actions CI workflow</td>
+          <td><span class="cat-pill chore">chore</span></td>
+          <td><span class="tag-chip packaging">packaging</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p3"></span></td>
+          <td class="title-cell">YAML schema — convert to JSON Schema</td>
+          <td><span class="cat-pill chore">chore</span></td>
+          <td><span class="tag-chip data">data</span></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p3"></span></td>
+          <td class="title-cell">Paste image when creating/editing items</td>
+          <td><span class="cat-pill feature">feature</span></td>
+          <td><span class="tag-chip ui">ui</span></td>
+          <td><span class="comment-badge red">1</span></td>
+          <td><span class="complexity-badge">S</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="height: 24px;"></div>
+
+    <div class="section-header">
+      <span class="chevron">&#9660;</span>
+      <span class="section-title">vNext — Sprint 15</span>
+      <span class="section-count">2</span>
+    </div>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th class="pri-cell"></th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Tags</th>
+          <th style="width:50px"></th>
+          <th>Cpx</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p1"></span></td>
+          <td class="title-cell">Bundled Claude plugin — ship sprint skills</td>
+          <td><span class="cat-pill feature">feature</span></td>
+          <td><span class="tag-chip cli">cli</span> <span class="tag-chip planning">planning</span></td>
+          <td><span class="comment-badge blue">1</span></td>
+          <td><span class="complexity-badge">L</span></td>
+        </tr>
+        <tr>
+          <td class="pri-cell"><span class="pri-dot p2"></span></td>
+          <td class="title-cell">CLI documentation — command reference</td>
+          <td><span class="cat-pill docs">docs</span></td>
+          <td><span class="tag-chip cli">cli</span></td>
+          <td></td>
+          <td><span class="complexity-badge">M</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ OPTION B: CARD LIST ═══ -->
+  <div>
+    <span class="option-label b">Option B — Card List</span>
+    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+      Compact cards in a list. Priority bar on the left, meta underneath. Like Linear or Notion. Feels more modern, less spreadsheet.
+    </p>
+
+    <div class="section-header">
+      <span class="chevron">&#9660;</span>
+      <span class="section-title">Backlog</span>
+      <span class="section-count">6</span>
+    </div>
+    <div class="card-list">
+      <div class="card-row">
+        <div class="card-pri-bar p2"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">Drag-and-drop between columns</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill feature">feature</span>
+            <span class="tag-chip ui">ui</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p2"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">Expand priority levels — add P0 and P4</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill feature">feature</span>
+            <span class="tag-chip planning">planning</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p2"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">show done checkbox doesn't make sense</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill bug">bug</span>
+            <span class="tag-chip ui">ui</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p2"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">GitHub Actions CI workflow</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill chore">chore</span>
+            <span class="tag-chip packaging">packaging</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p3"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">YAML schema — convert to JSON Schema</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill chore">chore</span>
+            <span class="tag-chip data">data</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p3"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">Paste image when creating/editing items</span>
+            <span class="comment-badge red">1</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill feature">feature</span>
+            <span class="tag-chip ui">ui</span>
+            <span class="complexity-badge">S</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+    </div>
+
+    <div style="height: 24px;"></div>
+
+    <div class="section-header">
+      <span class="chevron">&#9660;</span>
+      <span class="section-title">vNext — Sprint 15</span>
+      <span class="section-count">2</span>
+    </div>
+    <div class="card-list">
+      <div class="card-row">
+        <div class="card-pri-bar p1"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">Bundled Claude plugin — ship sprint skills</span>
+            <span class="comment-badge blue">1</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill feature">feature</span>
+            <span class="tag-chip cli">cli</span>
+            <span class="tag-chip planning">planning</span>
+            <span class="complexity-badge">L</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+
+      <div class="card-row">
+        <div class="card-pri-bar p2"></div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <span class="card-title">CLI documentation — command reference</span>
+          </div>
+          <div class="card-meta-row">
+            <span class="cat-pill docs">docs</span>
+            <span class="tag-chip cli">cli</span>
+            <span class="complexity-badge">M</span>
+          </div>
+        </div>
+        <div class="card-right"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -22,8 +22,8 @@ class BacklogItem(BaseModel):
     id: str
     title: str
     status: Literal["backlog", "doing", "done"] = "backlog"
-    priority: Literal["P1", "P2", "P3"]
-    category: str
+    priority: Literal["P0", "P1", "P2", "P3", "P4"]
+    category: Literal["bug", "feature", "docs", "chore"]
     sprint_target: int | None = None
     created: date = Field(default_factory=date.today)
     updated: date = Field(default_factory=date.today)
@@ -39,7 +39,7 @@ class BacklogItem(BaseModel):
     phase: Literal["plan", "spec", "build", "review"] | None = None
     design_reviewed: bool = False
     code_reviewed: bool = False
-    agent_notes: list[dict] = Field(default_factory=list)
+    comments: list[dict] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -58,6 +58,49 @@ class BacklogItem(BaseModel):
                     "testing": "review",
                 }
                 data["phase"] = phase_map.get(old_phase, "plan")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_old_categories(cls, data: dict) -> dict:
+        """Migrate old category values to the new 4-value enum."""
+        if not isinstance(data, dict):
+            return data
+        cat = data.get("category", "")
+        tags = list(data.get("tags", []))
+        migration_map = {
+            "infra": ("chore", "infra"),
+            "tech-debt": ("chore", "tech-debt"),
+            "security": ("feature", "security"),
+        }
+        if cat in migration_map:
+            new_cat, tag = migration_map[cat]
+            data["category"] = new_cat
+            if tag not in tags:
+                tags.append(tag)
+            data["tags"] = tags
+        elif cat not in ("bug", "feature", "docs", "chore"):
+            data["category"] = "chore"
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_agent_notes_to_comments(cls, data: dict) -> dict:
+        """Migrate old agent_notes field to comments."""
+        if not isinstance(data, dict):
+            return data
+        if "agent_notes" in data and "comments" not in data:
+            data["comments"] = data.pop("agent_notes")
+        elif "agent_notes" in data:
+            data.pop("agent_notes")
+        return data
+
+    def to_dict(self) -> dict:
+        """Return dict with all fields, dates serialized to ISO strings."""
+        data = self.model_dump()
+        for key in ("created", "updated"):
+            if isinstance(data.get(key), date):
+                data[key] = data[key].isoformat()
         return data
 
     def to_yaml_dict(self) -> dict:

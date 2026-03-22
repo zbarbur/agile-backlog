@@ -1,20 +1,31 @@
 title: show done checkbox doesn't make sense
-status: backlog
+status: done
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 15
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Replace show-done checkbox with archive-done feature that moves completed items
+  out of the board after a configurable period
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 remove done_check checkbox, add time-based\
+  \ filtering for done column, add archive toggle"
+- "File: src/agile_backlog/models.py \u2014 ensure done_date or updated field is available\
+  \ for age calculation"
 description: The items in done are already done, what would this checkbox really purpose?
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Show-done checkbox removed from board view
+- Done items auto-hide from board after N days (configurable, default 7)
+- Archive toggle or section shows older done items on demand
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'tests/test_app.py: done items older than N days hidden, archive toggle shows them'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+comments: []

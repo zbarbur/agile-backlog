@@ -1,0 +1,21 @@
+title: "CLI batch add \u2014 import multiple items from YAML/JSON file"
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Support agile-backlog add --from-file items.yaml to create multiple items
+  at once. Useful for bulk backlog creation and migration.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

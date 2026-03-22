@@ -1,12 +1,13 @@
 title: Split CLI and UI dependencies
 status: backlog
 priority: P3
-category: infra
+category: chore
 sprint_target: null
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
-tags: []
+tags:
+- infra
 goal: ''
 complexity: null
 technical_specs: []
@@ -18,3 +19,4 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
+comments: []

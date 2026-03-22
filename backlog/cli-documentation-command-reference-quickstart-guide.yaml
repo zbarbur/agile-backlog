@@ -1,0 +1,23 @@
+title: "CLI documentation \u2014 command reference + quickstart guide"
+status: backlog
+priority: P2
+category: docs
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Create user-facing documentation for the agile-backlog CLI. Include:
+  install instructions (git + future PyPI), quickstart guide (init project, create
+  first item, basic workflow), full command reference with examples. Can auto-generate
+  from Click decorators.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

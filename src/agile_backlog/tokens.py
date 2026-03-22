@@ -1,0 +1,28 @@
+"""Design tokens for agile-backlog — Mission Control dark theme."""
+
+# Category colors: (text_color, bg_color) — dark theme
+CATEGORY_STYLES: dict[str, tuple[str, str]] = {
+    "bug": ("#f472b6", "rgba(244,114,182,0.08)"),
+    "feature": ("#60a5fa", "rgba(59,130,246,0.08)"),
+    "docs": ("#34d399", "rgba(52,211,153,0.08)"),
+    "chore": ("#a78bfa", "rgba(167,139,250,0.08)"),
+}
+
+# Priority colors: (text_color, bg_color)
+PRIORITY_COLORS: dict[str, tuple[str, str]] = {
+    "P0": ("#ef4444", "rgba(239,68,68,0.10)"),
+    "P1": ("#f87171", "rgba(248,113,113,0.10)"),
+    "P2": ("#fbbf24", "rgba(251,191,36,0.10)"),
+    "P3": ("#6b7280", "rgba(107,114,128,0.08)"),
+    "P4": ("#4b5563", "rgba(75,85,99,0.08)"),
+}
+
+# Priority ordering for range filters
+PRIORITY_ORDER: dict[str, int] = {"P0": 0, "P1": 1, "P2": 2, "P3": 3, "P4": 4}
+
+# Column background tints
+COLUMN_BG: dict[str, str] = {
+    "backlog": "#111116",
+    "doing": "#14130e",
+    "done": "#0f1210",
+}

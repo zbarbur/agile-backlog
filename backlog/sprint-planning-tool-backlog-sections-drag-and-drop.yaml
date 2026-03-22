@@ -1,15 +1,28 @@
 title: "Sprint planning tool \u2014 backlog sections + drag-and-drop"
-status: doing
+status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 15
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: 'Replace backlog table with card-list planning view: 3 sections, side panel,
+  chat comments, data model migration (categories, P0-P4 priorities, tags, comments
+  rename)'
+complexity: L
+technical_specs:
+- "File: src/agile_backlog/models.py \u2014 category Literal enum, priority P0-P4,\
+  \ agent_notes\u2192comments rename, model validators for migration"
+- "File: src/agile_backlog/tokens.py \u2014 P0/P4 colors+order, chore category style,\
+  \ fix fallback color"
+- "File: src/agile_backlog/app.py \u2014 new backlog view with 3 sections, card rows,\
+  \ side panel, chat comments, move-to buttons"
+- "File: src/agile_backlog/cli.py \u2014 updated enums, comments field, --tags filter,\
+  \ migrate command"
+- "File: src/agile_backlog/schema.yaml \u2014 updated enums, comments field docs"
+- "File: tests/ \u2014 tests for group_items_by_section, render_backlog_card_html,\
+  \ render_comment_html, migration validators"
 description: 'Dedicated sprint planning feature combining:
 
   1. Backlog view sections: Backlog (unplanned), Next Sprint (N+1), Future (N+2+)
@@ -21,13 +34,35 @@ description: 'Dedicated sprint planning feature combining:
   4. Ties together with drag-and-drop backlog item
 
   5. Requires brainstorming session for UX design'
-acceptance_criteria: []
-test_plan: []
-notes: ''
-phase: plan
+acceptance_criteria:
+- Old YAML files with agent_notes, infra, tech-debt load without error (model validators)
+- Backlog view shows three collapsible sections (Backlog/vNext/vFuture) with correct
+  items
+- Move-to buttons move items between sections and update sprint_target
+- Filtering works on Backlog section only (priority, category, tags, search)
+- Side panel opens with all fields, edit button, and chat comments
+- Chat comments display with flag/resolve, new comment input works
+- P0-P4 priority levels render correctly with spec colors
+- Category enum enforced (bug/feature/docs/chore) with migration validator
+- CLI category/priority enums updated, note/flagged commands use comments field
+- CLI list --tags filter works
+- Migration CLI command works with dry-run mode
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- "tests/test_models.py: category migration validator, priority P0-P4, agent_notes\u2192\
+  comments migration"
+- 'tests/test_app.py: group_items_by_section, render_backlog_card_html, render_comment_html,
+  comment_thread_html'
+- 'tests/test_cli.py: --tags filter, migrate command dry-run'
+notes: "Spec: docs/superpowers/specs/2026-03-22-backlog-view-redesign.md \u2014 covers\
+  \ Phase 1 (card list, sections, side panel, chat comments, data model changes) and\
+  \ Phase 2 (drag-and-drop, inline editing). Next step: write Phase 1 implementation\
+  \ plan."
+phase: spec
 design_reviewed: false
 code_reviewed: false
-agent_notes:
+comments:
 - text: Perform a research on on backlog grooming and sprint planning best practices
     and what are the best ways to visualize, consider also the automatic AI tagging
     capabilities and AI effort scoping capabilities to make this a strong feature

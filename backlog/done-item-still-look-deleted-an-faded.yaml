@@ -1,0 +1,21 @@
+title: done item still look deleted an faded
+status: done
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: although there was a bug about it , but it was closed without a fix,
+  how did that happen ?
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

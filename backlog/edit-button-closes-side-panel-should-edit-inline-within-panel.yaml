@@ -1,0 +1,24 @@
+title: "Edit button closes side panel \u2014 should edit inline within panel"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Clicking Edit in the side panel closes the panel and opens a separate\
+  \ dialog. Instead, the panel should switch to edit mode inline \u2014 fields become\
+  \ editable inputs within the same panel. This avoids context loss and aligns with\
+  \ the Phase 2 click-to-edit spec, but even Phase 1 should keep the panel open with\
+  \ the edit dialog overlaid or embedded."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

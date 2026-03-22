@@ -4,6 +4,18 @@ All notable changes to agile-backlog will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.0] - 2026-03-22
+### Changed
+- Package renamed from `src` to `agile_backlog` for proper Python packaging
+- All imports now use `from agile_backlog import ...`
+- Version is now dynamic (single source of truth in `__init__.py`)
+
+### Added
+- `py.typed` marker for type checker support
+- Public API exports in `__init__.py` (`BacklogItem`, `load_all`, `load_item`, `save_item`)
+- `CHANGELOG.md`
+- `[build-system]` table in `pyproject.toml`
+
 ## [0.2.0] - 2026-03-21
 
 ### Added

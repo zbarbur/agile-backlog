@@ -1,0 +1,23 @@
+title: "Comments need chat-style layout \u2014 user right, agent left"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Comments currently all render left-aligned in the same style. Need a
+  proper chat layout: user messages aligned right (like iMessage/WhatsApp blue bubbles),
+  agent messages aligned left (gray bubbles). Different background colors per author.
+  This makes the conversation flow clear at a glance.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

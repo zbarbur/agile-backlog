@@ -1,0 +1,28 @@
+title: "Backlog view header needs design overhaul \u2014 sprint badge, filters, chips\
+  \ look odd"
+status: done
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Several header issues in backlog view: (1) Sprint badge shows 'Sprint\
+  \ 13' which is wrong and irrelevant in backlog view \u2014 remove or show current\
+  \ sprint contextually. (2) Filter dropdowns (Priority, Category, Sprint, Phase,\
+  \ Tags) and search bar look misaligned and unstyled \u2014 need consistent spacing,\
+  \ sizing, and dark-theme styling. (3) Active filter chips below the filter row look\
+  \ disconnected. (4) 'Show archived' toggle belongs on Board view only, not backlog.\
+  \ Need a proper design pass following established filter/header patterns (e.g. Linear,\
+  \ Notion, GitHub Projects)."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

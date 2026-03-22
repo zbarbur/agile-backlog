@@ -1,15 +1,25 @@
 title: 'Bug: Comment badge counts total instead of unresolved flagged'
-status: doing
+status: done
 priority: P1
 category: bug
-sprint_target: null
+sprint_target: 14
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix comment badge to show unresolved flagged count (red) instead of total count
+  (blue)
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 function _render_card (line ~424): lines\
+  \ 475\u2013487 compute comment_count and badge_html. Add flagged_count = sum(1 for\
+  \ n in item.agent_notes if n.get('flagged') and not n.get('resolved')). Change badge\
+  \ condition: if flagged_count > 0, show red (#f87171 background) badge with flagged_count;\
+  \ elif comment_count > 0, show blue (#3b82f6 background) badge with comment_count;\
+  \ else no badge."
+- "File: tests/test_app.py \u2014 add unit tests for badge HTML generation. Extract\
+  \ badge logic into a pure helper function _comment_badge_html(agent_notes: list[dict])\
+  \ -> str in app.py so it can be tested in isolation without a NiceGUI context."
 description: 'Badge shows total comment count (blue 3) instead of unresolved flagged
   count (red 1). Logic should be:
 
@@ -21,10 +31,18 @@ description: 'Badge shows total comment count (blue 3) instead of unresolved fla
 
   Also: agent reply should auto-resolve the original flagged comment, or agent should
   explicitly resolve via CLI.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Red badge shows count of unresolved+flagged comments only
+- Blue badge shows total comment count when no unresolved flagged exist
+- No badge shown when item has zero comments
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'tests/test_app.py: test badge shows red count for unresolved flagged'
+- 'tests/test_app.py: test badge shows blue count when no unresolved flagged'
+- 'tests/test_app.py: test no badge when zero comments'
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+comments: []

@@ -1,0 +1,24 @@
+title: "Slash command /check-comments \u2014 surface new flagged comments mid-session"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add a /check-comments slash command that runs agile-backlog flagged
+  and surfaces new unresolved flagged comments to the agent mid-session. Allows user
+  to write a comment in the board UI and immediately get the agent''s attention without
+  starting a new session. Future enhancement: PreToolUse hook that auto-checks on
+  every tool use for near-real-time notification.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

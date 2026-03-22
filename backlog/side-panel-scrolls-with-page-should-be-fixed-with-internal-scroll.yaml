@@ -1,0 +1,23 @@
+title: "Side panel scrolls with page \u2014 should be fixed with internal scroll"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The side panel (detail view) scrolls with the page instead of being fixed
+  in position with its own internal scroll. When scrolling the backlog list, the panel
+  content moves off-screen. The panel should be position:fixed (or sticky) with overflow-y:auto
+  for its own scrollable content area.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -1,10 +1,12 @@
+import json
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
-from src.cli import main
+from agile_backlog.cli import main
 
 
 @pytest.fixture()
@@ -16,7 +18,7 @@ def backlog_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture(autouse=True)
 def _patch_backlog_dir(backlog_dir: Path):
-    with patch("src.yaml_store.get_backlog_dir", return_value=backlog_dir):
+    with patch("agile_backlog.yaml_store.get_backlog_dir", return_value=backlog_dir):
         yield
 
 
@@ -27,7 +29,7 @@ def runner() -> CliRunner:
 
 class TestAdd:
     def test_add_basic(self, runner: CliRunner, backlog_dir: Path):
-        result = runner.invoke(main, ["add", "Fix auth leak", "--priority", "P1", "--category", "security"])
+        result = runner.invoke(main, ["add", "Fix auth leak", "--priority", "P1", "--category", "bug"])
         assert result.exit_code == 0
         assert "fix-auth-leak" in result.output
         assert (backlog_dir / "fix-auth-leak.yaml").exists()
@@ -85,10 +87,10 @@ class TestList:
         assert "chill" not in result.output
 
     def test_list_filter_by_category(self, runner: CliRunner):
-        runner.invoke(main, ["add", "Sec item", "--category", "security"])
+        runner.invoke(main, ["add", "Feature item", "--category", "feature"])
         runner.invoke(main, ["add", "Doc item", "--category", "docs"])
-        result = runner.invoke(main, ["list", "--category", "security"])
-        assert "sec-item" in result.output
+        result = runner.invoke(main, ["list", "--category", "feature"])
+        assert "feature-item" in result.output
         assert "doc-item" not in result.output
 
     def test_list_filter_by_sprint(self, runner: CliRunner):
@@ -142,12 +144,12 @@ class TestMove:
 
 class TestShow:
     def test_show_item(self, runner: CliRunner):
-        runner.invoke(main, ["add", "Task A", "--priority", "P1", "--category", "security"])
+        runner.invoke(main, ["add", "Task A", "--priority", "P1", "--category", "bug"])
         result = runner.invoke(main, ["show", "task-a"])
         assert result.exit_code == 0
         assert "Task A" in result.output
         assert "P1" in result.output
-        assert "security" in result.output
+        assert "bug" in result.output
 
     def test_show_nonexistent(self, runner: CliRunner):
         result = runner.invoke(main, ["show", "nope"])
@@ -233,10 +235,119 @@ class TestServe:
     def test_serve_calls_run_app(self, runner: CliRunner, monkeypatch):
         """Verify serve calls run_app with correct defaults."""
         calls = []
-        monkeypatch.setattr("src.app.run_app", lambda **kw: calls.append(kw))
+        monkeypatch.setattr("agile_backlog.app.run_app", lambda **kw: calls.append(kw))
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
         assert len(calls) == 1
         assert calls[0]["host"] == "127.0.0.1"
         assert calls[0]["port"] == 8501
         assert calls[0]["reload"] is True
+
+
+class TestJsonOutput:
+    def test_list_json(self, backlog_dir):
+        """list --json returns valid JSON array with all fields."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        result = runner.invoke(main, ["list", "--json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert "title" in data[0]
+        assert "priority" in data[0]
+        assert "comments" in data[0]  # ALL fields present
+
+    def test_show_json(self, backlog_dir):
+        """show --json returns valid JSON object with all fields."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        result = runner.invoke(main, ["show", "--json", "test-item"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, dict)
+        assert data["title"] == "Test Item"
+        assert "acceptance_criteria" in data
+
+    def test_flagged_json(self, backlog_dir):
+        """flagged --json returns valid JSON."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        runner.invoke(main, ["note", "test-item", "check this", "--flag"])
+        result = runner.invoke(main, ["flagged", "--json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, list)
+        assert len(data) == 1
+
+
+class TestMigrate:
+    def test_migrate_dry_run(self, runner, backlog_dir):
+        (backlog_dir / "old.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "Old Item",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "infra",
+                    "agent_notes": [{"text": "note", "flagged": False, "resolved": False}],
+                }
+            )
+        )
+        result = runner.invoke(main, ["migrate", "--dry-run"])
+        assert result.exit_code == 0
+        assert "old" in result.output
+        assert "category: infra" in result.output
+        assert "agent_notes" in result.output
+        # Verify file was NOT modified
+        raw = yaml.safe_load((backlog_dir / "old.yaml").read_text())
+        assert raw["category"] == "infra"
+
+    def test_migrate_applies_changes(self, runner, backlog_dir):
+        (backlog_dir / "old.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "Old Item",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "tech-debt",
+                    "agent_notes": [{"text": "note", "flagged": False, "resolved": False}],
+                }
+            )
+        )
+        result = runner.invoke(main, ["migrate"])
+        assert result.exit_code == 0
+        # Verify file WAS modified
+        raw = yaml.safe_load((backlog_dir / "old.yaml").read_text())
+        assert raw["category"] == "chore"
+        assert "comments" in raw
+        assert "agent_notes" not in raw
+
+
+class TestTagsFilter:
+    def test_list_filter_by_tag(self, runner, backlog_dir):
+        (backlog_dir / "a.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "A",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "feature",
+                    "tags": ["ui", "planning"],
+                }
+            )
+        )
+        (backlog_dir / "b.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "B",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "feature",
+                    "tags": ["cli"],
+                }
+            )
+        )
+        result = runner.invoke(main, ["list", "--tags", "ui"])
+        assert "A" in result.output
+        assert "B" not in result.output

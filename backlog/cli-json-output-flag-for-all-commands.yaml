@@ -1,0 +1,45 @@
+title: CLI --json output flag for all commands
+status: done
+priority: P2
+category: feature
+sprint_target: 14
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: Add --json flag to CLI commands for programmatic/agent-friendly output
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 add @click.option('--json', 'output_json',\
+  \ is_flag=True) to list_items(), show(), and flagged() commands; each command checks\
+  \ output_json and calls json.dumps() on item data instead of click.echo() formatted\
+  \ strings"
+- "File: src/agile_backlog/models.py \u2014 add to_dict() method on BacklogItem that\
+  \ calls self.model_dump() and serializes date fields to ISO strings; used by all\
+  \ three JSON-output commands"
+- "File: tests/test_cli.py \u2014 add TestJsonOutput class with test_list_json(),\
+  \ test_show_json(), test_flagged_json() methods using CliRunner and json.loads()\
+  \ to assert output is valid JSON with expected fields"
+description: Add --json flag to list, show, and other commands. Returns full item
+  data as JSON instead of truncated table. Enables programmatic use by agents and
+  scripts. One call to get all fields (phase, sprint, complexity, acceptance criteria,
+  etc.) instead of multiple show commands.
+acceptance_criteria:
+- list --json outputs full item data as JSON array
+- show --json outputs single item as JSON object
+- flagged --json outputs flagged items as JSON
+- JSON output includes ALL fields (not truncated like table)
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'tests/test_cli.py: test list --json returns valid JSON array with all BacklogItem
+  fields present'
+- 'tests/test_cli.py: test show --json returns valid JSON object with all fields including
+  acceptance_criteria, technical_specs, test_plan, agent_notes'
+- 'tests/test_cli.py: test flagged --json returns valid JSON array containing only
+  items with unresolved flagged notes'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from src.models import BacklogItem
-from src.yaml_store import item_exists, load_all, load_item, save_item
+from agile_backlog.models import BacklogItem
+from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def backlog_dir(tmp_path: Path) -> Path:
 @pytest.fixture(autouse=True)
 def _patch_backlog_dir(backlog_dir: Path):
     """Patch get_backlog_dir to return the tmp backlog dir."""
-    with patch("src.yaml_store.get_backlog_dir", return_value=backlog_dir):
+    with patch("agile_backlog.yaml_store.get_backlog_dir", return_value=backlog_dir):
         yield
 
 

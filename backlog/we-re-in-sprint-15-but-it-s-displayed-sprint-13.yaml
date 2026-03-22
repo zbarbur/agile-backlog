@@ -1,0 +1,20 @@
+title: we're in sprint 15, but it's displayed sprint 13
+status: done
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: the UI is not really updated with current sprint
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

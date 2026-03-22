@@ -1,0 +1,24 @@
+title: "Package restructure \u2014 proper Python packaging for portability"
+status: done
+priority: P1
+category: chore
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags:
+- tech-debt
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Restructure src/ to src/agile_backlog/ for proper Python packaging.
+  Fix all imports, update pyproject.toml, add __version__, py.typed, CHANGELOG.md.
+  Enables: pip install from git, library imports (from agile_backlog import ...),
+  future PyPI publishing.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+comments: []

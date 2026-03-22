@@ -1,0 +1,23 @@
+title: "GitHub Actions CI workflow \u2014 lint, test, format check"
+status: backlog
+priority: P2
+category: chore
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags:
+- infra
+goal: ''
+complexity: null
+technical_specs: []
+description: Add .github/workflows/ci.yml that runs ruff check, ruff format --check,
+  and pytest on push/PR. Ensures quality gate for contributions and validates package
+  installs correctly.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

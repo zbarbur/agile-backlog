@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from src.models import BacklogItem, slugify
+from agile_backlog.models import BacklogItem, slugify
 
 
 class TestSlugify:
@@ -61,7 +61,15 @@ class TestBacklogItem:
 
     def test_invalid_priority_rejected(self):
         with pytest.raises(ValueError):
-            BacklogItem(id="bad", title="Bad", priority="P0", category="x")
+            BacklogItem(id="bad", title="Bad", priority="P5", category="x")
+
+    def test_p0_priority_valid(self):
+        item = BacklogItem(id="x", title="x", priority="P0", category="bug")
+        assert item.priority == "P0"
+
+    def test_p4_priority_valid(self):
+        item = BacklogItem(id="x", title="x", priority="P4", category="bug")
+        assert item.priority == "P4"
 
 
 class TestPhaseField:
@@ -125,14 +133,73 @@ class TestTaskDefinitionFields:
 class TestAgentNotes:
     def test_agent_notes_default_empty(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
-        assert item.agent_notes == []
+        assert item.comments == []
 
     def test_agent_notes_round_trip(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
         note = {"text": "Focus on filters first", "flagged": True, "resolved": False, "created": "2026-03-22"}
-        item.agent_notes.append(note)
+        item.comments.append(note)
         d = item.to_yaml_dict()
-        assert d["agent_notes"] == [note]
+        assert d["comments"] == [note]
+
+
+class TestCommentsField:
+    def test_comments_field_exists(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="bug")
+        assert item.comments == []
+
+    def test_comments_field_populated(self):
+        item = BacklogItem(
+            id="x",
+            title="x",
+            priority="P2",
+            category="bug",
+            comments=[{"text": "hello", "flagged": False, "resolved": False}],
+        )
+        assert len(item.comments) == 1
+
+    def test_agent_notes_migrates_to_comments(self):
+        """Old YAML files with agent_notes key should load into comments field."""
+        item = BacklogItem(
+            id="x",
+            title="x",
+            priority="P2",
+            category="bug",
+            agent_notes=[{"text": "old note", "flagged": True, "resolved": False}],
+        )
+        assert len(item.comments) == 1
+        assert item.comments[0]["text"] == "old note"
+
+
+class TestCategoryMigration:
+    def test_valid_categories(self):
+        for cat in ("bug", "feature", "docs", "chore"):
+            item = BacklogItem(id="x", title="x", priority="P2", category=cat)
+            assert item.category == cat
+
+    def test_infra_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="infra")
+        assert item.category == "chore"
+        assert "infra" in item.tags
+
+    def test_tech_debt_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="tech-debt")
+        assert item.category == "chore"
+        assert "tech-debt" in item.tags
+
+    def test_security_migrates_to_feature(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="security")
+        assert item.category == "feature"
+        assert "security" in item.tags
+
+    def test_unknown_category_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="random-thing")
+        assert item.category == "chore"
+
+    def test_migration_does_not_duplicate_tags(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="infra", tags=["infra", "ci"])
+        assert item.category == "chore"
+        assert item.tags.count("infra") == 1
 
 
 class TestToYamlDict:

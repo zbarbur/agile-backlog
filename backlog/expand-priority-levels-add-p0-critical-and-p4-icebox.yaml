@@ -1,0 +1,30 @@
+title: "Expand priority levels \u2014 add P0 (critical) and P4 (icebox)"
+status: done
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add P0 and P4 to the priority enum. P0=drop everything (blocking/broken),
+  P4=icebox (acknowledged, not planned). Update: schema.yaml, models.py (BacklogItem
+  validation), tokens.py (priority colors/ordering), CLI (enum options), UI (board
+  rendering). Keep storage as P0-P4, show labels in UI. Don''t break existing P1-P3
+  items.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+comments:
+- text: Folded into sprint-planning-tool-backlog-sections-drag-and-drop for Sprint
+    15
+  flagged: false
+  resolved: false
+  created: '2026-03-22'
+  author: agent

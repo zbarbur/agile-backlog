@@ -1,7 +1,7 @@
 # agile-backlog — Project Rules
 
 > Lightweight Kanban board tool for agentic development.
-> Three interfaces: CLI, Streamlit web UI, Claude Code plugin.
+> Three interfaces: CLI, NiceGUI web UI, Claude Code plugin.
 > One data format: YAML files per backlog item, git-tracked.
 
 ## Project Brief
@@ -21,12 +21,11 @@ See `docs/superpowers/specs/2026-03-21-agile-backlog-tool-brief.md` for the full
 - **Lint:** `ruff check .`
 - **Format check:** `ruff format --check .`
 - **Full CI:** `ruff check . && ruff format --check . && pytest tests/ -v`
-- **Run Streamlit:** `streamlit run src/app.py`
-- **Run CLI:** `agile-backlog` (after pip install -e .)
+- **Run Web UI:** `agile-backlog serve`
+- **Run CLI:** `.venv/bin/agile-backlog` (venv not auto-activated in Claude Code sessions)
 
 ### Dependencies
-- `streamlit` — web UI
-- `streamlit-sortables` — drag-and-drop Kanban columns
+- `nicegui` — web UI
 - `pyyaml` — read/write YAML backlog items
 - `click` — CLI framework
 - `pydantic` — BacklogItem model validation

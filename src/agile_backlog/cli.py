@@ -1,11 +1,16 @@
 """Click CLI for agile-backlog."""
 
+import json
+import os
 from datetime import date
+from pathlib import Path
 
 import click
+import yaml
 
-from src.models import BacklogItem, slugify
-from src.yaml_store import item_exists, load_all, load_item, save_item
+import agile_backlog.yaml_store as _yaml_store
+from agile_backlog.models import BacklogItem, slugify
+from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
 
 @click.group()
@@ -15,8 +20,8 @@ def main():
 
 @main.command()
 @click.argument("title")
-@click.option("--priority", type=click.Choice(["P1", "P2", "P3"]), default="P2", help="Priority level.")
-@click.option("--category", required=True, help="Category tag (e.g., feature, security, docs).")
+@click.option("--priority", type=click.Choice(["P0", "P1", "P2", "P3", "P4"]), default="P2", help="Priority level.")
+@click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), required=True, help="Category.")
 @click.option("--description", default="", help="Item description.")
 @click.option("--sprint", "sprint_target", type=int, default=None, help="Target sprint number.")
 def add(title: str, priority: str, category: str, description: str, sprint_target: int | None):
@@ -44,10 +49,19 @@ def add(title: str, priority: str, category: str, description: str, sprint_targe
 
 @main.command("list")
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), default=None)
-@click.option("--priority", type=click.Choice(["P1", "P2", "P3"]), default=None)
-@click.option("--category", default=None)
+@click.option("--priority", type=click.Choice(["P0", "P1", "P2", "P3", "P4"]), default=None)
+@click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), default=None)
 @click.option("--sprint", "sprint_target", type=int, default=None)
-def list_items(status: str | None, priority: str | None, category: str | None, sprint_target: int | None):
+@click.option("--tags", multiple=True, help="Filter by tag (items matching ANY tag shown).")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def list_items(
+    status: str | None,
+    priority: str | None,
+    category: str | None,
+    sprint_target: int | None,
+    tags: tuple,
+    output_json: bool,
+):
     """List backlog items with optional filters."""
     items = load_all()
 
@@ -59,6 +73,12 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
         items = [i for i in items if i.category == category]
     if sprint_target is not None:
         items = [i for i in items if i.sprint_target == sprint_target]
+    if tags:
+        items = [i for i in items if set(tags) & set(i.tags)]
+
+    if output_json:
+        click.echo(json.dumps([item.to_dict() for item in items], indent=2))
+        return
 
     if not items:
         click.echo("No items found.")
@@ -97,12 +117,17 @@ def move(item_id: str, status: str, phase: str | None):
 
 @main.command()
 @click.argument("item_id")
-def show(item_id: str):
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def show(item_id: str, output_json: bool):
     """Show full details for a backlog item."""
     try:
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
+
+    if output_json:
+        click.echo(json.dumps(item.to_dict(), indent=2))
+        return
 
     click.echo(f"ID:          {item.id}")
     click.echo(f"Title:       {item.title}")
@@ -142,9 +167,9 @@ def show(item_id: str):
             click.echo(f"  - {tp}")
     if item.notes:
         click.echo(f"\nNotes:\n{item.notes}")
-    if item.agent_notes:
-        click.echo("\nAgent Notes:")
-        for n in item.agent_notes:
+    if item.comments:
+        click.echo("\nComments:")
+        for n in item.comments:
             flag_marker = " [FLAGGED]" if n.get("flagged") else ""
             resolved_marker = " [resolved]" if n.get("resolved") else ""
             click.echo(f"  - {n['text']} ({n['created']}){flag_marker}{resolved_marker}")
@@ -153,8 +178,8 @@ def show(item_id: str):
 @main.command()
 @click.argument("item_id")
 @click.option("--title", default=None)
-@click.option("--priority", type=click.Choice(["P1", "P2", "P3"]), default=None)
-@click.option("--category", default=None)
+@click.option("--priority", type=click.Choice(["P0", "P1", "P2", "P3", "P4"]), default=None)
+@click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), default=None)
 @click.option("--description", default=None)
 @click.option("--sprint", "sprint_target", type=int, default=None)
 @click.option("--goal", default=None)
@@ -190,7 +215,7 @@ def edit(item_id, resolve_notes: bool, **kwargs):
                 setattr(item, field, value)
 
     if resolve_notes:
-        for n in item.agent_notes:
+        for n in item.comments:
             if n.get("flagged"):
                 n["resolved"] = True
 
@@ -208,7 +233,7 @@ def note(item_id: str, text: str, flag: bool):
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
-    item.agent_notes.append(
+    item.comments.append(
         {
             "text": text,
             "flagged": flag,
@@ -222,16 +247,31 @@ def note(item_id: str, text: str, flag: bool):
 
 
 @main.command()
-def flagged():
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def flagged(output_json: bool):
     """List items with unresolved flagged notes."""
     items = load_all()
-    flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.agent_notes)]
+    flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.comments)]
+
+    if output_json:
+        result = [
+            {
+                "id": item.id,
+                "title": item.title,
+                "status": item.status,
+                "flagged_notes": [n for n in item.comments if n.get("flagged") and not n.get("resolved")],
+            }
+            for item in flagged_items
+        ]
+        click.echo(json.dumps(result, indent=2))
+        return
+
     if not flagged_items:
         click.echo("No flagged notes.")
         return
     for item in flagged_items:
         click.echo(f"\n{item.id} ({item.status}):")
-        for n in item.agent_notes:
+        for n in item.comments:
             if n.get("flagged") and not n.get("resolved"):
                 click.echo(f"  🚩 {n['text']} ({n['created']})")
 
@@ -245,9 +285,9 @@ def resolve_note(item_id: str, note_index: int):
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
-    if note_index < 0 or note_index >= len(item.agent_notes):
-        raise SystemExit(f"Error: note index {note_index} out of range (item has {len(item.agent_notes)} notes).")
-    item.agent_notes[note_index]["resolved"] = True
+    if note_index < 0 or note_index >= len(item.comments):
+        raise SystemExit(f"Error: note index {note_index} out of range (item has {len(item.comments)} notes).")
+    item.comments[note_index]["resolved"] = True
     save_item(item)
     click.echo(f"Resolved note {note_index} on {item_id}")
 
@@ -256,10 +296,78 @@ def resolve_note(item_id: str, note_index: int):
 @click.argument("number", type=int)
 def set_sprint(number: int):
     """Set the current sprint number."""
-    from src.config import set_current_sprint
+    from agile_backlog.config import set_current_sprint
 
     set_current_sprint(number)
     click.echo(f"Current sprint set to {number}")
+
+
+@main.command()
+@click.option("--dry-run", is_flag=True, help="Show changes without applying them")
+def migrate(dry_run: bool):
+    """Migrate YAML files to new schema (categories, comments field)."""
+    items = load_all()
+    changes = []
+    for item in items:
+        path = _yaml_store.get_backlog_dir() / f"{item.id}.yaml"
+        raw = yaml.safe_load(path.read_text())
+        item_changes = []
+
+        # Check category migration
+        old_cat = raw.get("category", "")
+        if old_cat != item.category:
+            item_changes.append(f"category: {old_cat} → {item.category}")
+
+        # Check agent_notes → comments
+        if "agent_notes" in raw:
+            item_changes.append("agent_notes → comments")
+
+        # Check tags added by migration
+        old_tags = set(raw.get("tags", []))
+        new_tags = set(item.tags)
+        added_tags = new_tags - old_tags
+        if added_tags:
+            item_changes.append(f"tags added: {', '.join(added_tags)}")
+
+        if item_changes:
+            changes.append((item.id, item_changes))
+            if not dry_run:
+                save_item(item)
+
+    if not changes:
+        click.echo("No migrations needed.")
+        return
+
+    for item_id, item_changes in changes:
+        click.echo(f"\n{item_id}:")
+        for change in item_changes:
+            click.echo(f"  {change}")
+
+    if dry_run:
+        click.echo(f"\n{len(changes)} item(s) would be migrated. Run without --dry-run to apply.")
+    else:
+        click.echo(f"\n{len(changes)} item(s) migrated.")
+
+
+def _pid_file() -> Path:
+    """Return path to the server PID file."""
+    return _yaml_store.get_backlog_dir().parent / ".agile-backlog.pid"
+
+
+def _kill_server() -> bool:
+    """Kill a running server if PID file exists. Returns True if a process was killed."""
+    import signal
+
+    pf = _pid_file()
+    if not pf.exists():
+        return False
+    pid = int(pf.read_text().strip())
+    pf.unlink()
+    try:
+        os.kill(pid, signal.SIGTERM)
+        return True
+    except ProcessLookupError:
+        return False
 
 
 @main.command()
@@ -268,6 +376,32 @@ def set_sprint(number: int):
 @click.option("--no-reload", is_flag=True, help="Disable hot reload.")
 def serve(port: int, host: str, no_reload: bool):
     """Open the Kanban board in the browser."""
-    from src.app import run_app
+    import atexit
 
+    from agile_backlog.app import run_app
+
+    pf = _pid_file()
+    pf.write_text(str(os.getpid()))
+    atexit.register(lambda: pf.unlink(missing_ok=True))
     run_app(host=host, port=port, reload=not no_reload)
+
+
+@main.command()
+def stop():
+    """Stop a running agile-backlog server."""
+    if _kill_server():
+        click.echo("Server stopped.")
+    else:
+        click.echo("No running server found.")
+
+
+@main.command()
+@click.option("--port", default=8501, type=int, help="Port number.")
+@click.option("--host", default="127.0.0.1", help="Host address.")
+@click.option("--no-reload", is_flag=True, help="Disable hot reload.")
+@click.pass_context
+def restart(ctx: click.Context, port: int, host: str, no_reload: bool):
+    """Restart the agile-backlog server."""
+    _kill_server()
+    click.echo("Restarting server...")
+    ctx.invoke(serve, port=port, host=host, no_reload=no_reload)

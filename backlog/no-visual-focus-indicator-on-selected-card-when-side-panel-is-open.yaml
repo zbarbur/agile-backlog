@@ -1,0 +1,23 @@
+title: No visual focus indicator on selected card when side panel is open
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "When clicking a backlog card to open the side panel, there's no visual\
+  \ highlight on the selected card. The user can't tell which card's details are shown\
+  \ in the panel. Need a selected state \u2014 e.g. brighter border, background highlight,\
+  \ or left accent bar \u2014 on the active card row."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

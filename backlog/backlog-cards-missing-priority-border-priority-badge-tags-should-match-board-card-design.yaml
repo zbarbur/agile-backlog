@@ -1,0 +1,26 @@
+title: "Backlog cards missing priority border, priority badge, tags \u2014 should\
+  \ match board card design"
+status: done
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "The backlog planning view cards are visually inconsistent with the board\
+  \ cards. Board cards have: colored left border for priority, priority badge (P2),\
+  \ category badge (FEATURE), comment icon, tags. Backlog cards are missing: priority\
+  \ left border (only P0/P1 show it, but it should match the board pattern), priority\
+  \ badge, tags aren't showing on some cards. The two card designs should be visually\
+  \ consistent \u2014 same information density and styling."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
