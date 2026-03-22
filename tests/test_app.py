@@ -1,5 +1,5 @@
 # tests/test_app.py
-from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html
+from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section
 from agile_backlog.models import BacklogItem
 
 
@@ -265,3 +265,59 @@ class TestDetectCurrentSprint:
 
     def test_empty_list(self):
         assert detect_current_sprint([]) is None
+
+
+class TestGroupItemsBySection:
+    def test_unplanned_backlog_items_in_backlog_section(self):
+        items = [_item(status="backlog", sprint_target=None)]
+        result = group_items_by_section(items, current_sprint=15)
+        assert len(result["backlog"]) == 1
+        assert result["vnext"] == []
+        assert result["vfuture"] == []
+
+    def test_vnext_items(self):
+        items = [_item(status="backlog", sprint_target=16)]
+        result = group_items_by_section(items, current_sprint=15)
+        assert len(result["vnext"]) == 1
+        assert result["backlog"] == []
+
+    def test_vfuture_items(self):
+        items = [_item(status="backlog", sprint_target=17)]
+        result = group_items_by_section(items, current_sprint=15)
+        assert len(result["vfuture"]) == 1
+
+    def test_sprint_18_also_vfuture(self):
+        items = [_item(status="backlog", sprint_target=18)]
+        result = group_items_by_section(items, current_sprint=15)
+        assert len(result["vfuture"]) == 1
+
+    def test_doing_and_done_excluded(self):
+        items = [
+            _item(status="doing", sprint_target=15),
+            _item(status="done", sprint_target=15),
+            _item(status="backlog", sprint_target=None),
+        ]
+        result = group_items_by_section(items, current_sprint=15)
+        assert len(result["backlog"]) == 1
+        assert result["vnext"] == []
+        assert result["vfuture"] == []
+
+    def test_no_current_sprint_all_in_backlog(self):
+        items = [
+            _item(status="backlog", sprint_target=None),
+            _item(status="backlog", sprint_target=16),
+        ]
+        result = group_items_by_section(items, current_sprint=None)
+        assert len(result["backlog"]) == 2
+        assert result["vnext"] == []
+        assert result["vfuture"] == []
+
+    def test_sorted_by_priority_then_updated(self):
+        items = [
+            _item(id="low", status="backlog", priority="P3"),
+            _item(id="high", status="backlog", priority="P1"),
+            _item(id="med", status="backlog", priority="P2"),
+        ]
+        result = group_items_by_section(items, current_sprint=15)
+        ids = [i.id for i in result["backlog"]]
+        assert ids == ["high", "med", "low"]

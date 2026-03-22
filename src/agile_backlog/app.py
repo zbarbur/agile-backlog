@@ -13,7 +13,7 @@ from agile_backlog.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDE
 
 def category_style(category: str) -> tuple[str, str]:
     """Return (text_color, bg_color) for a category."""
-    return CATEGORY_STYLES.get(category, ("#4b5563", "#f3f4f6"))
+    return CATEGORY_STYLES.get(category, ("#9ca3af", "rgba(156,163,175,0.10)"))
 
 
 def filter_items(
@@ -127,6 +127,35 @@ def comment_badge_html(comments: list[dict]) -> str:
         # Blue badge for total comments (no unresolved flagged)
         return f'<span style="background:#3b82f6;{_badge}">{total_count}</span>'
     return ""
+
+
+def group_items_by_section(
+    items: list[BacklogItem], current_sprint: int | None
+) -> dict[str, list[BacklogItem]]:
+    """Group backlog/unplanned items into three planning sections.
+
+    Items with status 'doing' or 'done' are excluded (they belong on the board).
+    """
+    backlog, vnext, vfuture = [], [], []
+    for item in items:
+        if item.status in ("doing", "done"):
+            continue
+        if current_sprint is None or item.sprint_target is None:
+            backlog.append(item)
+        elif item.sprint_target == current_sprint + 1:
+            vnext.append(item)
+        elif item.sprint_target >= current_sprint + 2:
+            vfuture.append(item)
+        else:
+            backlog.append(item)
+
+    def _sort_key(i: BacklogItem) -> tuple:
+        return (PRIORITY_ORDER.get(i.priority, 99), str(i.updated))
+
+    backlog.sort(key=_sort_key)
+    vnext.sort(key=_sort_key)
+    vfuture.sort(key=_sort_key)
+    return {"backlog": backlog, "vnext": vnext, "vfuture": vfuture}
 
 
 # ---------------------------------------------------------------------------
