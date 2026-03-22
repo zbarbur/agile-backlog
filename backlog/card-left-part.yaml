@@ -1,20 +1,27 @@
 title: card left part
-status: doing
+status: done
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 11
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix P1 red left border not showing on all P1 cards
+complexity: S
+technical_specs:
+- "Debug _render_card() \u2014 check mc-p1 CSS class application"
+- 'Verify CSS rule .mc-p1 { border-left: 3px solid #ef4444 } exists and is not overridden'
 description: not all cards have the red left part
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- 'All P1 cards show red left border (3px solid #ef4444)'
+- P2 and P3 cards have no left border
+- Works in both Kanban and Backlog views
+- Tests pass
+test_plan:
+- 'Manual: verify all P1 cards in all columns have red left border'
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

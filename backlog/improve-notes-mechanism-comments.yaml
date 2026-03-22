@@ -1,5 +1,5 @@
 title: Improve notes mechanism -> comments
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 11
@@ -11,11 +11,12 @@ goal: "Replace notes with a comments system \u2014 add comments from the card, f
   \ for agent with AI icon, agent marks complete"
 complexity: M
 technical_specs:
-- Refactor agent_notes to comments field on BacklogItem (or rename)
-- Add comment button to card row 2 (next to move buttons)
-- 'Comment dialog: textarea + AI flag checkbox + save'
-- Render comments in detail modal with AI icon and completion status
-- Update CLI note/flagged commands to use comments terminology
+- Rename agent_notes to comments in model (add model_validator for migration)
+- 'Comment schema: {text: str, author: str, flagged: bool, completed: bool, created:
+  str}'
+- "Comment button on card \u2014 use stopPropagation to prevent modal opening"
+- "Rename CLI note\u2192comment, flagged stays, add --resolve to edit"
+- Update _render_detail_modal_content to show comments section
 description: 'The idea is that it''ll be a comment on the item, so instead from edit,
   I want a place from the card to add a comment, the comment should have an AI icon
   to indicate that this is for the agent to look at, the agent can review the comment,

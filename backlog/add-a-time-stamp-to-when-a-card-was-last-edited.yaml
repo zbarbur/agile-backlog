@@ -1,21 +1,30 @@
 title: Add a time stamp to when a card was last edited
-status: backlog
+status: done
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 11
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add updated column to backlog table with sort-by-updated option (card display
+  already exists)
+complexity: S
+technical_specs:
+- "BacklogItem already has 'updated' field (date) \u2014 display it on card"
+- "Consider adding time (not just date) \u2014 change updated from date to datetime"
+- Add sort-by-updated option in backlog table view
 description: Add a time stamp to when a card was last edited  , be able to filter
   according to it
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Backlog table has Updated column
+- Sort by updated works
+- Keep date type (no datetime migration)
+- Tests pass
+test_plan:
+- 'Manual: edit an item, verify timestamp updates and shows on card'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []
