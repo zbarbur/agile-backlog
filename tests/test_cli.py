@@ -281,6 +281,49 @@ class TestJsonOutput:
         assert len(data) == 1
 
 
+class TestMigrate:
+    def test_migrate_dry_run(self, runner, backlog_dir):
+        (backlog_dir / "old.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "Old Item",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "infra",
+                    "agent_notes": [{"text": "note", "flagged": False, "resolved": False}],
+                }
+            )
+        )
+        result = runner.invoke(main, ["migrate", "--dry-run"])
+        assert result.exit_code == 0
+        assert "old" in result.output
+        assert "category: infra" in result.output
+        assert "agent_notes" in result.output
+        # Verify file was NOT modified
+        raw = yaml.safe_load((backlog_dir / "old.yaml").read_text())
+        assert raw["category"] == "infra"
+
+    def test_migrate_applies_changes(self, runner, backlog_dir):
+        (backlog_dir / "old.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "Old Item",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "tech-debt",
+                    "agent_notes": [{"text": "note", "flagged": False, "resolved": False}],
+                }
+            )
+        )
+        result = runner.invoke(main, ["migrate"])
+        assert result.exit_code == 0
+        # Verify file WAS modified
+        raw = yaml.safe_load((backlog_dir / "old.yaml").read_text())
+        assert raw["category"] == "chore"
+        assert "comments" in raw
+        assert "agent_notes" not in raw
+
+
 class TestTagsFilter:
     def test_list_filter_by_tag(self, runner, backlog_dir):
         (backlog_dir / "a.yaml").write_text(

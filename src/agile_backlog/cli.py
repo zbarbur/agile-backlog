@@ -4,7 +4,9 @@ import json
 from datetime import date
 
 import click
+import yaml
 
+import agile_backlog.yaml_store as _yaml_store
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
@@ -296,6 +298,53 @@ def set_sprint(number: int):
 
     set_current_sprint(number)
     click.echo(f"Current sprint set to {number}")
+
+
+@main.command()
+@click.option("--dry-run", is_flag=True, help="Show changes without applying them")
+def migrate(dry_run: bool):
+    """Migrate YAML files to new schema (categories, comments field)."""
+    items = load_all()
+    changes = []
+    for item in items:
+        path = _yaml_store.get_backlog_dir() / f"{item.id}.yaml"
+        raw = yaml.safe_load(path.read_text())
+        item_changes = []
+
+        # Check category migration
+        old_cat = raw.get("category", "")
+        if old_cat != item.category:
+            item_changes.append(f"category: {old_cat} → {item.category}")
+
+        # Check agent_notes → comments
+        if "agent_notes" in raw:
+            item_changes.append("agent_notes → comments")
+
+        # Check tags added by migration
+        old_tags = set(raw.get("tags", []))
+        new_tags = set(item.tags)
+        added_tags = new_tags - old_tags
+        if added_tags:
+            item_changes.append(f"tags added: {', '.join(added_tags)}")
+
+        if item_changes:
+            changes.append((item.id, item_changes))
+            if not dry_run:
+                save_item(item)
+
+    if not changes:
+        click.echo("No migrations needed.")
+        return
+
+    for item_id, item_changes in changes:
+        click.echo(f"\n{item_id}:")
+        for change in item_changes:
+            click.echo(f"  {change}")
+
+    if dry_run:
+        click.echo(f"\n{len(changes)} item(s) would be migrated. Run without --dry-run to apply.")
+    else:
+        click.echo(f"\n{len(changes)} item(s) migrated.")
 
 
 @main.command()
