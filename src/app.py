@@ -240,7 +240,7 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 .mc-card.mc-p1 {
-    border-left: 3px solid #ef4444;
+    border-left: 3px solid #ef4444 !important;
 }
 .mc-card.mc-done {
     opacity: 0.4;
@@ -328,6 +328,47 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     ui.html(f'<span style="{style}">{text}</span>')
 
 
+def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
+    """Open a comment dialog for the given backlog item."""
+    from datetime import date
+
+    comment_dialog = ui.dialog().classes("mc-detail-dialog")
+    with (
+        comment_dialog,
+        ui.card().style(
+            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+            "padding:20px;max-width:480px;width:480px;border-radius:8px;"
+        ),
+    ):
+        ui.html(
+            '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
+            f"\U0001f4ac Comment on: {item.title}</div>"
+        )
+        comment_text = ui.textarea("Comment").props("dense outlined autogrow").style("width:100%;")
+        flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
+
+        def _save_comment():
+            text = (comment_text.value or "").strip()
+            if not text:
+                return
+            item.agent_notes.append(
+                {
+                    "text": text,
+                    "flagged": flag_check.value,
+                    "resolved": False,
+                    "created": str(date.today()),
+                }
+            )
+            save_fn(item)
+            comment_dialog.close()
+            refresh_fn()
+
+        with ui.row().classes("gap-2 mt-3"):
+            ui.button("Save", on_click=_save_comment).props("flat dense no-caps").style("color:#3b82f6;")
+            ui.button("Cancel", on_click=comment_dialog.close).props("flat dense no-caps").style("color:#a1a1aa;")
+    comment_dialog.open()
+
+
 def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None) -> None:
     """Render a single Kanban card with Mission Control dark theme — click opens detail modal."""
     cat_color, cat_bg = category_style(item.category)
@@ -367,20 +408,21 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
     card_el.on("click", lambda _e, d=detail_dialog: d.open())
 
     with card_el:
-        # Row 1: title + badges inline
-        with ui.element("div").style("display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"):
-            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
-            if is_done:
-                title_style += "text-decoration:line-through;color:#52525b;"
-            else:
-                title_style += "color:#e4e4e7;"
-            ui.html(f'<span style="{title_style}">{item.title}</span>')
+        # Row 1: title only (full width)
+        title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
+        if is_done:
+            title_style += "text-decoration:line-through;color:#52525b;"
+        else:
+            title_style += "color:#e4e4e7;"
+        ui.html(f'<div style="{title_style}">{item.title}</div>')
 
-            opacity = "opacity:0.5;" if is_done else ""
-            pill_base = (
-                "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-                "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
-            )
+        # Row 2: badges left-aligned
+        opacity = "opacity:0.5;" if is_done else ""
+        pill_base = (
+            "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+            "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+        )
+        with ui.element("div").style("display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;"):
             # Category
             ui.html(
                 f'<span style="{pill_base}text-transform:uppercase;'
@@ -418,7 +460,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                     f"S{item.sprint_target}</span>"
                 )
 
-        # Row 2: move buttons (not for done cards) — no details link
+        # Row 3: move buttons + comment button (not for done cards)
         if not is_done:
             with ui.element("div").style("display:flex;align-items:center;gap:4px;margin-top:5px;"):
                 other_statuses = [s for s in STATUSES if s != status]
@@ -428,6 +470,22 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                         f"{arrow} {target}",
                         on_click=lambda _e, i=item, t=target: move_fn(i, t),
                     ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+                # Comment button
+                if save_fn and refresh_fn:
+
+                    def _open_comment(_e, i=item):
+                        _e.args = None  # prevent propagation to card click
+                        _show_comment_dialog(i, save_fn, refresh_fn)
+
+                    comment_btn = (
+                        ui.button(
+                            "\U0001f4ac",
+                            on_click=_open_comment,
+                        )
+                        .classes("mc-move-btn")
+                        .props("flat dense unelevated no-caps")
+                    )
+                    comment_btn.on("click.stop", lambda _e: None)
 
 
 def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
@@ -538,9 +596,9 @@ def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> No
         ui.html(f'<div style="{label_style}">Depends on</div>')
         ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
 
-    # Agent Notes
+    # Comments (agent_notes)
     if item.agent_notes:
-        ui.html(f'<div style="{label_style}">Agent Notes</div>')
+        ui.html(f'<div style="{label_style}">Comments</div>')
         for note in item.agent_notes:
             flagged = note.get("flagged", False)
             resolved = note.get("resolved", False)
@@ -552,7 +610,7 @@ def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> No
                 row_style = "opacity:0.5;text-decoration:line-through;"
                 icon_style = "color:#71717a;margin-right:6px;"
             elif flagged:
-                icon = "\U0001f6a9"
+                icon = "\U0001f916"
                 row_style = ""
                 icon_style = "color:#f87171;margin-right:6px;"
             else:
@@ -816,6 +874,7 @@ def _render_backlog_list(
         {"name": "phase", "label": "Phase", "field": "phase", "sortable": True},
         {"name": "complexity", "label": "Complexity", "field": "complexity", "sortable": True},
         {"name": "created", "label": "Created", "field": "created", "sortable": True},
+        {"name": "updated", "label": "Updated", "field": "updated", "sortable": True},
     ]
     rows = [
         {
@@ -827,6 +886,7 @@ def _render_backlog_list(
             "phase": item.phase or "",
             "complexity": item.complexity or "",
             "created": str(item.created),
+            "updated": str(item.updated),
         }
         for item in backlog_items
     ]
@@ -1034,7 +1094,12 @@ def kanban_page():
         categories = sorted({i.category for i in all_items})
         category_options = {c: c for c in categories}
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
-        sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
+        sprint_options = {}
+        if current_sprint is not None:
+            sprint_options["current"] = f"Current (S{current_sprint})"
+        sprint_options["unplanned"] = "Unplanned"
+        for s in sprints:
+            sprint_options[s] = f"Sprint {s}"
         phases = sorted({i.phase for i in all_items if i.phase})
         phase_options = {None: "All phases", **{p: p for p in phases}}
 
@@ -1055,10 +1120,10 @@ def kanban_page():
                 .style("min-width:130px;")
             )
             sprint_select = (
-                ui.select(label="Sprint", options=sprint_options, value=None)
-                .props("dense outlined")
+                ui.select(label="Sprint", options=sprint_options, multiple=True, value=[])
+                .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:130px;")
             )
             phase_select = (
                 ui.select(label="Phase", options=phase_options, value=None)
@@ -1099,12 +1164,16 @@ def kanban_page():
                             render_board.refresh(),
                         ),
                     )
-                if sprint_select.value is not None:
-                    sv = sprint_options.get(sprint_select.value, str(sprint_select.value))
-                    chip = ui.chip(f"Sprint: {sv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                svals = sprint_select.value or []
+                for sv in svals:
+                    label = sprint_options.get(sv, str(sv))
+                    chip = ui.chip(f"Sprint: {label}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
                     chip.on(
                         "remove",
-                        lambda _e: (sprint_select.set_value(None), render_board.refresh()),
+                        lambda _e, v=sv: (
+                            sprint_select.set_value([x for x in (sprint_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
                     )
                 if phase_select.value is not None:
                     chip = ui.chip(f"Phase: {phase_select.value}", removable=True, color="blue-grey-9").classes(
@@ -1139,17 +1208,25 @@ def kanban_page():
 
             pf_list = priority_select.value or []
             cf_list = category_select.value or []
-            sf = sprint_select.value
+            sf_list = sprint_select.value or []
             phf = phase_select.value
             sq = search_input.value or ""
             sd = done_check.value
+
+            # Resolve "current" sprint value to actual sprint number
+            resolved_sprints: list[int | str] = []
+            for sv in sf_list:
+                if sv == "current" and current_sprint is not None:
+                    resolved_sprints.append(current_sprint)
+                else:
+                    resolved_sprints.append(sv)
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
             done_items = [i for i in items if i.status == "done"]
 
-            # Apply filters — multi-select priority/category handled here, rest via filter_items
-            filtered_backlog = filter_items(backlog_items, sprint=sf, search=sq)
+            # Apply search filter via filter_items (sprint handled below for multi-select)
+            filtered_backlog = filter_items(backlog_items, search=sq)
             filtered_doing = doing_items
             filtered_done = done_items
 
@@ -1165,12 +1242,19 @@ def kanban_page():
                 filtered_doing = [i for i in filtered_doing if i.category in cf_list]
                 filtered_done = [i for i in filtered_done if i.category in cf_list]
 
-            if sf == "unplanned":
-                filtered_doing = [i for i in filtered_doing if i.sprint_target is None]
-                filtered_done = [i for i in filtered_done if i.sprint_target is None]
-            elif sf is not None:
-                filtered_doing = [i for i in filtered_doing if i.sprint_target == sf]
-                filtered_done = [i for i in filtered_done if i.sprint_target == sf]
+            # Multi-select sprint filter
+            if resolved_sprints:
+                has_unplanned = "unplanned" in resolved_sprints
+                numeric_sprints = [s for s in resolved_sprints if s != "unplanned"]
+
+                def _sprint_match(item_sprint: int | None) -> bool:
+                    if item_sprint is None:
+                        return has_unplanned
+                    return item_sprint in numeric_sprints
+
+                filtered_backlog = [i for i in filtered_backlog if _sprint_match(i.sprint_target)]
+                filtered_doing = [i for i in filtered_doing if _sprint_match(i.sprint_target)]
+                filtered_done = [i for i in filtered_done if _sprint_match(i.sprint_target)]
 
             if phf is not None:
                 filtered_backlog = [i for i in filtered_backlog if i.phase == phf]
