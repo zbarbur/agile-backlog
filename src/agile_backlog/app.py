@@ -129,9 +129,7 @@ def comment_badge_html(comments: list[dict]) -> str:
     return ""
 
 
-def group_items_by_section(
-    items: list[BacklogItem], current_sprint: int | None
-) -> dict[str, list[BacklogItem]]:
+def group_items_by_section(items: list[BacklogItem], current_sprint: int | None) -> dict[str, list[BacklogItem]]:
     """Group backlog/unplanned items into three planning sections.
 
     Items with status 'doing' or 'done' are excluded (they belong on the board).
@@ -175,9 +173,9 @@ def render_comment_html(comment: dict) -> str:
         f'<div style="border-left:3px solid {border_color};padding:8px 12px;'
         f'margin:4px 0;border-radius:6px;background:rgba(255,255,255,0.04);opacity:{opacity};">'
         f'<div style="font-size:11px;color:#71717a;margin-bottom:4px;">'
-        f'{icon} {author} &nbsp; {created}</div>'
+        f"{icon} {author} &nbsp; {created}</div>"
         f'<div style="{text_style}color:#d4d4d8;font-size:13px;">{text}</div>'
-        f'</div>'
+        f"</div>"
     )
 
 
@@ -212,10 +210,10 @@ def render_backlog_card_html(item: BacklogItem) -> str:
         f'class="backlog-card-row">'
         f'<div style="display:flex;justify-content:space-between;align-items:center;">'
         f'<span style="color:#e4e4e7;font-size:13px;">{item.title}</span>'
-        f'<span>{badge}{complexity}</span>'
-        f'</div>'
+        f"<span>{badge}{complexity}</span>"
+        f"</div>"
         f'<div style="margin-top:4px;">{cat_pill}{tag_chips}</div>'
-        f'</div>'
+        f"</div>"
     )
 
 
@@ -1010,82 +1008,44 @@ BACKLOG_SORT_OPTIONS = {"priority": "Priority", "category": "Category", "title":
 
 
 def _render_backlog_list(
-    backlog_items: list[BacklogItem],
+    all_items: list[BacklogItem],
     current_sprint: int | None,
     move_fn,
     save_fn,
     refresh_fn,
+    *,
+    priorities: list[str] | None = None,
+    categories: list[str] | None = None,
+    tags: list[str] | None = None,
+    search: str = "",
 ) -> None:
-    """Render the backlog management list view as a sortable table."""
-    # Header
-    with ui.element("div").style("display:flex;align-items:center;gap:10px;margin-bottom:10px;"):
-        ui.html(
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
-            "font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
-            'color:#71717a;">BACKLOG</span>'
-        )
-        ui.html(
-            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
-            f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
-            f'border-radius:4px;">{len(backlog_items)}</span>'
-        )
+    """Render the backlog planning view with three collapsible sections."""
+    # Group all items into sections
+    sections = group_items_by_section(all_items, current_sprint)
+    backlog_items = sections["backlog"]
+    vnext_items = sections["vnext"]
+    vfuture_items = sections["vfuture"]
 
-    if not backlog_items:
-        ui.html(
-            '<div style="font-size:11px;color:#52525b;padding:8px 6px;'
-            "font-style:italic;font-family:'DM Sans',sans-serif;\">No backlog items match filters.</div>"
-        )
-        return
+    # Apply filters to backlog section ONLY
+    filtered_backlog = backlog_items
+    if priorities:
+        filtered_backlog = [i for i in filtered_backlog if i.priority in priorities]
+    if categories:
+        filtered_backlog = [i for i in filtered_backlog if i.category in categories]
+    if tags:
+        tag_set = set(tags)
+        filtered_backlog = [i for i in filtered_backlog if tag_set & set(i.tags)]
+    if search:
+        filtered_backlog = filter_items(filtered_backlog, search=search)
 
-    # Build item lookup for row-click
-    item_lookup = {item.id: item for item in backlog_items}
-
-    # Table columns
-    columns = [
-        {"name": "title", "label": "Title", "field": "title", "sortable": True, "align": "left"},
-        {"name": "priority", "label": "Priority", "field": "priority", "sortable": True},
-        {"name": "category", "label": "Category", "field": "category", "sortable": True},
-        {"name": "sprint", "label": "Sprint", "field": "sprint", "sortable": True},
-        {"name": "phase", "label": "Phase", "field": "phase", "sortable": True},
-        {"name": "complexity", "label": "Complexity", "field": "complexity", "sortable": True},
-        {"name": "created", "label": "Created", "field": "created", "sortable": True},
-        {"name": "updated", "label": "Updated", "field": "updated", "sortable": True},
-    ]
-    rows = [
-        {
-            "id": item.id,
-            "title": item.title,
-            "priority": item.priority,
-            "category": item.category,
-            "sprint": f"S{item.sprint_target}" if item.sprint_target is not None else "",
-            "phase": item.phase or "",
-            "complexity": item.complexity or "",
-            "created": str(item.created),
-            "updated": str(item.updated),
-        }
-        for item in backlog_items
-    ]
-
-    # Inject dark table CSS
-    ui.add_head_html("""<style>
-    .mc-backlog-table .q-table { background: #18181b !important; color: #e4e4e7 !important; }
-    .mc-backlog-table .q-table th { color: #71717a !important; background: #111116 !important; }
-    .mc-backlog-table .q-table td { border-color: #27272a !important; }
-    .mc-backlog-table .q-table tbody tr:hover { background: #27272a !important; cursor: pointer; }
-    .mc-backlog-table .q-table thead tr { border-bottom: 1px solid #27272a !important; }
-    .mc-backlog-table .q-table__bottom { background: #111116 !important; color: #71717a !important; }
-    </style>""")
-
-    def open_detail_modal(item_id: str):
-        item = item_lookup.get(item_id)
-        if not item:
-            return
+    def _open_detail_modal(item: BacklogItem):
         detail_dialog = ui.dialog().classes("mc-detail-dialog")
         with (
             detail_dialog,
             ui.card().style(
                 "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
                 "padding:20px;max-width:720px;width:720px;border-radius:8px;"
+                "max-height:80vh;overflow-y:auto;"
             ),
         ):
             _render_detail_modal_content(item, False)
@@ -1103,9 +1063,123 @@ def _render_backlog_list(
                 )
         detail_dialog.open()
 
-    with ui.element("div").classes("mc-backlog-table"):
-        table = ui.table(columns=columns, rows=rows, row_key="id").props("flat bordered dense")
-        table.on("row-click", lambda e: open_detail_modal(e.args[1]["id"]))
+    def _move_to_section(item: BacklogItem, target_sprint: int | None):
+        item.sprint_target = target_sprint
+        save_fn(item)
+        refresh_fn()
+
+    move_btn_style = (
+        "font-size:10px;padding:2px 8px;min-height:0;border-radius:4px;"
+        "font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em;"
+    )
+
+    def _render_section_items(items: list[BacklogItem], section: str):
+        if not items:
+            ui.html(
+                '<div style="font-size:11px;color:#52525b;padding:8px 12px;'
+                "font-style:italic;font-family:'DM Sans',sans-serif;\">No items.</div>"
+            )
+            return
+
+        for card_item in items:
+            with ui.element("div").style("display:flex;align-items:center;gap:8px;margin:2px 0;"):
+                # Card (clickable)
+                card_container = ui.element("div").style("flex:1;min-width:0;")
+                card_container.on("click", lambda _e, i=card_item: _open_detail_modal(i))
+                with card_container:
+                    ui.html(render_backlog_card_html(card_item))
+
+                # Move-to buttons
+                with ui.element("div").style("display:flex;gap:4px;flex-shrink:0;"):
+                    next_sprint = (current_sprint or 0) + 1
+                    future_sprint = (current_sprint or 0) + 2
+
+                    if section == "backlog":
+                        ui.button(
+                            "\u2192 vNext",
+                            on_click=lambda _e, i=card_item, s=next_sprint: _move_to_section(i, s),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#3b82f6;background:rgba(59,130,246,0.08);"
+                        )
+                        ui.button(
+                            "\u2192 vFuture",
+                            on_click=lambda _e, i=card_item, s=future_sprint: _move_to_section(i, s),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#8b5cf6;background:rgba(139,92,246,0.08);"
+                        )
+                    elif section == "vnext":
+                        ui.button(
+                            "\u2190 Backlog",
+                            on_click=lambda _e, i=card_item: _move_to_section(i, None),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.08);"
+                        )
+                        ui.button(
+                            "\u2192 vFuture",
+                            on_click=lambda _e, i=card_item, s=future_sprint: _move_to_section(i, s),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#8b5cf6;background:rgba(139,92,246,0.08);"
+                        )
+                    elif section == "vfuture":
+                        ui.button(
+                            "\u2190 Backlog",
+                            on_click=lambda _e, i=card_item: _move_to_section(i, None),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.08);"
+                        )
+                        ui.button(
+                            "\u2190 vNext",
+                            on_click=lambda _e, i=card_item, s=next_sprint: _move_to_section(i, s),
+                        ).props("flat dense no-caps unelevated").style(
+                            f"{move_btn_style}color:#3b82f6;background:rgba(59,130,246,0.08);"
+                        )
+
+    # Section header style helper
+    def _section_header(label: str, count: int, color: str) -> str:
+        return (
+            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+            f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+            f'color:{color};">{label}</span>'
+            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+            f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+            f'border-radius:4px;margin-left:8px;">{count}</span>'
+        )
+
+    # Filter info for backlog section
+    has_filters = bool(priorities or categories or tags or search)
+    backlog_label = "BACKLOG (unplanned)"
+    if has_filters:
+        backlog_label += f" \u2014 filtered {len(filtered_backlog)}/{len(backlog_items)}"
+
+    # Render three collapsible sections
+    with (
+        ui.expansion(value=True)
+        .style("width:100%;background:#111116;border-radius:8px;margin-bottom:8px;")
+        .classes("mc-planning-section")
+    ):
+        with ui.element("template").props("v-slot:header"):
+            ui.html(_section_header(backlog_label, len(filtered_backlog), "#71717a"))
+        _render_section_items(filtered_backlog, "backlog")
+
+    vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
+    with (
+        ui.expansion(value=True)
+        .style("width:100%;background:#14130e;border:1px solid #2a2618;border-radius:8px;margin-bottom:8px;")
+        .classes("mc-planning-section")
+    ):
+        with ui.element("template").props("v-slot:header"):
+            ui.html(_section_header(vnext_label, len(vnext_items), "#ca8a04"))
+        _render_section_items(vnext_items, "vnext")
+
+    vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
+    with (
+        ui.expansion(value=True)
+        .style("width:100%;background:#0f1210;border-radius:8px;margin-bottom:8px;")
+        .classes("mc-planning-section")
+    ):
+        with ui.element("template").props("v-slot:header"):
+            ui.html(_section_header(vfuture_label, len(vfuture_items), "#22c55e"))
+        _render_section_items(vfuture_items, "vfuture")
 
 
 @ui.page("/")
@@ -1487,7 +1561,17 @@ def kanban_page():
 
             if view_mode["current"] == "backlog":
                 # --- Backlog management view ---
-                _render_backlog_list(filtered_backlog, current_sprint, move_item, save_item, render_board.refresh)
+                _render_backlog_list(
+                    items,
+                    current_sprint,
+                    move_item,
+                    save_item,
+                    render_board.refresh,
+                    priorities=pf_list or None,
+                    categories=cf_list or None,
+                    tags=tf_list or None,
+                    search=sq,
+                )
             else:
                 # --- Kanban board view ---
                 with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;"):
