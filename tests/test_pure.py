@@ -177,6 +177,7 @@ class TestRenderCardHtml:
 
     def test_shows_relative_timestamp(self):
         from datetime import date
+
         html = render_card_html(_item(updated=date.today()))
         assert "today" in html
 
@@ -340,7 +341,6 @@ class TestGroupItemsBySection:
         assert ids == ["high", "med", "low"]
 
 
-
 class TestRenderCommentHtml:
     def test_user_comment_right_aligned(self):
         comment = {"text": "Hello", "author": "user", "flagged": False, "resolved": False}
@@ -374,7 +374,13 @@ class TestRenderCommentHtml:
         assert "line-through" not in html
 
     def test_shows_text_and_date(self):
-        comment = {"text": "Hello world", "created": "2026-03-22", "author": "user", "flagged": False, "resolved": False}
+        comment = {
+            "text": "Hello world",
+            "created": "2026-03-22",
+            "author": "user",
+            "flagged": False,
+            "resolved": False,
+        }
         html = render_comment_html(comment)
         assert "Hello world" in html
         assert "2026-03-22" in html

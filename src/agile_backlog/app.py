@@ -6,6 +6,7 @@ from nicegui import ui
 from agile_backlog.components import (
     _render_backlog_list,
     _render_card,
+    _render_side_panel_content,
 )
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.pure import (
@@ -470,46 +471,102 @@ def kanban_page():
                     search=sq,
                 )
             else:
-                # --- Kanban board view ---
-                with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;height:100%;"):
-                    for col_status in STATUSES:
-                        items_in_col = columns_map[col_status]
-                        col_style, label_color = COLUMN_STYLES[col_status]
+                # --- Kanban board view with side panel ---
+                board_panel_state = {"selected_id": None}
+                board_list_ref: dict[str, object] = {"el": None}
+                board_panel_ref: dict[str, object] = {"el": None}
 
-                        with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
-                            with ui.element("div").style(
-                                "display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"
-                            ):
-                                ui.html(
-                                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
-                                    f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
-                                    f'color:{label_color};">{LABELS[col_status]}</span>'
-                                )
-                                ui.html(
-                                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
-                                    f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
-                                    f'border-radius:4px;">{len(items_in_col)}</span>'
-                                )
+                def _open_board_panel(item: BacklogItem):
+                    board_panel_state["selected_id"] = item.id
+                    if board_list_ref["el"]:
+                        board_list_ref["el"].style(
+                            "flex:6;min-width:0;display:flex;gap:10px;align-items:flex-start;height:100%;"
+                        )
+                    if board_panel_ref["el"]:
+                        board_panel_ref["el"].style("flex:4;min-width:320px;display:block;")
+                        board_panel_ref["el"].clear()
+                        with board_panel_ref["el"]:
+                            _render_side_panel_content(
+                                item,
+                                save_item,
+                                render_board.refresh,
+                                _close_board_panel,
+                                all_items=items,
+                            )
 
-                            if not items_in_col:
-                                if col_status == "backlog":
-                                    msg = (
-                                        "No items match filters."
-                                        if items
-                                        else "No items yet \u2014 use `agile-backlog add` to create one."
+                def _close_board_panel():
+                    board_panel_state["selected_id"] = None
+                    if board_list_ref["el"]:
+                        board_list_ref["el"].style(
+                            "flex:1;min-width:0;display:flex;gap:10px;align-items:flex-start;height:100%;"
+                        )
+                    if board_panel_ref["el"]:
+                        board_panel_ref["el"].style("display:none;")
+                        board_panel_ref["el"].clear()
+
+                ui.keyboard(
+                    on_key=lambda e: _close_board_panel() if e.key == "Escape" and not e.action.repeat else None,
+                )
+
+                with ui.element("div").style("display:flex;gap:0;height:100%;"):
+                    # Left: board columns
+                    board_columns = ui.element("div").style(
+                        "flex:1;min-width:0;display:flex;gap:10px;align-items:flex-start;height:100%;"
+                    )
+                    board_list_ref["el"] = board_columns
+
+                    with board_columns:
+                        for col_status in STATUSES:
+                            items_in_col = columns_map[col_status]
+                            col_style, label_color = COLUMN_STYLES[col_status]
+
+                            with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
+                                with ui.element("div").style(
+                                    "display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"
+                                ):
+                                    ui.html(
+                                        f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+                                        f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+                                        f'color:{label_color};">{LABELS[col_status]}</span>'
                                     )
-                                elif col_status == "done" and not show_archived:
-                                    msg = "No recent done items. Toggle \u2018Show archived\u2019 to see older items."
-                                else:
-                                    msg = "No items."
-                                ui.html(
-                                    f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
-                                    f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
-                                )
-                                continue
+                                    ui.html(
+                                        f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+                                        f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+                                        f'border-radius:4px;">{len(items_in_col)}</span>'
+                                    )
 
-                            for card_item in items_in_col:
-                                _render_card(card_item, col_status, move_item, save_item, render_board.refresh)
+                                if not items_in_col:
+                                    if col_status == "backlog":
+                                        msg = (
+                                            "No items match filters."
+                                            if items
+                                            else "No items yet \u2014 use `agile-backlog add` to create one."
+                                        )
+                                    elif col_status == "done" and not show_archived:
+                                        msg = (
+                                            "No recent done items. Toggle \u2018Show archived\u2019 to see older items."
+                                        )
+                                    else:
+                                        msg = "No items."
+                                    ui.html(
+                                        f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
+                                        f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
+                                    )
+                                    continue
+
+                                for card_item in items_in_col:
+                                    _render_card(
+                                        card_item,
+                                        col_status,
+                                        move_item,
+                                        save_item,
+                                        render_board.refresh,
+                                        on_card_click=_open_board_panel,
+                                    )
+
+                    # Right: side panel (hidden by default)
+                    board_panel = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")
+                    board_panel_ref["el"] = board_panel
 
         with main_content:
             priority_select.on_value_change(lambda _: render_board.refresh())

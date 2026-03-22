@@ -6,13 +6,12 @@ from nicegui import ui
 
 from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
-    _complexity_badge,
     category_style,
     comment_badge_html,
     comment_thread_html,
-    detect_current_sprint,
     filter_items,
     group_items_by_section,
+    relative_time,
     render_card_html,
 )
 from agile_backlog.styles import STATUSES
@@ -37,83 +36,11 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     ui.html(f'<span style="{style}">{text}</span>')
 
 
-def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
-    """Open a comment dialog for the given backlog item."""
-    comment_dialog = ui.dialog().classes("mc-detail-dialog")
-    with (
-        comment_dialog,
-        ui.card().style(
-            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
-        ),
-    ):
-        ui.html(
-            '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
-            f"\U0001f4ac Comment on: {item.title}</div>"
-        )
-        # Show existing comments first
-        if item.comments:
-            ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">COMMENTS</div>')
-            for idx, note in enumerate(item.comments):
-                icon = "\U0001f916" if note.get("flagged") else "\U0001f4ac"
-                resolved_style = "opacity:0.5;text-decoration:line-through;" if note.get("resolved") else ""
-                author = note.get("author", "")
-                author_label = f' <span style="font-size:8px;color:#52525b;">[{author}]</span>' if author else ""
-                with ui.element("div").style(
-                    f"display:flex;align-items:center;gap:6px;font-size:12px;color:#d4d4d8;"
-                    f"margin-bottom:6px;padding:6px 8px;background:#111116;border-radius:4px;{resolved_style}"
-                ):
-                    ui.html(
-                        f'<div style="flex:1;">'
-                        f"{icon} {note['text']}{author_label}"
-                        f'<span style="font-size:9px;color:#52525b;margin-left:8px;">'
-                        f"{note.get('created', '')}</span>"
-                        f"</div>"
-                    )
-                    if not note.get("resolved"):
+def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None, on_card_click=None) -> None:
+    """Render a single Kanban card with Mission Control dark theme.
 
-                        def _resolve_note(note_idx=idx):
-                            item.comments[note_idx]["resolved"] = True
-                            save_fn(item)
-                            comment_dialog.close()
-                            refresh_fn()
-                            _show_comment_dialog(item, save_fn, refresh_fn)
-
-                        ui.button(
-                            "\u2713",
-                            on_click=_resolve_note,
-                        ).props("flat dense no-caps").style("color:#4ade80;font-size:12px;min-width:24px;padding:2px;")
-            ui.html('<div style="border-top:1px solid #27272a;margin:10px 0;"></div>')
-
-        ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">ADD COMMENT</div>')
-        comment_text = ui.textarea("Comment").props("outlined rows=8").style("width:100%;")
-        flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
-
-        def _save_comment():
-            text = (comment_text.value or "").strip()
-            if not text:
-                return
-            item.comments.append(
-                {
-                    "text": text,
-                    "flagged": flag_check.value,
-                    "resolved": False,
-                    "created": str(date.today()),
-                    "author": "user",
-                }
-            )
-            save_fn(item)
-            comment_dialog.close()
-            refresh_fn()
-
-        with ui.row().classes("gap-2 mt-3"):
-            ui.button("Save", on_click=_save_comment).props("flat dense no-caps").style("color:#3b82f6;")
-            ui.button("Cancel", on_click=comment_dialog.close).props("flat dense no-caps").style("color:#a1a1aa;")
-    comment_dialog.open()
-
-
-def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None) -> None:
-    """Render a single Kanban card with Mission Control dark theme — click opens detail modal."""
+    If on_card_click is provided, clicking opens side panel. Otherwise falls back to detail modal.
+    """
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
     is_done = status == "done"
@@ -124,35 +51,16 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
     if is_done:
         card_css += " mc-done"
 
-    # Build the detail dialog
-    detail_dialog = ui.dialog().classes("mc-detail-dialog")
-    with (
-        detail_dialog,
-        ui.card().style(
-            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
-            "max-height:80vh;overflow-y:auto;"
-        ),
-    ):
-        _render_detail_modal_content(item, is_done)
-        with ui.row().classes("gap-2").style("margin-top:12px;"):
-            if not is_done and save_fn and refresh_fn:
-                ui.button(
-                    "Edit",
-                    on_click=lambda d=detail_dialog, i=item: (
-                        d.close(),
-                        _show_edit_dialog(i, save_fn, refresh_fn),
-                    ),
-                ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
-            ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
-                "color:#a1a1aa;font-size:11px;"
-            )
-
     card_el = ui.element("div").classes(card_css)
-    card_el.on("click", lambda _e, d=detail_dialog: d.open())
+
+    if on_card_click:
+        card_el.on("click", lambda _e, i=item: on_card_click(i))
+    else:
+        # Fallback: no-op (side panel should always be provided)
+        pass
 
     with card_el:
-        # Row 1: title (left) + comment button (top-right corner)
+        # Row 1: title (left) + comment badge (top-right corner)
         with ui.element("div").style("display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"):
             title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
             if is_done:
@@ -161,18 +69,15 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                 title_style += "color:#e4e4e7;"
             ui.html(f'<div style="{title_style}">{item.title}</div>').style("flex:1;min-width:0;")
 
-            # Comment button (top-right corner)
-            if not is_done and save_fn and refresh_fn:
-                comment_count = len(item.comments)
+            # Comment badge (top-right corner)
+            if item.comments:
                 has_flagged = any(n.get("flagged") and not n.get("resolved") for n in item.comments)
-                icon_color = "#f87171" if has_flagged else "#52525b" if comment_count == 0 else "#60a5fa"
+                icon_color = "#f87171" if has_flagged else "#60a5fa"
                 badge_html = (
-                    f'<span style="position:relative;cursor:pointer;color:{icon_color};'
+                    f'<span style="position:relative;color:{icon_color};'
                     f'font-size:14px;padding:2px 4px;">\U0001f4ac' + comment_badge_html(item.comments) + "</span>"
                 )
-                comment_btn = ui.element("div").style("flex-shrink:0;")
-                comment_btn.on("click.stop", lambda _e, i=item: _show_comment_dialog(i, save_fn, refresh_fn))
-                with comment_btn:
+                with ui.element("div").style("flex-shrink:0;"):
                     ui.html(badge_html)
 
         # Row 2: move buttons (left) + badges (right)
@@ -229,554 +134,428 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
             ui.html(f'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;">{tags_html}</div>')
 
 
-def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
-    """Render the content inside the detail modal dialog."""
-    cat_color, cat_bg = category_style(item.category)
-    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
-
-    label_style = (
-        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
-        "margin-top:10px;margin-bottom:3px;"
-    )
-    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
-
-    # Title
-    title_style = "font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;font-family:'DM Sans',sans-serif;"
-    if is_done:
-        title_style += "text-decoration:line-through;color:#52525b;"
-    ui.html(f'<div style="{title_style}">{item.title}</div>')
-
-    # Badges row
-    pill_base = (
-        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
-    )
-    badges_html = (
-        f'<span style="{pill_base}text-transform:uppercase;color:{cat_color};background:{cat_bg}">'
-        f"{item.category}</span> "
-        f'<span style="{pill_base}text-transform:uppercase;color:{pri_color};background:{pri_bg}">'
-        f"{item.priority}</span>"
-    )
-    if item.phase:
-        badges_html += (
-            f' <span style="{pill_base}font-style:italic;text-transform:none;'
-            f'color:#71717a;background:#1e1e23;">{item.phase}</span>'
-        )
-    if item.design_reviewed:
-        badges_html += (
-            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
-            f'background:rgba(74,222,128,0.1);">&#10003; design</span>'
-        )
-    if item.code_reviewed:
-        badges_html += (
-            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
-            f'background:rgba(74,222,128,0.1);">&#10003; code</span>'
-        )
-    if item.sprint_target is not None:
-        badges_html += (
-            f' <span style="{pill_base}font-weight:500;text-transform:none;'
-            f'color:#52525b;background:transparent;border:1px solid #27272a;">'
-            f"S{item.sprint_target}</span>"
-        )
-    ui.html(f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">{badges_html}</div>')
-
-    # Detail fields
-    if item.goal:
-        ui.html(f'<div style="{label_style}">Goal</div>')
-        ui.html(f'<div style="{value_style}">{item.goal}</div>')
-
-    if item.complexity:
-        ui.html(f'<div style="{label_style}">Complexity</div>')
-        ui.html(
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
-            f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
-            f"{item.complexity}</span>"
-        )
-
-    if item.description:
-        ui.html(f'<div style="{label_style}">Description</div>')
-        ui.markdown(item.description).style(value_style)
-
-    if item.acceptance_criteria:
-        ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
-        li_items = "".join(
-            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>' for ac in item.acceptance_criteria
-        )
-        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-    if item.technical_specs:
-        ui.html(f'<div style="{label_style}">Technical Specs</div>')
-        li_items = "".join(
-            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
-        )
-        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-    if item.test_plan:
-        ui.html(f'<div style="{label_style}">Test Plan</div>')
-        li_items = "".join(
-            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{tp}</li>' for tp in item.test_plan
-        )
-        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-    if item.notes:
-        ui.html(f'<div style="{label_style}">Notes</div>')
-        ui.html(f'<div style="{value_style}">{item.notes}</div>')
-
-    if item.tags:
-        ui.html(f'<div style="{label_style}">Tags</div>')
-        tag_html = " ".join(
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
-            f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
-            f'border-radius:3px;margin-right:2px;">{t}</span>'
-            for t in item.tags
-        )
-        ui.html(tag_html)
-
-    if item.depends_on:
-        ui.html(f'<div style="{label_style}">Depends on</div>')
-        ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
-
-    # Comments
-    if item.comments:
-        ui.html(f'<div style="{label_style}">Comments</div>')
-        for note in item.comments:
-            flagged = note.get("flagged", False)
-            resolved = note.get("resolved", False)
-            text = note.get("text", "")
-            created = note.get("created", "")
-
-            if resolved:
-                icon = "&#10003;"
-                row_style = "opacity:0.5;text-decoration:line-through;"
-                icon_style = "color:#71717a;margin-right:6px;"
-            elif flagged:
-                icon = "\U0001f916"
-                row_style = ""
-                icon_style = "color:#f87171;margin-right:6px;"
-            else:
-                icon = ""
-                row_style = ""
-                icon_style = ""
-
-            note_html = (
-                f'<div style="display:flex;align-items:baseline;gap:4px;font-size:11px;'
-                f'color:#a1a1aa;margin-bottom:3px;{row_style}">'
-            )
-            if icon:
-                note_html += f'<span style="{icon_style}">{icon}</span>'
-            note_html += f"<span>{text}</span>"
-            if created:
-                note_html += (
-                    f'<span style="margin-left:auto;font-size:9px;color:#3f3f46;'
-                    f"font-family:'IBM Plex Mono',monospace;white-space:nowrap;\">{created}</span>"
-                )
-            note_html += "</div>"
-            ui.html(note_html)
-
-    # Footer
-    ui.html(
-        '<div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #1e1e23;">'
-        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-        f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
-        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-        f"Created: {item.created}</span>"
-        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-        f"Updated: {item.updated}</span>"
-        "</div>"
-    )
-
-
-def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
-    """Open an edit dialog for the given backlog item."""
-    edit_dialog = ui.dialog().classes("mc-detail-dialog")
-    with (
-        edit_dialog,
-        ui.card().style(
-            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
-        ),
-    ):
-        ui.html('<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Edit Item</div>')
-
-        title_input = ui.input("Title", value=item.title).props("dense outlined").style("width:100%;")
-        from agile_backlog.yaml_store import load_all as _load_all
-
-        _items = _load_all()
-        all_categories = sorted({i.category for i in _items})
-        with ui.row().classes("gap-2").style("width:100%;"):
-            priority_input = (
-                ui.select(label="Priority", options=["P1", "P2", "P3"], value=item.priority)
-                .props("dense outlined")
-                .style("min-width:100px;")
-            )
-            category_input = (
-                ui.select(label="Category", options=all_categories, value=item.category, with_input=True)
-                .props("dense outlined")
-                .style("flex:1;")
-            )
-        with ui.row().classes("gap-2").style("width:100%;"):
-            current = detect_current_sprint(_items)
-            sprint_options_edit = {None: "Backlog (unplanned)"}
-            if current is not None:
-                sprint_options_edit[current] = f"Sprint {current} (current)"
-                sprint_options_edit[current + 1] = f"Sprint {current + 1} (next)"
-            if item.sprint_target is not None and item.sprint_target not in sprint_options_edit:
-                sprint_options_edit[item.sprint_target] = f"Sprint {item.sprint_target}"
-            sprint_input = (
-                ui.select(label="Sprint", options=sprint_options_edit, value=item.sprint_target)
-                .props("dense outlined")
-                .style("min-width:120px;")
-            )
-            phase_input = (
-                ui.select(
-                    label="Phase",
-                    options={None: "(none)", "plan": "plan", "spec": "spec", "build": "build", "review": "review"},
-                    value=item.phase,
-                )
-                .props("dense outlined")
-                .style("min-width:120px;")
-            )
-            complexity_input = (
-                ui.select(
-                    label="Complexity",
-                    options={None: "(none)", "S": "S", "M": "M", "L": "L"},
-                    value=item.complexity,
-                )
-                .props("dense outlined")
-                .style("min-width:140px;")
-            )
-        all_tags = sorted({t for i in _items for t in i.tags})
-        tag_input = (
-            ui.select(
-                label="Tags",
-                options=all_tags,
-                multiple=True,
-                value=list(item.tags),
-                with_input=True,
-                new_value_mode="add-unique",
-            )
-            .props("dense outlined use-chips")
-            .classes("mc-select")
-            .style("width:100%;")
-        )
-        goal_input = ui.textarea("Goal", value=item.goal).props("dense outlined autogrow").style("width:100%;")
-        description_input = (
-            ui.textarea("Description", value=item.description).props("outlined autogrow rows=6").style("width:100%;")
-        )
-        ac_input = (
-            ui.textarea("Acceptance Criteria (one per line)", value="\n".join(item.acceptance_criteria))
-            .props("outlined autogrow rows=6")
-            .style("width:100%;")
-        )
-        ts_input = (
-            ui.textarea("Technical Specs (one per line)", value="\n".join(item.technical_specs))
-            .props("outlined autogrow rows=6")
-            .style("width:100%;")
-        )
-        tp_input = (
-            ui.textarea("Test Plan (one per line)", value="\n".join(item.test_plan))
-            .props("outlined autogrow rows=6")
-            .style("width:100%;")
-        )
-        notes_input = ui.textarea("Notes", value=item.notes).props("outlined autogrow rows=6").style("width:100%;")
-
-        def _split_lines(text: str) -> list[str]:
-            return [line.strip() for line in text.split("\n") if line.strip()] if text else []
-
-        def save_and_close():
-            item.title = title_input.value or item.title
-            item.priority = priority_input.value
-            item.category = category_input.value or item.category
-            sprint_val = sprint_input.value
-            item.sprint_target = int(sprint_val) if sprint_val is not None and sprint_val != "" else None
-            item.phase = phase_input.value
-            item.complexity = complexity_input.value
-            item.tags = list(tag_input.value or [])
-            item.goal = goal_input.value or ""
-            item.description = description_input.value or ""
-            item.acceptance_criteria = _split_lines(ac_input.value)
-            item.technical_specs = _split_lines(ts_input.value)
-            item.test_plan = _split_lines(tp_input.value)
-            item.notes = notes_input.value or ""
-            save_fn(item)
-            edit_dialog.close()
-            refresh_fn()
-
-        with ui.row().classes("gap-2 mt-3"):
-            ui.button("Save", on_click=save_and_close).props("flat dense no-caps").style("color:#3b82f6;")
-            ui.button("Cancel", on_click=edit_dialog.close).props("flat dense no-caps").style("color:#a1a1aa;")
-
-    edit_dialog.open()
-
-
-def _render_detail_panel(item: BacklogItem) -> None:
-    """Render the expandable details section of a card."""
-    label_style = (
-        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
-        "margin-top:6px;margin-bottom:2px;"
-    )
-    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
-
-    with ui.element("div").style(
-        "margin-top:8px;padding-top:8px;border-top:1px solid #1e1e23;font-size:11px;color:#a1a1aa;line-height:1.6;"
-    ):
-        if item.goal:
-            ui.html(f'<div style="{label_style}">Goal</div>')
-            ui.html(f'<div style="{value_style}">{item.goal}</div>')
-
-        if item.complexity:
-            ui.html(f'<div style="{label_style}">Complexity</div>')
-            ui.html(
-                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
-                f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
-                f"{item.complexity}</span>"
-            )
-
-        if item.description:
-            ui.html(f'<div style="{label_style}">Description</div>')
-            ui.html(f'<div style="{value_style}">{item.description}</div>')
-
-        if item.acceptance_criteria:
-            ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
-            li_items = "".join(
-                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>'
-                for ac in item.acceptance_criteria
-            )
-            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-        if item.technical_specs:
-            ui.html(f'<div style="{label_style}">Technical Specs</div>')
-            li_items = "".join(
-                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
-            )
-            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-        if item.test_plan:
-            ui.html(f'<div style="{label_style}">Test Plan</div>')
-            li_items = "".join(
-                f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{tp}</li>' for tp in item.test_plan
-            )
-            ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-        if item.notes:
-            ui.html(f'<div style="{label_style}">Notes</div>')
-            ui.html(f'<div style="{value_style}">{item.notes}</div>')
-
-        if item.tags:
-            ui.html(f'<div style="{label_style}">Tags</div>')
-            tag_html = " ".join(
-                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
-                f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
-                f'border-radius:3px;margin-right:2px;">{t}</span>'
-                for t in item.tags
-            )
-            ui.html(tag_html)
-
-        if item.depends_on:
-            ui.html(f'<div style="{label_style}">Depends on</div>')
-            ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
-
-        # Footer
-        ui.html(
-            '<div style="display:flex;gap:12px;margin-top:8px;padding-top:6px;border-top:1px solid #1e1e23;">'
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-            f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-            f"Created: {item.created}</span>"
-            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-            f"Updated: {item.updated}</span>"
-            "</div>"
-        )
-
-
 def _render_side_panel_content(
     item: BacklogItem,
     save_fn,
     refresh_fn,
     close_fn,
+    all_items: list[BacklogItem] | None = None,
 ) -> None:
-    """Render the side panel content for a backlog item detail view."""
+    """Render the side panel with click-to-edit fields, comments thread, and pinned comment input."""
+    from agile_backlog.yaml_store import load_all as _load_all
+
+    if all_items is None:
+        all_items = _load_all()
+
+    pill_base = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "padding:2px 6px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;cursor:pointer;"
+    )
     label_style = (
         "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
         "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
         "margin-top:10px;margin-bottom:3px;"
     )
-    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
 
-    # Header: Close button (left) + Edit button (right)
-    with ui.element("div").style("display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"):
-        ui.button(
-            "\u2715",
-            on_click=close_fn,
-        ).props("flat dense no-caps").style("color:#71717a;font-size:14px;min-width:28px;padding:2px;")
-        if save_fn and refresh_fn:
-            ui.button(
-                "Edit",
-                on_click=lambda i=item: (
-                    close_fn(),
-                    _show_edit_dialog(i, save_fn, refresh_fn),
-                ),
-            ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
+    def _save_and_refresh():
+        save_fn(item)
+        refresh_fn()
 
-    # Title
-    ui.html(
-        f'<div style="font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;'
-        f"font-family:'DM Sans',sans-serif;\">{item.title}</div>"
-    )
+    # Outer flex column: scrollable content + pinned comment input
+    with ui.element("div").style("display:flex;flex-direction:column;height:100%;"):
+        # === Scrollable content area ===
+        with ui.element("div").style("flex:1;overflow-y:auto;padding-bottom:8px;"):
+            # 1. Header: Close button only
+            with ui.element("div").style("display:flex;justify-content:flex-end;align-items:center;margin-bottom:8px;"):
+                ui.button(
+                    "\u2715",
+                    on_click=close_fn,
+                ).props("flat dense no-caps").style("color:#71717a;font-size:14px;min-width:28px;padding:2px;")
 
-    # Metadata grid
-    pill_base = (
-        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
-    )
+            # 2. Title — click to edit
+            title_container = ui.element("div")
+            with title_container:
+                _render_editable_title(item, title_container, _save_and_refresh)
 
-    meta_items = []
-    meta_items.append(("Status", f'<span style="{pill_base}color:#a1a1aa;background:#1e1e23;">{item.status}</span>'))
-    if item.phase:
-        meta_items.append(
-            (
-                "Phase",
-                f'<span style="{pill_base}font-style:italic;text-transform:none;color:#71717a;'
-                f'background:#1e1e23;">{item.phase}</span>',
+            # 3. Metadata pills row 1: status, phase, priority, complexity, category
+            with ui.element("div").style("display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;"):
+                _render_metadata_pill(
+                    item,
+                    "status",
+                    item.status,
+                    pill_base,
+                    "#a1a1aa",
+                    "#1e1e23",
+                    options=["backlog", "doing", "done"],
+                    save_and_refresh=_save_and_refresh,
+                )
+                _render_metadata_pill(
+                    item,
+                    "phase",
+                    item.phase or "(no phase)",
+                    pill_base,
+                    "#71717a",
+                    "#1e1e23",
+                    options=[None, "plan", "spec", "build", "review"],
+                    labels={None: "(no phase)", "plan": "plan", "spec": "spec", "build": "build", "review": "review"},
+                    save_and_refresh=_save_and_refresh,
+                    italic=True,
+                )
+                _render_metadata_pill(
+                    item,
+                    "priority",
+                    item.priority,
+                    pill_base,
+                    pri_color,
+                    pri_bg,
+                    options=["P0", "P1", "P2", "P3", "P4"],
+                    save_and_refresh=_save_and_refresh,
+                )
+                _render_metadata_pill(
+                    item,
+                    "complexity",
+                    item.complexity or "(none)",
+                    pill_base,
+                    "#60a5fa",
+                    "rgba(59,130,246,0.12)",
+                    options=[None, "S", "M", "L"],
+                    labels={None: "(none)", "S": "S", "M": "M", "L": "L"},
+                    save_and_refresh=_save_and_refresh,
+                )
+                _render_metadata_pill(
+                    item,
+                    "category",
+                    item.category,
+                    pill_base,
+                    cat_color,
+                    cat_bg,
+                    options=["bug", "feature", "docs", "chore"],
+                    save_and_refresh=_save_and_refresh,
+                )
+
+            # 4. Tags row 2: tag pills + "+ tag" + updated timestamp
+            with ui.element("div").style("display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:6px;"):
+                _render_editable_tags(item, all_items, _save_and_refresh)
+                # Updated timestamp
+                ui.html(
+                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+                    f'color:#3f3f46;margin-left:auto;">updated {relative_time(item.updated)}</span>'
+                )
+
+            # 5. Divider
+            ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
+
+            # 6. Description — click to edit
+            ui.html(f'<div style="{label_style}">Description</div>')
+            desc_container = ui.element("div")
+            with desc_container:
+                _render_editable_textarea(
+                    item,
+                    "description",
+                    item.description,
+                    desc_container,
+                    _save_and_refresh,
+                    use_markdown=True,
+                )
+
+            # 7. Acceptance Criteria — click to edit
+            ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
+            ac_container = ui.element("div")
+            with ac_container:
+                _render_editable_list_field(
+                    item,
+                    "acceptance_criteria",
+                    item.acceptance_criteria,
+                    ac_container,
+                    _save_and_refresh,
+                )
+
+            # 8. Technical Specs — click to edit
+            ui.html(f'<div style="{label_style}">Technical Specs</div>')
+            ts_container = ui.element("div")
+            with ts_container:
+                _render_editable_list_field(
+                    item,
+                    "technical_specs",
+                    item.technical_specs,
+                    ts_container,
+                    _save_and_refresh,
+                )
+
+            # 9. Divider
+            ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
+
+            # 10. Comments thread
+            ui.html(f'<div style="{label_style}">Comments</div>')
+            if item.comments:
+                ui.html(comment_thread_html(item.comments))
+                # Resolve buttons for flagged, unresolved comments
+                for idx, comment in enumerate(item.comments):
+                    if comment.get("flagged") and not comment.get("resolved"):
+                        preview = comment.get("text", "")[:40]
+
+                        def _resolve_comment(comment_idx=idx):
+                            item.comments[comment_idx]["resolved"] = True
+                            _save_and_refresh()
+
+                        with ui.element("div").style("display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"):
+                            ui.html(
+                                f'<span style="font-size:10px;color:#71717a;font-style:italic;">'
+                                f'Resolve: "{preview}..."</span>'
+                            )
+                            ui.button(
+                                "\u2713 Resolve",
+                                on_click=_resolve_comment,
+                            ).props("flat dense no-caps").style(
+                                "color:#4ade80;font-size:10px;min-width:0;padding:1px 6px;"
+                            )
+            else:
+                ui.html('<div style="font-size:11px;color:#52525b;font-style:italic;">No comments yet.</div>')
+
+        # === Pinned comment input area (flex-shrink:0) ===
+        with ui.element("div").style("flex-shrink:0;border-top:1px solid #27272a;padding-top:10px;"):
+            comment_text = (
+                ui.textarea()
+                .props("outlined dense rows=2 placeholder='Write a comment...'")
+                .style("width:100%;font-size:12px;")
             )
-        )
-    meta_items.append(
-        (
-            "Priority",
-            f'<span style="{pill_base}text-transform:uppercase;color:{pri_color};background:{pri_bg}">'
-            f"{item.priority}</span>",
-        )
+            with ui.element("div").style("display:flex;align-items:center;gap:8px;margin-top:6px;"):
+                flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
+                ui.element("div").style("flex:1;")
+
+                def _send_comment():
+                    text = (comment_text.value or "").strip()
+                    if not text:
+                        return
+                    item.comments.append(
+                        {
+                            "text": text,
+                            "flagged": flag_check.value,
+                            "resolved": False,
+                            "created": str(date.today()),
+                            "author": "user",
+                        }
+                    )
+                    _save_and_refresh()
+
+                ui.button("Send", on_click=_send_comment).props("flat dense no-caps").style(
+                    "color:#3b82f6;font-size:11px;font-weight:600;"
+                )
+
+
+def _render_editable_title(item: BacklogItem, container, save_and_refresh) -> None:
+    """Render a click-to-edit title field."""
+    title_style = (
+        "font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;font-family:'DM Sans',sans-serif;padding:2px 4px;"
     )
-    if item.complexity:
-        meta_items.append(("Complexity", _complexity_badge(item.complexity)))
-    meta_items.append(
-        (
-            "Category",
-            f'<span style="{pill_base}text-transform:uppercase;color:{cat_color};background:{cat_bg}">'
-            f"{item.category}</span>",
-        )
-    )
-    meta_items.append(
-        (
-            "Sprint",
-            f'<span style="{pill_base}font-weight:500;color:#52525b;background:transparent;'
-            f'border:1px solid #27272a;">'
-            f"{'S' + str(item.sprint_target) if item.sprint_target is not None else 'Unplanned'}"
-            f"</span>",
-        )
-    )
-    if item.tags:
-        tag_html = " ".join(
+
+    def _show_label():
+        container.clear()
+        with container:
+            label_el = ui.html(f'<div style="{title_style}">{item.title}</div>').classes("mc-editable")
+            label_el.on("click", lambda _e: _show_input())
+
+    def _show_input():
+        container.clear()
+        with container:
+            inp = ui.input(value=item.title).props("outlined dense").style("width:100%;font-size:14px;font-weight:600;")
+
+            def _save(e=None):
+                new_val = (inp.value or "").strip()
+                if new_val and new_val != item.title:
+                    item.title = new_val
+                    save_and_refresh()
+                else:
+                    _show_label()
+
+            inp.on("blur", _save)
+            inp.on("keydown.enter", _save)
+
+    _show_label()
+
+
+def _render_metadata_pill(
+    item: BacklogItem,
+    field: str,
+    display_text: str,
+    pill_base: str,
+    text_color: str,
+    bg_color: str,
+    options: list,
+    save_and_refresh,
+    labels: dict | None = None,
+    italic: bool = False,
+) -> None:
+    """Render a clickable metadata pill with a dropdown menu."""
+    extra_style = "font-style:italic;text-transform:none;" if italic else "text-transform:uppercase;"
+    with (
+        ui.element("span")
+        .classes("mc-editable")
+        .style(f"{pill_base}{extra_style}color:{text_color};background:{bg_color};")
+    ):
+        ui.label(display_text).style("font-size:inherit;color:inherit;font-weight:inherit;")
+        with ui.menu() as menu:
+            for opt in options:
+                opt_label = labels[opt] if labels and opt in labels else (opt if opt is not None else "(none)")
+
+                def _select(val=opt, m=menu):
+                    setattr(item, field, val)
+                    m.close()
+                    save_and_refresh()
+
+                ui.menu_item(opt_label, on_click=_select)
+
+
+def _render_editable_tags(item: BacklogItem, all_items: list[BacklogItem], save_and_refresh) -> None:
+    """Render tag pills with remove buttons and a + tag button."""
+    all_tags = sorted({t for i in all_items for t in i.tags})
+
+    for tag in list(item.tags):
+        tag_html = (
             f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
             f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
-            f'border-radius:3px;">{t}</span>'
-            for t in item.tags
+            f'border-radius:3px;display:inline-flex;align-items:center;gap:3px;">'
+            f'{tag} <span style="cursor:pointer;color:#71717a;font-size:11px;">\u00d7</span></span>'
         )
-        meta_items.append(("Tags", tag_html))
+        tag_el = ui.html(tag_html).style("cursor:pointer;")
 
-    meta_html = '<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:10px;">'
-    for label, value in meta_items:
-        meta_html += (
-            f'<div style="{label_style}margin-top:0;">{label}</div>'
-            f'<div style="display:flex;align-items:center;gap:4px;">{value}</div>'
-        )
-    meta_html += "</div>"
-    ui.html(meta_html)
+        def _remove_tag(_e, t=tag):
+            if t in item.tags:
+                item.tags.remove(t)
+                save_and_refresh()
 
-    # Description
-    if item.description:
-        ui.html(f'<div style="{label_style}">Description</div>')
-        ui.markdown(item.description).style(value_style)
+        tag_el.on("click", _remove_tag)
 
-    # Acceptance Criteria
-    if item.acceptance_criteria:
-        ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
-        li_items = "".join(
-            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>' for ac in item.acceptance_criteria
-        )
-        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+    # + tag button with autocomplete input
+    add_tag_container = ui.element("span")
+    with add_tag_container:
 
-    # Technical Specs
-    if item.technical_specs:
-        ui.html(f'<div style="{label_style}">Technical Specs</div>')
-        li_items = "".join(
-            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
-        )
-        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
-
-    # Comments thread
-    ui.html(f'<div style="{label_style}">Comments</div>')
-    if item.comments:
-        ui.html(comment_thread_html(item.comments))
-
-        # Resolve buttons for flagged, unresolved comments
-        for idx, comment in enumerate(item.comments):
-            if comment.get("flagged") and not comment.get("resolved"):
-                preview = comment.get("text", "")[:40]
-
-                def _resolve_comment(comment_idx=idx):
-                    item.comments[comment_idx]["resolved"] = True
-                    save_fn(item)
-                    refresh_fn()
-
-                with ui.element("div").style("display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"):
-                    ui.html(
-                        f'<span style="font-size:10px;color:#71717a;font-style:italic;">Resolve: "{preview}..."</span>'
+        def _show_tag_input():
+            add_tag_container.clear()
+            with add_tag_container:
+                tag_inp = (
+                    ui.select(
+                        options=all_tags,
+                        with_input=True,
+                        new_value_mode="add-unique",
+                        value=None,
                     )
-                    ui.button(
-                        "\u2713 Resolve",
-                        on_click=_resolve_comment,
-                    ).props("flat dense no-caps").style("color:#4ade80;font-size:10px;min-width:0;padding:1px 6px;")
-    else:
-        ui.html('<div style="font-size:11px;color:#52525b;font-style:italic;">No comments yet.</div>')
+                    .props("dense outlined placeholder='tag'")
+                    .style("min-width:80px;max-width:120px;font-size:9px;")
+                    .classes("mc-select")
+                )
 
-    # Comment input
-    ui.html(
-        '<div style="border-top:1px solid #27272a;margin-top:12px;padding-top:10px;">'
-        f'<div style="{label_style}">Add Comment</div></div>'
-    )
-    comment_text = (
-        ui.textarea()
-        .props("outlined dense rows=3 placeholder='Write a comment...'")
-        .style("width:100%;font-size:12px;")
-    )
-    with ui.element("div").style("display:flex;align-items:center;gap:8px;margin-top:6px;"):
-        flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
-        ui.element("div").style("flex:1;")
+                def _add_tag(e):
+                    val = tag_inp.value
+                    if val and val not in item.tags:
+                        item.tags.append(val)
+                        save_and_refresh()
+                    else:
+                        _show_add_button()
 
-        def _send_comment():
-            text = (comment_text.value or "").strip()
-            if not text:
-                return
-            item.comments.append(
-                {
-                    "text": text,
-                    "flagged": flag_check.value,
-                    "resolved": False,
-                    "created": str(date.today()),
-                    "author": "user",
-                }
+                tag_inp.on("update:model-value", _add_tag)
+
+        def _show_add_button():
+            add_tag_container.clear()
+            with add_tag_container:
+                add_btn = ui.html(
+                    "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+                    "background:#1e1e23;color:#52525b;padding:1px 6px;"
+                    'border-radius:3px;cursor:pointer;">+ tag</span>'
+                )
+                add_btn.on("click", lambda _e: _show_tag_input())
+
+        _show_add_button()
+
+
+def _render_editable_textarea(
+    item: BacklogItem,
+    field: str,
+    current_value: str,
+    container,
+    save_and_refresh,
+    use_markdown: bool = False,
+) -> None:
+    """Render a click-to-edit text area field."""
+    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;padding:2px 4px;"
+    empty_style = "font-size:11px;color:#52525b;font-style:italic;padding:2px 4px;"
+
+    def _show_display():
+        container.clear()
+        with container:
+            if current_value:
+                if use_markdown:
+                    el = ui.markdown(current_value).style(value_style).classes("mc-editable")
+                else:
+                    el = ui.html(f'<div style="{value_style}">{current_value}</div>').classes("mc-editable")
+            else:
+                el = ui.html(f'<div style="{empty_style}">Click to add...</div>').classes("mc-editable")
+            el.on("click", lambda _e: _show_editor())
+
+    def _show_editor():
+        container.clear()
+        with container:
+            ta = (
+                ui.textarea(value=getattr(item, field))
+                .props("outlined autogrow rows=4")
+                .style("width:100%;font-size:12px;")
             )
-            save_fn(item)
-            refresh_fn()
+            with ui.row().classes("gap-2").style("margin-top:4px;"):
 
-        ui.button("Send", on_click=_send_comment).props("flat dense no-caps").style(
-            "color:#3b82f6;font-size:11px;font-weight:600;"
-        )
+                def _save():
+                    setattr(item, field, ta.value or "")
+                    save_and_refresh()
 
-    # Footer
-    ui.html(
-        '<div style="display:flex;gap:12px;margin-top:12px;padding-top:8px;border-top:1px solid #1e1e23;">'
-        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-        f"Created: {item.created}</span>"
-        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
-        f"Updated: {item.updated}</span>"
-        "</div>"
-    )
+                ui.button("Save", on_click=_save).props("flat dense no-caps").style("color:#3b82f6;font-size:10px;")
+                ui.button("Cancel", on_click=lambda: _show_display()).props("flat dense no-caps").style(
+                    "color:#a1a1aa;font-size:10px;"
+                )
+
+    _show_display()
+
+
+def _render_editable_list_field(
+    item: BacklogItem,
+    field: str,
+    current_values: list[str],
+    container,
+    save_and_refresh,
+) -> None:
+    """Render a click-to-edit list field (one item per line)."""
+    empty_style = "font-size:11px;color:#52525b;font-style:italic;padding:2px 4px;"
+
+    def _show_display():
+        container.clear()
+        with container:
+            if current_values:
+                li_items = "".join(
+                    f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{v}</li>' for v in current_values
+                )
+                el = ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>').classes("mc-editable")
+            else:
+                el = ui.html(f'<div style="{empty_style}">Click to add...</div>').classes("mc-editable")
+            el.on("click", lambda _e: _show_editor())
+
+    def _show_editor():
+        container.clear()
+        with container:
+            current_text = "\n".join(getattr(item, field))
+            ta = ui.textarea(value=current_text).props("outlined autogrow rows=4").style("width:100%;font-size:12px;")
+            with ui.row().classes("gap-2").style("margin-top:4px;"):
+
+                def _save():
+                    lines = [line.strip() for line in (ta.value or "").split("\n") if line.strip()]
+                    setattr(item, field, lines)
+                    save_and_refresh()
+
+                ui.button("Save", on_click=_save).props("flat dense no-caps").style("color:#3b82f6;font-size:10px;")
+                ui.button("Cancel", on_click=lambda: _show_display()).props("flat dense no-caps").style(
+                    "color:#a1a1aa;font-size:10px;"
+                )
+
+    _show_display()
 
 
 def _render_backlog_list(
@@ -823,7 +602,7 @@ def _render_backlog_list(
             panel_container_ref["el"].style("flex:4;min-width:320px;display:block;")
             panel_container_ref["el"].clear()
             with panel_container_ref["el"]:
-                _render_side_panel_content(item, save_fn, refresh_fn, _close_side_panel)
+                _render_side_panel_content(item, save_fn, refresh_fn, _close_side_panel, all_items=all_items)
 
     def _close_side_panel():
         panel_state["selected_id"] = None
@@ -896,7 +675,12 @@ def _render_backlog_list(
 
         for card_item in items:
             # Card row with hover-revealed move buttons
-            with ui.element("div").classes("mc-card-row").style("position:relative;margin:2px 0;padding:0 4px;"):
+            selected_class = " mc-selected" if panel_state["selected_id"] == card_item.id else ""
+            with (
+                ui.element("div")
+                .classes(f"mc-card-row{selected_class}")
+                .style("position:relative;margin:2px 0;padding:0 4px;")
+            ):
                 # Card (clickable)
                 card_container = ui.element("div").style("cursor:pointer;")
                 card_container.on("click", lambda _e, i=card_item: _open_side_panel(i))
