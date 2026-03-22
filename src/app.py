@@ -948,9 +948,10 @@ def kanban_page():
                     ),
                 ):
                     ui.html(
-                        '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Add Item</div>'
+                        '<div style="font-size:16px;font-weight:700;color:#e4e4e7;margin-bottom:16px;">'
+                        "New Backlog Item</div>"
                     )
-                    add_title = ui.input("Title *").props("dense outlined").style("width:100%;")
+                    add_title = ui.input("Title *").props("outlined").style("width:100%;")
                     with ui.row().classes("gap-2").style("width:100%;"):
                         add_priority = (
                             ui.select(label="Priority", options=["P1", "P2", "P3"], value="P2")
@@ -958,20 +959,24 @@ def kanban_page():
                             .style("min-width:100px;")
                         )
                         all_cats = sorted({i.category for i in all_items})
-                    add_category = (
-                        ui.select(label="Category *", options=all_cats, value=None, with_input=True)
-                        .props("dense outlined")
-                        .style("flex:1;")
-                    )
-                    add_description = ui.textarea("Description").props("dense outlined autogrow").style("width:100%;")
-                    sprint_add_options = {None: "Backlog (no sprint)"}
-                    if current_sprint is not None:
-                        sprint_add_options[current_sprint] = f"Sprint {current_sprint} (current)"
-                    add_sprint = (
-                        ui.select(label="Sprint target", options=sprint_add_options, value=None)
-                        .props("dense outlined")
-                        .style("width:200px;")
-                    )
+                        add_category = (
+                            ui.select(label="Category *", options=all_cats, value=None, with_input=True)
+                            .props("dense outlined")
+                            .style("flex:1;")
+                        )
+                        sprint_target_label = f"Sprint {current_sprint}" if current_sprint else "Backlog"
+                        add_sprint = (
+                            ui.select(
+                                label="Target",
+                                options={None: "Backlog", current_sprint: sprint_target_label}
+                                if current_sprint
+                                else {None: "Backlog"},
+                                value=None,
+                            )
+                            .props("dense outlined")
+                            .style("min-width:120px;")
+                        )
+                    add_description = ui.textarea("Description").props("outlined").style("width:100%;min-height:150px;")
                     add_error = ui.label("").style("color:#f87171;font-size:11px;display:none;")
 
                     def _save_new_item():
