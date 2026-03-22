@@ -50,38 +50,45 @@ def filter_items(
 
 
 def render_card_html(item: BacklogItem) -> str:
-    """Generate the HTML string for a styled card (two-row design)."""
-    cat_color, cat_bg = category_style(item.category)
-    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+    """Render a unified two-line card row as HTML. Used by both board and backlog views."""
+    pri_color = PRIORITY_COLORS.get(item.priority, ("#6b7280", "rgba(107,114,128,0.08)"))
+    bar_color = pri_color[0] if item.priority in ("P0", "P1") else "transparent"
+    cat_style = category_style(item.category)
+    title_color = "#71717a" if item.priority in ("P3", "P4") else "#e4e4e7"
 
-    p1_style = "border-left:3px solid #ef4444;" if item.priority == "P1" else ""
-    pill = "font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap"
+    badge = comment_badge_html(item.comments)
+    cat_pill = (
+        f'<span style="font-size:9px;color:{cat_style[0]};background:{cat_style[1]};'
+        f'padding:1px 6px;border-radius:3px;">{item.category}</span>'
+    )
+    pri_pill = (
+        f'<span style="font-size:9px;color:{pri_color[0]};background:{pri_color[1]};'
+        f'padding:1px 6px;border-radius:3px;font-weight:600;">{item.priority}</span>'
+    )
+    complexity = _complexity_badge(item.complexity) if item.complexity else ""
 
-    badges = [
-        f'<span style="{pill};text-transform:uppercase;color:{cat_color};background:{cat_bg}">{item.category}</span>',
-        f'<span style="{pill};text-transform:uppercase;color:{pri_color};background:{pri_bg}">{item.priority}</span>',
-    ]
-    if item.phase:
-        badges.append(f'<span style="{pill};font-style:italic;color:#71717a;background:#1e1e23">{item.phase}</span>')
-    review_badge = "font-size:10px;color:#4ade80;background:rgba(74,222,128,0.1);padding:1px 6px;border-radius:3px"
-    if item.design_reviewed:
-        badges.append(f'<span style="{review_badge}">&#10003; design</span>')
-    if item.code_reviewed:
-        badges.append(f'<span style="{review_badge}">&#10003; code</span>')
-    if item.sprint_target is not None:
-        badges.append(
-            f'<span style="{pill};font-weight:500;color:#52525b;background:none;'
-            f'border:1px solid #27272a">S{item.sprint_target}</span>'
-        )
+    tag_chips = "".join(
+        f'<span style="font-size:9px;color:#52525b;background:rgba(82,82,91,0.10);'
+        f'padding:1px 6px;border-radius:3px;margin-right:4px;">{t}</span>'
+        for t in item.tags
+    )
 
-    badge_row = " ".join(badges)
+    ts = relative_time(item.updated)
 
     return (
-        f'<div style="margin:0;padding:2px 0;{p1_style}">'
-        f'<div style="font-size:14px;font-weight:600;color:#e4e4e7;line-height:1.35;'
-        f'margin-bottom:6px">{item.title}</div>'
-        f'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-        f"{badge_row}</div></div>"
+        f'<div style="border-left:2px solid {bar_color};padding:6px 10px;cursor:pointer;'
+        f'border-radius:5px;margin:1px 0;" class="mc-card-row">'
+        f'<div style="display:flex;align-items:center;gap:8px;">'
+        f'<span style="color:{title_color};font-size:12.5px;font-weight:500;'
+        f'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{item.title}</span>'
+        f'<span style="display:flex;gap:5px;align-items:center;flex-shrink:0;">'
+        f"{badge}{complexity}{cat_pill}{pri_pill}</span>"
+        f"</div>"
+        f'<div style="display:flex;align-items:center;gap:5px;margin-top:3px;">'
+        f"{tag_chips}"
+        f'<span style="font-size:9px;color:#27272a;margin-left:auto;">{ts}</span>'
+        f"</div>"
+        f"</div>"
     )
 
 
@@ -201,34 +208,3 @@ def relative_time(dt: date) -> str:
     return dt.strftime("%b %-d")
 
 
-def render_backlog_card_html(item: BacklogItem) -> str:
-    """Render a backlog card row as HTML for the planning view."""
-    pri_color = PRIORITY_COLORS.get(item.priority, ("#6b7280", "rgba(107,114,128,0.1)"))
-    bar_color = pri_color[0] if item.priority in ("P0", "P1") else "transparent"
-    cat_style = category_style(item.category)
-
-    badge = comment_badge_html(item.comments)
-    complexity = _complexity_badge(item.complexity) if item.complexity else ""
-
-    tag_chips = "".join(
-        f'<span style="font-size:10px;color:#9ca3af;background:rgba(156,163,175,0.10);'
-        f'padding:1px 6px;border-radius:4px;margin-right:4px;">{t}</span>'
-        for t in item.tags
-    )
-
-    cat_pill = (
-        f'<span style="font-size:10px;color:{cat_style[0]};background:{cat_style[1]};'
-        f'padding:1px 8px;border-radius:4px;margin-right:4px;">{item.category}</span>'
-    )
-
-    return (
-        f'<div style="border-left:3px solid {bar_color};padding:8px 12px;cursor:pointer;'
-        f'border-radius:6px;background:rgba(255,255,255,0.03);margin:2px 0;" '
-        f'class="backlog-card-row">'
-        f'<div style="display:flex;justify-content:space-between;align-items:center;">'
-        f'<span style="color:#e4e4e7;font-size:13px;">{item.title}</span>'
-        f"<span>{badge}{complexity}</span>"
-        f"</div>"
-        f'<div style="margin-top:4px;">{cat_pill}{tag_chips}</div>'
-        f"</div>"
-    )

@@ -11,7 +11,6 @@ from agile_backlog.pure import (
     group_items_by_section,
     is_recently_done,
     relative_time,
-    render_backlog_card_html,
     render_card_html,
     render_comment_html,
 )
@@ -139,86 +138,59 @@ class TestFilterItems:
 
 
 class TestRenderCardHtml:
-    def test_contains_title(self):
-        html = render_card_html(_item(title="Fix auth leak"))
-        assert "Fix auth leak" in html
+    def test_shows_title(self):
+        html = render_card_html(_item(title="My Task"))
+        assert "My Task" in html
 
-    def test_contains_category_text_no_emoji(self):
+    def test_shows_category_pill(self):
         html = render_card_html(_item(category="bug"))
         assert "bug" in html
-        # No emoji in category pills
-        assert "\U0001f41b" not in html
 
-    def test_contains_priority_badge(self):
-        html = render_card_html(_item(priority="P1"))
-        assert "P1" in html
-
-    def test_contains_sprint_indicator(self):
-        html = render_card_html(_item(sprint_target=2))
-        assert "S2" in html
-
-    def test_unplanned_sprint(self):
-        html = render_card_html(_item(sprint_target=None))
-        # Unplanned items don't show a sprint indicator
-        assert "S2" not in html
-        assert "S3" not in html
-
-    def test_contains_category_color(self):
-        # "security" migrates to "feature"; verify the feature color is rendered
-        html = render_card_html(_item(category="security"))
-        assert "#60a5fa" in html
-
-    def test_render_card_with_phase(self):
-        html = render_card_html(_item(phase="build"))
-        assert "build" in html
-        # Phase uses italic style
-        assert "italic" in html
-
-    def test_render_card_without_phase(self):
-        html = render_card_html(_item(phase=None))
-        # Phase badge should not appear when phase is None
-        assert "italic" not in html
-
-    def test_p1_card_has_red_left_border(self):
-        html = render_card_html(_item(priority="P1"))
-        assert "border-left:3px solid #ef4444" in html
-
-    def test_p2_card_no_left_border(self):
+    def test_shows_priority_pill(self):
         html = render_card_html(_item(priority="P2"))
-        assert "border-left" not in html
+        assert "P2" in html
 
-    def test_card_title_14px(self):
-        html = render_card_html(_item(title="Some title"))
-        assert "14px" in html
+    def test_p0_has_left_border(self):
+        html = render_card_html(_item(priority="P0"))
+        assert "border-left:2px solid #ef4444" in html
 
-    def test_badge_uses_design_system_colors(self):
-        html = render_card_html(_item(category="feature"))
-        assert "#60a5fa" in html
-        assert "rgba(59,130,246,0.08)" in html
-
-    def test_sprint_badge_outlined_style(self):
-        html = render_card_html(_item(sprint_target=3))
-        assert "background:none" in html
-        assert "border:1px solid #27272a" in html
-
-    def test_priority_badge_has_bg_color(self):
+    def test_p1_has_left_border(self):
         html = render_card_html(_item(priority="P1"))
-        assert "#f87171" in html
-        assert "rgba(248,113,113,0.10)" in html
+        assert "border-left:2px solid #f87171" in html
 
-    def test_design_reviewed_badge_shown_when_true(self):
+    def test_p2_no_left_border(self):
+        html = render_card_html(_item(priority="P2"))
+        assert "border-left:2px solid transparent" in html
+
+    def test_shows_tags(self):
+        html = render_card_html(_item(tags=["ui", "planning"]))
+        assert "ui" in html
+        assert "planning" in html
+
+    def test_shows_complexity_badge(self):
+        html = render_card_html(_item(complexity="M"))
+        assert "M" in html
+
+    def test_shows_comment_badge(self):
+        html = render_card_html(_item(comments=[{"text": "x", "flagged": True, "resolved": False}]))
+        assert "1" in html
+
+    def test_shows_relative_timestamp(self):
+        from datetime import date
+        html = render_card_html(_item(updated=date.today()))
+        assert "today" in html
+
+    def test_p3_muted_title_color(self):
+        html = render_card_html(_item(priority="P3"))
+        assert "#71717a" in html
+
+    def test_no_phase_badge_on_card(self):
+        html = render_card_html(_item(phase="build"))
+        assert "build" not in html
+
+    def test_no_review_badge_on_card(self):
         html = render_card_html(_item(design_reviewed=True))
-        assert "design" in html
-        assert "#4ade80" in html
-
-    def test_code_reviewed_badge_shown_when_true(self):
-        html = render_card_html(_item(code_reviewed=True))
-        assert "code" in html
-        assert "#4ade80" in html
-
-    def test_review_badges_not_shown_by_default(self):
-        html = render_card_html(_item())
-        assert "rgba(74,222,128,0.1)" not in html
+        assert "design" not in html
 
 
 class TestCommentBadgeHtml:
@@ -367,43 +339,6 @@ class TestGroupItemsBySection:
         ids = [i.id for i in result["backlog"]]
         assert ids == ["high", "med", "low"]
 
-
-class TestRenderBacklogCardHtml:
-    def test_shows_title(self):
-        item = _item(title="My Task")
-        html = render_backlog_card_html(item)
-        assert "My Task" in html
-
-    def test_shows_category_pill(self):
-        item = _item(category="bug")
-        html = render_backlog_card_html(item)
-        assert "bug" in html
-
-    def test_shows_tags(self):
-        item = _item(tags=["ui", "planning"])
-        html = render_backlog_card_html(item)
-        assert "ui" in html
-        assert "planning" in html
-
-    def test_shows_priority_bar_for_p0(self):
-        item = _item(priority="P0")
-        html = render_backlog_card_html(item)
-        assert "#ef4444" in html  # P0 red
-
-    def test_no_priority_bar_for_p3(self):
-        item = _item(priority="P3")
-        html = render_backlog_card_html(item)
-        assert "transparent" in html  # no colored bar for P3
-
-    def test_shows_complexity_badge(self):
-        item = _item(complexity="M")
-        html = render_backlog_card_html(item)
-        assert "M" in html
-
-    def test_shows_comment_badge(self):
-        item = _item(comments=[{"text": "x", "flagged": True, "resolved": False}])
-        html = render_backlog_card_html(item)
-        assert "1" in html  # badge count
 
 
 class TestRenderCommentHtml:

@@ -13,7 +13,7 @@ from agile_backlog.pure import (
     detect_current_sprint,
     filter_items,
     group_items_by_section,
-    render_backlog_card_html,
+    render_card_html,
 )
 from agile_backlog.styles import STATUSES
 from agile_backlog.tokens import PRIORITY_COLORS
@@ -863,7 +863,7 @@ def _render_backlog_list(
                 card_container = ui.element("div").style("flex:1;min-width:0;")
                 card_container.on("click", lambda _e, i=card_item: _open_side_panel(i))
                 with card_container:
-                    ui.html(render_backlog_card_html(card_item))
+                    ui.html(render_card_html(card_item))
 
                 # Move-to buttons
                 with ui.element("div").style("display:flex;gap:4px;flex-shrink:0;"):
