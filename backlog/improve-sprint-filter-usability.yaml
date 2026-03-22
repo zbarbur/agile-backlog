@@ -9,7 +9,7 @@ depends_on: []
 tags: []
 goal: "Make sprint filter usable with many sprints \u2014 show Current, Previous,\
   \ then specific numbers"
-complexity: S
+complexity: M
 technical_specs:
 - "Modify sprint filter options in kanban_page() \u2014 group as Current/Previous/specific"
 - Use ui.select with structured options
