@@ -1,7 +1,9 @@
 """Click CLI for agile-backlog."""
 
 import json
+import os
 from datetime import date
+from pathlib import Path
 
 import click
 import yaml
@@ -347,12 +349,59 @@ def migrate(dry_run: bool):
         click.echo(f"\n{len(changes)} item(s) migrated.")
 
 
+def _pid_file() -> Path:
+    """Return path to the server PID file."""
+    return _yaml_store.get_backlog_dir().parent / ".agile-backlog.pid"
+
+
+def _kill_server() -> bool:
+    """Kill a running server if PID file exists. Returns True if a process was killed."""
+    import signal
+
+    pf = _pid_file()
+    if not pf.exists():
+        return False
+    pid = int(pf.read_text().strip())
+    pf.unlink()
+    try:
+        os.kill(pid, signal.SIGTERM)
+        return True
+    except ProcessLookupError:
+        return False
+
+
 @main.command()
 @click.option("--port", default=8501, type=int, help="Port number.")
 @click.option("--host", default="127.0.0.1", help="Host address.")
 @click.option("--no-reload", is_flag=True, help="Disable hot reload.")
 def serve(port: int, host: str, no_reload: bool):
     """Open the Kanban board in the browser."""
+    import atexit
+
     from agile_backlog.app import run_app
 
+    pf = _pid_file()
+    pf.write_text(str(os.getpid()))
+    atexit.register(lambda: pf.unlink(missing_ok=True))
     run_app(host=host, port=port, reload=not no_reload)
+
+
+@main.command()
+def stop():
+    """Stop a running agile-backlog server."""
+    if _kill_server():
+        click.echo("Server stopped.")
+    else:
+        click.echo("No running server found.")
+
+
+@main.command()
+@click.option("--port", default=8501, type=int, help="Port number.")
+@click.option("--host", default="127.0.0.1", help="Host address.")
+@click.option("--no-reload", is_flag=True, help="Disable hot reload.")
+@click.pass_context
+def restart(ctx: click.Context, port: int, host: str, no_reload: bool):
+    """Restart the agile-backlog server."""
+    _kill_server()
+    click.echo("Restarting server...")
+    ctx.invoke(serve, port=port, host=host, no_reload=no_reload)
