@@ -220,9 +220,9 @@ class TestDetectCurrentSprint:
         ]
         assert detect_current_sprint(items) == 3
 
-    def test_returns_none_when_no_doing(self):
+    def test_fallback_to_highest_sprint_when_no_doing(self):
         items = [_item(id="a", status="backlog", sprint_target=2)]
-        assert detect_current_sprint(items) is None
+        assert detect_current_sprint(items) == 2
 
     def test_returns_none_when_doing_has_no_sprint(self):
         items = [_item(id="a", status="doing", sprint_target=None)]

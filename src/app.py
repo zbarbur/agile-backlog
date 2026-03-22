@@ -90,13 +90,15 @@ def render_card_html(item: BacklogItem) -> str:
 
 
 def detect_current_sprint(items: list[BacklogItem]) -> int | None:
-    """Detect the current sprint from items in 'doing' status. Returns the most common sprint_target."""
+    """Detect the current sprint. Checks doing items first, then falls back to highest sprint number."""
     doing_sprints = [i.sprint_target for i in items if i.status == "doing" and i.sprint_target is not None]
-    if not doing_sprints:
-        return None
-    from collections import Counter
+    if doing_sprints:
+        from collections import Counter
 
-    return Counter(doing_sprints).most_common(1)[0][0]
+        return Counter(doing_sprints).most_common(1)[0][0]
+    # Fallback: highest sprint number across all items (sprint is active until closed)
+    all_sprints = [i.sprint_target for i in items if i.sprint_target is not None]
+    return max(all_sprints) if all_sprints else None
 
 
 def _complexity_badge(complexity: str) -> str:

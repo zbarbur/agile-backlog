@@ -1,0 +1,30 @@
+title: Track current sprint explicitly
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Current sprint detection should not rely on inferring from items. Instead:
+
+  1. Store current sprint number in a config file (.agile-backlog.yaml or similar)
+
+  2. Sprint-start sets the current sprint number
+
+  3. Sprint-end clears it
+
+  4. UI reads from config, not from item inference
+
+  5. This ensures sprint badge and Add Item dialog always know the current sprint'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
