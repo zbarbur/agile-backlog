@@ -143,6 +143,37 @@ class TestAgentNotes:
         assert d["agent_notes"] == [note]
 
 
+class TestCategoryMigration:
+    def test_valid_categories(self):
+        for cat in ("bug", "feature", "docs", "chore"):
+            item = BacklogItem(id="x", title="x", priority="P2", category=cat)
+            assert item.category == cat
+
+    def test_infra_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="infra")
+        assert item.category == "chore"
+        assert "infra" in item.tags
+
+    def test_tech_debt_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="tech-debt")
+        assert item.category == "chore"
+        assert "tech-debt" in item.tags
+
+    def test_security_migrates_to_feature(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="security")
+        assert item.category == "feature"
+        assert "security" in item.tags
+
+    def test_unknown_category_migrates_to_chore(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="random-thing")
+        assert item.category == "chore"
+
+    def test_migration_does_not_duplicate_tags(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="infra", tags=["infra", "ci"])
+        assert item.category == "chore"
+        assert item.tags.count("infra") == 1
+
+
 class TestToYamlDict:
     def test_excludes_id(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")

@@ -86,9 +86,10 @@ class TestList:
         assert "chill" not in result.output
 
     def test_list_filter_by_category(self, runner: CliRunner):
+        # "security" migrates to "feature" on load; filter by the canonical category
         runner.invoke(main, ["add", "Sec item", "--category", "security"])
         runner.invoke(main, ["add", "Doc item", "--category", "docs"])
-        result = runner.invoke(main, ["list", "--category", "security"])
+        result = runner.invoke(main, ["list", "--category", "feature"])
         assert "sec-item" in result.output
         assert "doc-item" not in result.output
 

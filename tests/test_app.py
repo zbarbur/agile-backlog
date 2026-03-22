@@ -160,8 +160,9 @@ class TestRenderCardHtml:
         assert "S3" not in html
 
     def test_contains_category_color(self):
+        # "security" migrates to "feature"; verify the feature color is rendered
         html = render_card_html(_item(category="security"))
-        assert "#a78bfa" in html
+        assert "#60a5fa" in html
 
     def test_render_card_with_phase(self):
         html = render_card_html(_item(phase="build"))
