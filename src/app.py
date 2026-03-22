@@ -867,7 +867,7 @@ def kanban_page():
     all_items = load_all()
     current_sprint = detect_current_sprint(all_items)
 
-    with ui.element("div").style("max-width:1400px;margin:0 auto;padding:16px 20px;"):
+    with ui.element("div").style("width:100%;padding:16px 24px;"):
         # === Header Row 1 ===
         with ui.element("div").style("display:flex;align-items:center;gap:12px;margin-bottom:12px;"):
             ui.html(
