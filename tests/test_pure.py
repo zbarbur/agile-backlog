@@ -26,17 +26,17 @@ class TestCategoryStyle:
     def test_known_category_feature(self):
         color, bg = category_style("feature")
         assert color == "#60a5fa"
-        assert bg == "rgba(59,130,246,0.15)"
+        assert bg == "rgba(59,130,246,0.08)"
 
     def test_known_category_bug(self):
         color, bg = category_style("bug")
         assert color == "#f472b6"
-        assert bg == "rgba(244,114,182,0.12)"
+        assert bg == "rgba(244,114,182,0.08)"
 
     def test_known_category_docs(self):
         color, bg = category_style("docs")
         assert color == "#34d399"
-        assert bg == "rgba(52,211,153,0.12)"
+        assert bg == "rgba(52,211,153,0.08)"
 
     def test_chore_style(self):
         text, bg = category_style("chore")
@@ -193,7 +193,7 @@ class TestRenderCardHtml:
     def test_badge_uses_design_system_colors(self):
         html = render_card_html(_item(category="feature"))
         assert "#60a5fa" in html
-        assert "rgba(59,130,246,0.15)" in html
+        assert "rgba(59,130,246,0.08)" in html
 
     def test_sprint_badge_outlined_style(self):
         html = render_card_html(_item(sprint_target=3))
@@ -203,7 +203,7 @@ class TestRenderCardHtml:
     def test_priority_badge_has_bg_color(self):
         html = render_card_html(_item(priority="P1"))
         assert "#f87171" in html
-        assert "rgba(248,113,113,0.15)" in html
+        assert "rgba(248,113,113,0.10)" in html
 
     def test_design_reviewed_badge_shown_when_true(self):
         html = render_card_html(_item(design_reviewed=True))

@@ -2,20 +2,18 @@
 
 # Category colors: (text_color, bg_color) — dark theme
 CATEGORY_STYLES: dict[str, tuple[str, str]] = {
-    "bug": ("#f472b6", "rgba(244,114,182,0.12)"),
-    "feature": ("#60a5fa", "rgba(59,130,246,0.15)"),
-    "tech-debt": ("#fbbf24", "rgba(251,191,36,0.12)"),
-    "docs": ("#34d399", "rgba(52,211,153,0.12)"),
-    "security": ("#a78bfa", "rgba(167,139,250,0.12)"),
-    "infra": ("#22d3ee", "rgba(34,211,238,0.12)"),
+    "bug": ("#f472b6", "rgba(244,114,182,0.08)"),
+    "feature": ("#60a5fa", "rgba(59,130,246,0.08)"),
+    "docs": ("#34d399", "rgba(52,211,153,0.08)"),
+    "chore": ("#a78bfa", "rgba(167,139,250,0.08)"),
 }
 
 # Priority colors: (text_color, bg_color)
 PRIORITY_COLORS: dict[str, tuple[str, str]] = {
-    "P0": ("#ef4444", "rgba(239,68,68,0.18)"),
-    "P1": ("#f87171", "rgba(248,113,113,0.15)"),
-    "P2": ("#fbbf24", "rgba(251,191,36,0.12)"),
-    "P3": ("#6b7280", "rgba(107,114,128,0.10)"),
+    "P0": ("#ef4444", "rgba(239,68,68,0.10)"),
+    "P1": ("#f87171", "rgba(248,113,113,0.10)"),
+    "P2": ("#fbbf24", "rgba(251,191,36,0.10)"),
+    "P3": ("#6b7280", "rgba(107,114,128,0.08)"),
     "P4": ("#4b5563", "rgba(75,85,99,0.08)"),
 }
 
