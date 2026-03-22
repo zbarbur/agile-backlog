@@ -425,6 +425,24 @@ body {
 .q-table td { border-color: #27272a !important; color: #d4d4d8 !important; font-size: 12px !important; }
 .q-table tbody tr:hover td { background: #1e1e23 !important; }
 .q-table .q-table__bottom { background: #111116 !important; color: #71717a !important; }
+/* Side panel styling */
+.mc-side-panel {
+    background: #18181b;
+    border-left: 1px solid #27272a;
+    border-radius: 8px;
+    overflow-y: auto;
+    max-height: calc(100vh - 160px);
+}
+.mc-side-panel::-webkit-scrollbar {
+    width: 6px;
+}
+.mc-side-panel::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 3px;
+}
+.mc-side-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
 </style>
 """
 )
@@ -1007,6 +1025,196 @@ def _render_detail_panel(item: BacklogItem) -> None:
 BACKLOG_SORT_OPTIONS = {"priority": "Priority", "category": "Category", "title": "Title"}
 
 
+def _render_side_panel_content(
+    item: BacklogItem,
+    save_fn,
+    refresh_fn,
+    close_fn,
+) -> None:
+    """Render the side panel content for a backlog item detail view."""
+    from datetime import date
+
+    label_style = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
+        "margin-top:10px;margin-bottom:3px;"
+    )
+    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
+    cat_color, cat_bg = category_style(item.category)
+    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+
+    # Header: Close button (left) + Edit button (right)
+    with ui.element("div").style("display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"):
+        ui.button(
+            "\u2715",
+            on_click=close_fn,
+        ).props("flat dense no-caps").style("color:#71717a;font-size:14px;min-width:28px;padding:2px;")
+        if save_fn and refresh_fn:
+            ui.button(
+                "Edit",
+                on_click=lambda i=item: (
+                    close_fn(),
+                    _show_edit_dialog(i, save_fn, refresh_fn),
+                ),
+            ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
+
+    # Title
+    ui.html(
+        f'<div style="font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;'
+        f"font-family:'DM Sans',sans-serif;\">{item.title}</div>"
+    )
+
+    # Metadata grid
+    pill_base = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+    )
+
+    meta_items = []
+    meta_items.append(("Status", f'<span style="{pill_base}color:#a1a1aa;background:#1e1e23;">{item.status}</span>'))
+    if item.phase:
+        meta_items.append(
+            (
+                "Phase",
+                f'<span style="{pill_base}font-style:italic;text-transform:none;color:#71717a;'
+                f'background:#1e1e23;">{item.phase}</span>',
+            )
+        )
+    meta_items.append(
+        (
+            "Priority",
+            f'<span style="{pill_base}text-transform:uppercase;color:{pri_color};background:{pri_bg}">'
+            f"{item.priority}</span>",
+        )
+    )
+    if item.complexity:
+        meta_items.append(("Complexity", _complexity_badge(item.complexity)))
+    meta_items.append(
+        (
+            "Category",
+            f'<span style="{pill_base}text-transform:uppercase;color:{cat_color};background:{cat_bg}">'
+            f"{item.category}</span>",
+        )
+    )
+    meta_items.append(
+        (
+            "Sprint",
+            f'<span style="{pill_base}font-weight:500;color:#52525b;background:transparent;'
+            f'border:1px solid #27272a;">'
+            f"{'S' + str(item.sprint_target) if item.sprint_target is not None else 'Unplanned'}"
+            f"</span>",
+        )
+    )
+    if item.tags:
+        tag_html = " ".join(
+            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+            f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
+            f'border-radius:3px;">{t}</span>'
+            for t in item.tags
+        )
+        meta_items.append(("Tags", tag_html))
+
+    meta_html = '<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:10px;">'
+    for label, value in meta_items:
+        meta_html += (
+            f'<div style="{label_style}margin-top:0;">{label}</div>'
+            f'<div style="display:flex;align-items:center;gap:4px;">{value}</div>'
+        )
+    meta_html += "</div>"
+    ui.html(meta_html)
+
+    # Description
+    if item.description:
+        ui.html(f'<div style="{label_style}">Description</div>')
+        ui.markdown(item.description).style(value_style)
+
+    # Acceptance Criteria
+    if item.acceptance_criteria:
+        ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>' for ac in item.acceptance_criteria
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    # Technical Specs
+    if item.technical_specs:
+        ui.html(f'<div style="{label_style}">Technical Specs</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    # Comments thread
+    ui.html(f'<div style="{label_style}">Comments</div>')
+    if item.comments:
+        ui.html(comment_thread_html(item.comments))
+
+        # Resolve buttons for flagged, unresolved comments
+        for idx, comment in enumerate(item.comments):
+            if comment.get("flagged") and not comment.get("resolved"):
+                preview = comment.get("text", "")[:40]
+
+                def _resolve_comment(comment_idx=idx):
+                    item.comments[comment_idx]["resolved"] = True
+                    save_fn(item)
+                    refresh_fn()
+
+                with ui.element("div").style("display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"):
+                    ui.html(
+                        f'<span style="font-size:10px;color:#71717a;font-style:italic;">Resolve: "{preview}..."</span>'
+                    )
+                    ui.button(
+                        "\u2713 Resolve",
+                        on_click=_resolve_comment,
+                    ).props("flat dense no-caps").style("color:#4ade80;font-size:10px;min-width:0;padding:1px 6px;")
+    else:
+        ui.html('<div style="font-size:11px;color:#52525b;font-style:italic;">No comments yet.</div>')
+
+    # Comment input
+    ui.html(
+        '<div style="border-top:1px solid #27272a;margin-top:12px;padding-top:10px;">'
+        f'<div style="{label_style}">Add Comment</div></div>'
+    )
+    comment_text = (
+        ui.textarea()
+        .props("outlined dense rows=3 placeholder='Write a comment...'")
+        .style("width:100%;font-size:12px;")
+    )
+    with ui.element("div").style("display:flex;align-items:center;gap:8px;margin-top:6px;"):
+        flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
+        ui.element("div").style("flex:1;")
+
+        def _send_comment():
+            text = (comment_text.value or "").strip()
+            if not text:
+                return
+            item.comments.append(
+                {
+                    "text": text,
+                    "flagged": flag_check.value,
+                    "resolved": False,
+                    "created": str(date.today()),
+                    "author": "user",
+                }
+            )
+            save_fn(item)
+            refresh_fn()
+
+        ui.button("Send", on_click=_send_comment).props("flat dense no-caps").style(
+            "color:#3b82f6;font-size:11px;font-weight:600;"
+        )
+
+    # Footer
+    ui.html(
+        '<div style="display:flex;gap:12px;margin-top:12px;padding-top:8px;border-top:1px solid #1e1e23;">'
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Created: {item.created}</span>"
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Updated: {item.updated}</span>"
+        "</div>"
+    )
+
+
 def _render_backlog_list(
     all_items: list[BacklogItem],
     current_sprint: int | None,
@@ -1019,7 +1227,7 @@ def _render_backlog_list(
     tags: list[str] | None = None,
     search: str = "",
 ) -> None:
-    """Render the backlog planning view with three collapsible sections."""
+    """Render the backlog planning view with three collapsible sections and a side panel."""
     # Group all items into sections
     sections = group_items_by_section(all_items, current_sprint)
     backlog_items = sections["backlog"]
@@ -1038,30 +1246,34 @@ def _render_backlog_list(
     if search:
         filtered_backlog = filter_items(filtered_backlog, search=search)
 
-    def _open_detail_modal(item: BacklogItem):
-        detail_dialog = ui.dialog().classes("mc-detail-dialog")
-        with (
-            detail_dialog,
-            ui.card().style(
-                "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-                "padding:20px;max-width:720px;width:720px;border-radius:8px;"
-                "max-height:80vh;overflow-y:auto;"
-            ),
-        ):
-            _render_detail_modal_content(item, False)
-            with ui.row().classes("gap-2").style("margin-top:12px;"):
-                if save_fn and refresh_fn:
-                    ui.button(
-                        "Edit",
-                        on_click=lambda d=detail_dialog, i=item: (
-                            d.close(),
-                            _show_edit_dialog(i, save_fn, refresh_fn),
-                        ),
-                    ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
-                ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
-                    "color:#a1a1aa;font-size:11px;"
-                )
-        detail_dialog.open()
+    # Side panel state: mutable dict to track selected item
+    panel_state = {"selected_id": None}
+
+    # References to the layout containers
+    list_container_ref = {"el": None}
+    panel_container_ref = {"el": None}
+
+    def _open_side_panel(item: BacklogItem):
+        panel_state["selected_id"] = item.id
+        # Adjust layout: shrink list, show panel
+        if list_container_ref["el"]:
+            list_container_ref["el"].style("flex:6;min-width:0;")
+        if panel_container_ref["el"]:
+            panel_container_ref["el"].style("flex:4;min-width:320px;display:block;")
+            panel_container_ref["el"].clear()
+            with panel_container_ref["el"]:
+                _render_side_panel_content(item, save_fn, refresh_fn, _close_side_panel)
+
+    def _close_side_panel():
+        panel_state["selected_id"] = None
+        if list_container_ref["el"]:
+            list_container_ref["el"].style("flex:1;min-width:0;")
+        if panel_container_ref["el"]:
+            panel_container_ref["el"].style("display:none;")
+            panel_container_ref["el"].clear()
+
+    # Escape key handler
+    ui.keyboard(on_key=lambda e: _close_side_panel() if e.key == "Escape" and not e.action.repeat else None)
 
     def _move_to_section(item: BacklogItem, target_sprint: int | None):
         item.sprint_target = target_sprint
@@ -1085,7 +1297,7 @@ def _render_backlog_list(
             with ui.element("div").style("display:flex;align-items:center;gap:8px;margin:2px 0;"):
                 # Card (clickable)
                 card_container = ui.element("div").style("flex:1;min-width:0;")
-                card_container.on("click", lambda _e, i=card_item: _open_detail_modal(i))
+                card_container.on("click", lambda _e, i=card_item: _open_side_panel(i))
                 with card_container:
                     ui.html(render_backlog_card_html(card_item))
 
@@ -1151,35 +1363,45 @@ def _render_backlog_list(
     if has_filters:
         backlog_label += f" \u2014 filtered {len(filtered_backlog)}/{len(backlog_items)}"
 
-    # Render three collapsible sections
-    with (
-        ui.expansion(value=True)
-        .style("width:100%;background:#111116;border-radius:8px;margin-bottom:8px;")
-        .classes("mc-planning-section")
-    ):
-        with ui.element("template").props("v-slot:header"):
-            ui.html(_section_header(backlog_label, len(filtered_backlog), "#71717a"))
-        _render_section_items(filtered_backlog, "backlog")
+    # Two-column layout: list (left) + side panel (right)
+    with ui.element("div").style("display:flex;gap:12px;align-items:flex-start;"):
+        # Left column: three collapsible sections
+        list_container = ui.element("div").style("flex:1;min-width:0;")
+        list_container_ref["el"] = list_container
 
-    vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
-    with (
-        ui.expansion(value=True)
-        .style("width:100%;background:#14130e;border:1px solid #2a2618;border-radius:8px;margin-bottom:8px;")
-        .classes("mc-planning-section")
-    ):
-        with ui.element("template").props("v-slot:header"):
-            ui.html(_section_header(vnext_label, len(vnext_items), "#ca8a04"))
-        _render_section_items(vnext_items, "vnext")
+        with list_container:
+            with (
+                ui.expansion(value=True)
+                .style("width:100%;background:#111116;border-radius:8px;margin-bottom:8px;")
+                .classes("mc-planning-section")
+            ):
+                with ui.element("template").props("v-slot:header"):
+                    ui.html(_section_header(backlog_label, len(filtered_backlog), "#71717a"))
+                _render_section_items(filtered_backlog, "backlog")
 
-    vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
-    with (
-        ui.expansion(value=True)
-        .style("width:100%;background:#0f1210;border-radius:8px;margin-bottom:8px;")
-        .classes("mc-planning-section")
-    ):
-        with ui.element("template").props("v-slot:header"):
-            ui.html(_section_header(vfuture_label, len(vfuture_items), "#22c55e"))
-        _render_section_items(vfuture_items, "vfuture")
+            vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
+            with (
+                ui.expansion(value=True)
+                .style("width:100%;background:#14130e;border:1px solid #2a2618;border-radius:8px;margin-bottom:8px;")
+                .classes("mc-planning-section")
+            ):
+                with ui.element("template").props("v-slot:header"):
+                    ui.html(_section_header(vnext_label, len(vnext_items), "#ca8a04"))
+                _render_section_items(vnext_items, "vnext")
+
+            vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
+            with (
+                ui.expansion(value=True)
+                .style("width:100%;background:#0f1210;border-radius:8px;margin-bottom:8px;")
+                .classes("mc-planning-section")
+            ):
+                with ui.element("template").props("v-slot:header"):
+                    ui.html(_section_header(vfuture_label, len(vfuture_items), "#22c55e"))
+                _render_section_items(vfuture_items, "vfuture")
+
+        # Right column: side panel (hidden by default)
+        panel_container = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")
+        panel_container_ref["el"] = panel_container
 
 
 @ui.page("/")
