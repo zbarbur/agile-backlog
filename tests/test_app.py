@@ -1,6 +1,6 @@
 # tests/test_app.py
-from src.app import category_style, detect_current_sprint, filter_items, render_card_html
-from src.models import BacklogItem
+from agile_backlog.app import category_style, detect_current_sprint, filter_items, render_card_html
+from agile_backlog.models import BacklogItem
 
 
 def _item(**overrides) -> BacklogItem:

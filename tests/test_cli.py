@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from src.cli import main
+from agile_backlog.cli import main
 
 
 @pytest.fixture()
@@ -16,7 +16,7 @@ def backlog_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture(autouse=True)
 def _patch_backlog_dir(backlog_dir: Path):
-    with patch("src.yaml_store.get_backlog_dir", return_value=backlog_dir):
+    with patch("agile_backlog.yaml_store.get_backlog_dir", return_value=backlog_dir):
         yield
 
 
@@ -233,7 +233,7 @@ class TestServe:
     def test_serve_calls_run_app(self, runner: CliRunner, monkeypatch):
         """Verify serve calls run_app with correct defaults."""
         calls = []
-        monkeypatch.setattr("src.app.run_app", lambda **kw: calls.append(kw))
+        monkeypatch.setattr("agile_backlog.app.run_app", lambda **kw: calls.append(kw))
         result = runner.invoke(main, ["serve"])
         assert result.exit_code == 0
         assert len(calls) == 1

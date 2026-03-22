@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from src.models import BacklogItem, slugify
+from agile_backlog.models import BacklogItem, slugify
 
 
 class TestSlugify:
