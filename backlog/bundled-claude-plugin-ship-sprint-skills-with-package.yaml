@@ -1,5 +1,5 @@
 title: "Bundled Claude plugin \u2014 ship sprint skills with package"
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: null
@@ -20,7 +20,7 @@ notes: "Must include: SessionStart hook or skill that runs 'agile-backlog flagge
   \ and surfaces unresolved flagged comments at the beginning of every session. This\
   \ is the core async communication channel between user and agent \u2014 it should\
   \ work out of the box, not require manual memory setup."
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 agent_notes: []
