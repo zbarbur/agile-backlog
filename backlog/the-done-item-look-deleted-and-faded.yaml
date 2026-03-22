@@ -1,0 +1,20 @@
+title: The done item look deleted and faded
+status: backlog
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: this is not good UX, we know they're done, I still want to view them
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
