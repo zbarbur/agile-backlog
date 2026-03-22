@@ -227,5 +227,3 @@ body {
 </style>
 """
 )
-
-BACKLOG_SORT_OPTIONS = {"priority": "Priority", "category": "Category", "title": "Title"}

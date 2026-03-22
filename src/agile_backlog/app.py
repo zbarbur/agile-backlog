@@ -20,6 +20,7 @@ from agile_backlog.styles import (
     LABELS,
     STATUSES,
 )
+from agile_backlog.tokens import PRIORITY_ORDER
 
 # Sort option definitions: key -> (label, sort_key_fn, reverse)
 SORT_OPTIONS = {
@@ -31,15 +32,13 @@ SORT_OPTIONS = {
     "title_asc": "Title A-Z",
 }
 
-_PRIORITY_RANK = {"P0": 0, "P1": 1, "P2": 2, "P3": 3, "P4": 4}
-
 
 def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
     """Sort items according to the chosen sort option."""
     if sort_key == "priority_desc":
-        return sorted(items, key=lambda i: _PRIORITY_RANK.get(i.priority, 99))
+        return sorted(items, key=lambda i: PRIORITY_ORDER.get(i.priority, 99))
     if sort_key == "priority_asc":
-        return sorted(items, key=lambda i: _PRIORITY_RANK.get(i.priority, 99), reverse=True)
+        return sorted(items, key=lambda i: PRIORITY_ORDER.get(i.priority, 99), reverse=True)
     if sort_key == "updated_desc":
         return sorted(items, key=lambda i: i.updated, reverse=True)
     if sort_key == "updated_asc":

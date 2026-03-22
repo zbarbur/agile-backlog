@@ -1,5 +1,6 @@
 """Pure functions for agile-backlog — framework-independent, fully tested."""
 
+import html as _html
 from datetime import date, timedelta
 
 from agile_backlog.config import get_current_sprint
@@ -57,19 +58,21 @@ def render_card_html(item: BacklogItem) -> str:
     title_color = "#71717a" if item.priority in ("P3", "P4") else "#e4e4e7"
 
     badge = comment_badge_html(item.comments)
+    esc_cat = _html.escape(item.category)
     cat_pill = (
         f'<span style="font-size:9px;color:{cat_style[0]};background:{cat_style[1]};'
-        f'padding:1px 6px;border-radius:3px;">{item.category}</span>'
+        f'padding:1px 6px;border-radius:3px;">{esc_cat}</span>'
     )
+    esc_pri = _html.escape(item.priority)
     pri_pill = (
         f'<span style="font-size:9px;color:{pri_color[0]};background:{pri_color[1]};'
-        f'padding:1px 6px;border-radius:3px;font-weight:600;">{item.priority}</span>'
+        f'padding:1px 6px;border-radius:3px;font-weight:600;">{esc_pri}</span>'
     )
     complexity = _complexity_badge(item.complexity) if item.complexity else ""
 
     tag_chips = "".join(
         f'<span style="font-size:9px;color:#52525b;background:rgba(82,82,91,0.10);'
-        f'padding:1px 6px;border-radius:3px;margin-right:4px;">{t}</span>'
+        f'padding:1px 6px;border-radius:3px;margin-right:4px;">{_html.escape(t)}</span>'
         for t in item.tags
     )
 
@@ -80,7 +83,7 @@ def render_card_html(item: BacklogItem) -> str:
         f'border-radius:5px;margin:1px 0;" class="mc-card-row">'
         f'<div style="display:flex;align-items:center;gap:8px;">'
         f'<span style="color:{title_color};font-size:12.5px;font-weight:500;'
-        f'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{item.title}</span>'
+        f'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{_html.escape(item.title)}</span>'
         f'<span style="display:flex;gap:5px;align-items:center;flex-shrink:0;">'
         f"{badge}{complexity}{cat_pill}{pri_pill}</span>"
         f"</div>"
@@ -176,10 +179,11 @@ def render_comment_html(comment: dict) -> str:
     return (
         f'<div style="display:flex;flex-direction:column;max-width:82%;align-self:{align};{opacity}">'
         f'<div style="font-size:9px;color:#3f3f46;margin-bottom:2px;padding:0 4px;{meta_align}">'
-        f"{icon} {author} · {created}{'  · 🚩' if flagged and not resolved else ''}</div>"
+        f"{icon} {_html.escape(author)} · {_html.escape(str(created))}"
+        f"{'  · 🚩' if flagged and not resolved else ''}</div>"
         f'<div style="padding:8px 12px;border-radius:12px;{flat_corner}'
         f'background:{bg};color:#d4d4d8;font-size:12px;line-height:1.5;{border}">'
-        f"{text}</div>"
+        f"{_html.escape(text)}</div>"
         f"</div>"
     )
 
