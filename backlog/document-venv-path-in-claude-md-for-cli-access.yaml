@@ -1,0 +1,21 @@
+title: Document venv path in CLAUDE.md for CLI access
+status: done
+priority: P1
+category: docs
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add to CLAUDE.md: use .venv/bin/agile-backlog to invoke the CLI. Every
+  new session wastes time discovering this. Zero code change, high impact.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

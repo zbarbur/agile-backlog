@@ -1,0 +1,21 @@
+title: "CLI add \u2014 accept --title as alias for positional argument"
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Currently add takes TITLE as positional arg. Also accept --title for
+  discoverability. Agents and scripts tend to guess --title first.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

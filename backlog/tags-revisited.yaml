@@ -1,0 +1,22 @@
+title: tags - revisited
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: we did a tag feature, but I didn't see the result , I want to talk about
+  it more and make sure that we have proper understanding of the requirements and
+  then implement
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

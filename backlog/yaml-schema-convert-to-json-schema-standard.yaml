@@ -1,0 +1,22 @@
+title: "YAML schema \u2014 convert to JSON Schema standard"
+status: backlog
+priority: P3
+category: tech-debt
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Convert the custom schema format in schema.yaml to standard JSON Schema.
+  Benefits: validation without importing Python, IDE autocomplete for YAML files,
+  documentation generation, interoperability with other tools.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

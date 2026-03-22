@@ -1,0 +1,22 @@
+title: deployment
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'the project is updated all the time in github, what''s the publish a
+  proces to publish it to be used in other projects and use it and get updates rapidly
+  as we move '
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

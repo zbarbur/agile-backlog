@@ -1,0 +1,26 @@
+title: "Bundled Claude plugin \u2014 ship sprint skills with package"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Design and bundle a Claude Code plugin that ships with the agile-backlog
+  package. After pip install, users register the plugin and get sprint management
+  skills, backlog management, and hooks. Plugin references installed CLI commands
+  and works independently of the dev repo. Needs its own brainstorm/design session.
+acceptance_criteria: []
+test_plan: []
+notes: "Must include: SessionStart hook or skill that runs 'agile-backlog flagged'\
+  \ and surfaces unresolved flagged comments at the beginning of every session. This\
+  \ is the core async communication channel between user and agent \u2014 it should\
+  \ work out of the box, not require manual memory setup."
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

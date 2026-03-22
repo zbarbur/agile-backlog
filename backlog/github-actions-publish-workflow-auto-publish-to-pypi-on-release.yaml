@@ -1,0 +1,22 @@
+title: "GitHub Actions publish workflow \u2014 auto-publish to PyPI on release"
+status: backlog
+priority: P3
+category: infra
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add .github/workflows/publish.yml triggered by GitHub release tags (v*).
+  Uses Trusted Publishers (OIDC) for secure upload. Depends on: package restructure,
+  PyPI account setup.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

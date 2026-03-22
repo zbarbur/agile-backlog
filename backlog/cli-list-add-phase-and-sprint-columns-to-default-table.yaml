@@ -1,0 +1,22 @@
+title: "CLI list \u2014 add Phase and Sprint columns to default table"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The default list table only shows ID, Title, Status, Priority, Category.
+  Add Phase and Sprint columns so sprint state is visible at a glance without running
+  show on each item.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

@@ -1,0 +1,22 @@
+title: Archiving of done items
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The done items list is only getting bigger, need an archiving capability,
+  how is this managed in other platforms , what's the best way to do it, need some
+  research and brainstorming to execute
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

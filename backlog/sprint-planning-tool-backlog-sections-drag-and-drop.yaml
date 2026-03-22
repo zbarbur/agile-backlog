@@ -23,7 +23,9 @@ description: 'Dedicated sprint planning feature combining:
   5. Requires brainstorming session for UX design'
 acceptance_criteria: []
 test_plan: []
-notes: ''
+notes: P4/icebox items should be hidden by default in the planning view. Add a toggle
+  or filter to show them when needed. This keeps the planning view focused on actionable
+  items.
 phase: plan
 design_reviewed: false
 code_reviewed: false
