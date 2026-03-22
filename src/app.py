@@ -350,7 +350,7 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
             '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
             f"\U0001f4ac Comment on: {item.title}</div>"
         )
-        comment_text = ui.textarea("Comment").props("outlined autogrow").style("width:100%;min-height:120px;")
+        comment_text = ui.textarea("Comment").props("outlined rows=8").style("width:100%;")
         flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
 
         def _save_comment():
