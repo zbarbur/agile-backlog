@@ -1,42 +1,42 @@
 # Memory Index
 
 ## Project Status
-- Sprint 10 COMPLETED (2026-03-22)
+- Sprint 11 COMPLETED (2026-03-22)
 - 110 tests, ruff clean, all PRs merged to main
 - NiceGUI dark theme ("Mission Control") — full screen width
 - YAML is single source of truth
 - Phases: plan → spec → build → review
 
 ## Architecture
-- NiceGUI (migrated from Streamlit in Sprint 7)
+- NiceGUI with IBM Plex Mono + DM Sans fonts
 - Design tokens in src/tokens.py (dark theme)
-- Agent notes: agile-backlog note/flagged CLI commands
+- Comments system (agent_notes field) with AI flagging
 - Hot reload enabled by default
-- Board/Backlog toggle view
+- Board/Backlog toggle view (backlog uses ui.table)
 - Detail modal on card click, Edit button opens form dialog
 - Add Item button in header
-- Backlog view uses ui.table with sortable columns
+- Multi-select filters with chips (priority, category, sprint)
+- Priority-colored left borders (P1=red, P2=blue, P3=amber)
+- Card layout: title+comment top, move buttons+badges bottom
 
 ## Key Patterns
 - Use `.venv/bin/python` for all commands (uv-managed venv)
 - Sprint skills use agile-backlog CLI (not TODO.md)
-- Sprint detection falls back to highest sprint number (needs proper config tracking)
-- Multi-select filters with chips for priority/category
-- IBM Plex Mono + DM Sans fonts
+- Sprint detection falls back to highest sprint number
 - Category select with autocomplete from existing values
 - Sprint target as Backlog/current sprint dropdown
+- Comments via 💬 button on cards, flagged with 🤖 icon
 
-## Known Issues for Next Sprint
-- Sprint tracking should be explicit (config file, not inferred)
-- Auto-update phase during execution still in backlog
-- Some UI polish items remain (frontend designer pass)
-- Agent notes not yet editable from board UI
-- Drag-and-drop still in backlog
+## Remaining Backlog
+- Auto-update phase during execution (P1)
+- Track current sprint explicitly (P1)
+- Drag-and-drop between columns (P2)
+- Design review of backlog grid
+- Various P3 items (export/import, PyPI, MCP, etc.)
 
 ## Lessons
 - Dogfooding finds UX issues faster than specs
-- Brainstorm with visual companion before design implementation
 - Spec review catches real issues — always run it
-- Phase `spec` was needed — 4 phases better than 3
+- NiceGUI gives full CSS control but needs careful click event handling (click.stop)
+- Items already done should be verified before coding (3 Sprint 11 items were already implemented)
 - Sprint detection needs explicit tracking, not inference
-- Category should be select-from-list, not free text input
