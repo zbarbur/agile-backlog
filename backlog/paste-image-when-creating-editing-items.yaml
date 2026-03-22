@@ -38,3 +38,9 @@ agent_notes:
   flagged: true
   resolved: false
   created: '2026-03-22'
+- text: 'Research complete: Recommended approach is file-based storage (backlog/images/{item-id}/)
+    + JavaScript clipboard paste API via ui.run_javascript(). Fallback: ui.upload().
+    ~7-9 hours to implement. Ready for implementation sprint.'
+  flagged: false
+  resolved: false
+  created: '2026-03-22'
