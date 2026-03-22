@@ -21,7 +21,7 @@ See `docs/superpowers/specs/2026-03-21-agile-backlog-tool-brief.md` for the full
 - **Lint:** `ruff check .`
 - **Format check:** `ruff format --check .`
 - **Full CI:** `ruff check . && ruff format --check . && pytest tests/ -v`
-- **Run Streamlit:** `streamlit run src/app.py`
+- **Run Web UI:** `agile-backlog serve`
 - **Run CLI:** `agile-backlog` (after pip install -e .)
 
 ### Dependencies

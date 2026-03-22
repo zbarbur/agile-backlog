@@ -70,10 +70,10 @@
   - [ ] Tests pass (`pytest tests/ -v`)
   - [ ] Lint clean (`ruff check .`)
 - **Technical Specs:**
-  - Modify `src/models.py`: add `phase: Literal[...] | None = None` field
-  - Modify `src/cli.py`: add `--phase` option to `move` command, add `phase` display to `show`
-  - Modify `src/app.py`: show phase badge on card, clear phase when status != "doing"
-  - Update `src/schema.yaml` with phase field
+  - Modify `src/agile_backlog/models.py`: add `phase: Literal[...] | None = None` field
+  - Modify `src/agile_backlog/cli.py`: add `--phase` option to `move` command, add `phase` display to `show`
+  - Modify `src/agile_backlog/app.py`: show phase badge on card, clear phase when status != "doing"
+  - Update `src/agile_backlog/schema.yaml` with phase field
 - **Test Plan:**
   - `tests/test_models.py` — test phase validation, default None
   - `tests/test_cli.py` — test `move --phase coding`
@@ -91,10 +91,10 @@
   - [ ] Tests pass (`pytest tests/ -v`)
   - [ ] Lint clean (`ruff check .`)
 - **Technical Specs:**
-  - Modify `src/models.py`: add `goal: str = ""`, `complexity: Literal["S","M","L"] | None = None`, `technical_specs: list[str] = []`
+  - Modify `src/agile_backlog/models.py`: add `goal: str = ""`, `complexity: Literal["S","M","L"] | None = None`, `technical_specs: list[str] = []`
   - Existing fields already cover: `description`, `acceptance_criteria` (= DoD), `notes`
-  - Modify `src/cli.py`: show these fields in `show` command
-  - Update `src/schema.yaml`
+  - Modify `src/agile_backlog/cli.py`: show these fields in `show` command
+  - Update `src/agile_backlog/schema.yaml`
 - **Test Plan:**
   - `tests/test_models.py` — test new fields, defaults, validation
 
@@ -112,7 +112,7 @@
   - [ ] Tests pass (`pytest tests/ -v`)
   - [ ] Lint clean (`ruff check .`)
 - **Technical Specs:**
-  - Modify `src/app.py`: rewrite expander content rendering
+  - Modify `src/agile_backlog/app.py`: rewrite expander content rendering
   - Use HTML/CSS from design system for consistent styling
   - Group fields: Overview (goal, complexity) → DoD → Tech Specs → Metadata (dates, tags, deps)
 - **Test Plan:**
@@ -132,7 +132,7 @@
   - [ ] Tests pass (`pytest tests/ -v`)
   - [ ] Lint clean (`ruff check .`)
 - **Technical Specs:**
-  - Modify `src/app.py`: rewrite `render_card_html()` and CSS per design system
+  - Modify `src/agile_backlog/app.py`: rewrite `render_card_html()` and CSS per design system
   - Apply design tokens (CSS variables) for consistent styling
 - **Test Plan:**
   - `tests/test_app.py` — render_card_html tests updated

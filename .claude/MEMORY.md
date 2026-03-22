@@ -14,7 +14,7 @@
 
 ## Architecture
 - NiceGUI dark theme, IBM Plex Mono + DM Sans
-- src/config.py for explicit sprint tracking (.agile-backlog.yaml)
+- src/agile_backlog/config.py for explicit sprint tracking (.agile-backlog.yaml)
 - Comments system with author field (user/agent), per-comment resolve
 - Tags on cards with filter
 - Board/Backlog toggle, detail modal, edit dialog
