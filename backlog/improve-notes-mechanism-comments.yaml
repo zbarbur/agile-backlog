@@ -1,0 +1,38 @@
+title: Improve notes mechanism -> comments
+status: doing
+priority: P1
+category: feature
+sprint_target: 11
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: "Replace notes with a comments system \u2014 add comments from the card, flag\
+  \ for agent with AI icon, agent marks complete"
+complexity: M
+technical_specs:
+- Refactor agent_notes to comments field on BacklogItem (or rename)
+- Add comment button to card row 2 (next to move buttons)
+- 'Comment dialog: textarea + AI flag checkbox + save'
+- Render comments in detail modal with AI icon and completion status
+- Update CLI note/flagged commands to use comments terminology
+description: 'The idea is that it''ll be a comment on the item, so instead from edit,
+  I want a place from the card to add a comment, the comment should have an AI icon
+  to indicate that this is for the agent to look at, the agent can review the comment,
+  do any changes they need and then mark the comment complete so it can be acknowledged
+  , the comment should have its own view from the card '
+acceptance_criteria:
+- Comment button on each card (not in edit dialog)
+- Comment dialog with text area and AI flag toggle
+- Comments shown in card detail view with AI icon for flagged ones
+- Agent can mark comments as complete/acknowledged
+- 'CLI: agile-backlog comments <id> lists comments, agile-backlog flagged shows flagged'
+- Tests pass
+test_plan:
+- 'tests/test_cli.py: test comment add, flagged list, mark complete'
+- 'Manual: add comment from card, verify AI icon shows'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

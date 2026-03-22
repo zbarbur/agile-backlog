@@ -1,0 +1,30 @@
+title: improve sprint filter usability
+status: doing
+priority: P2
+category: feature
+sprint_target: 11
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: "Make sprint filter usable with many sprints \u2014 show Current, Previous,\
+  \ then specific numbers"
+complexity: S
+technical_specs:
+- "Modify sprint filter options in kanban_page() \u2014 group as Current/Previous/specific"
+- Use ui.select with structured options
+description: "The list of sprints getting long , the filter should give current, last,\
+  \ then an option to provide specific number/range \nI didn't see how it's possible\
+  \ to choose multiple ones"
+acceptance_criteria:
+- 'Sprint filter shows: All, Current, Previous, then specific sprint numbers'
+- Multi-select works for sprint filter
+- Long sprint list is manageable
+- Tests pass
+test_plan:
+- 'Manual: verify filter with 10+ sprints is usable'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

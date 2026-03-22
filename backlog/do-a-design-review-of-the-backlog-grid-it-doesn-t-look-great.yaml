@@ -1,0 +1,21 @@
+title: do a design review of the backlog grid , it doesn't look great
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: the grid layout not great, the priority, category, phase are lacking
+  design , make it look like a professional board
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

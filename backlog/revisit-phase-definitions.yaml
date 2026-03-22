@@ -1,18 +1,29 @@
 title: Revisit phase definitions
-status: backlog
+status: doing
 priority: P3
 category: feature
-sprint_target: null
+sprint_target: 11
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Confirm 4 phases (plan/spec/build/review) are the right set \u2014 update description\
+  \ if already done"
+complexity: S
+technical_specs:
+- Update description in YAML to reflect current 4-phase model
+- Verify model, CLI, and UI all support plan/spec/build/review
 description: Current 8 phases may be too granular. Consider simplifying to 3-4 phases
   (e.g., plan, build, review, test). Evaluate what's actually useful for tracking
   progress vs overhead.
-acceptance_criteria: []
+acceptance_criteria:
+- Phase definitions documented and confirmed
+- Old description about 8 phases updated
+- Tests pass
+test_plan:
+- 'Manual: verify phases work in CLI and board'
 notes: ''
-phase: null
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

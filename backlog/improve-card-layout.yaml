@@ -1,0 +1,32 @@
+title: Improve card layout
+status: doing
+priority: P2
+category: feature
+sprint_target: 11
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: Move category/priority badges to fixed position at bottom-right of card for
+  better readability
+complexity: S
+technical_specs:
+- "Modify _render_card() in src/app.py \u2014 separate title from badges"
+- 'Use flexbox with justify-content: space-between for title row and badge row'
+description: 'the cards are showing "feature" ,"P1" etc.... right next to the text
+  making it less readbale
+
+  can they be in a fixed position at the bottom right corner of the card'
+acceptance_criteria:
+- Title text is on its own line without inline badges
+- Category, priority, phase, sprint badges in fixed position (bottom-right or second
+  row)
+- "Card is more readable \u2014 title stands out"
+- Tests pass
+test_plan:
+- 'Manual: verify card readability on board with multiple items'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
