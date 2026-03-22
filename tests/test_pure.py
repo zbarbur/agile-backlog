@@ -10,6 +10,7 @@ from agile_backlog.pure import (
     filter_items,
     group_items_by_section,
     is_recently_done,
+    relative_time,
     render_backlog_card_html,
     render_card_html,
     render_comment_html,
@@ -416,6 +417,39 @@ class TestCommentThreadHtml:
         html = comment_thread_html(comments)
         assert "First" in html
         assert "Second" in html
+
+
+class TestRelativeTime:
+    def test_today(self):
+        assert relative_time(date.today()) == "today"
+
+    def test_yesterday(self):
+        assert relative_time(date.today() - timedelta(days=1)) == "1d"
+
+    def test_3_days(self):
+        assert relative_time(date.today() - timedelta(days=3)) == "3d"
+
+    def test_1_week(self):
+        assert relative_time(date.today() - timedelta(days=7)) == "1w"
+
+    def test_3_weeks(self):
+        assert relative_time(date.today() - timedelta(days=21)) == "3w"
+
+    def test_over_4_weeks(self):
+        old = date(2026, 2, 15)
+        result = relative_time(old)
+        assert result == "Feb 15"
+
+    def test_6_days_still_days(self):
+        assert relative_time(date.today() - timedelta(days=6)) == "6d"
+
+    def test_28_days_is_4w(self):
+        assert relative_time(date.today() - timedelta(days=28)) == "4w"
+
+    def test_29_days_is_month_format(self):
+        d = date.today() - timedelta(days=29)
+        result = relative_time(d)
+        assert len(result) > 2
 
 
 class TestArchiveDone:

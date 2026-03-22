@@ -191,6 +191,18 @@ def is_recently_done(item: BacklogItem, days: int = 7) -> bool:
     return item.updated >= cutoff
 
 
+def relative_time(dt: date) -> str:
+    """Format a date as a relative timestamp for card display."""
+    days = (date.today() - dt).days
+    if days <= 0:
+        return "today"
+    if days <= 6:
+        return f"{days}d"
+    if days <= 28:
+        return f"{days // 7}w"
+    return dt.strftime("%b %-d")
+
+
 def render_backlog_card_html(item: BacklogItem) -> str:
     """Render a backlog card row as HTML for the planning view."""
     pri_color = PRIORITY_COLORS.get(item.priority, ("#6b7280", "rgba(107,114,128,0.1)"))
