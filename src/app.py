@@ -605,17 +605,28 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
                 .props("dense outlined")
                 .style("min-width:100px;")
             )
-            category_input = ui.input("Category", value=item.category).props("dense outlined").style("flex:1;")
+            from src.yaml_store import load_all as _load_all
+
+        _items = _load_all()
+        all_categories = sorted({i.category for i in _items})
+        category_input = (
+            ui.select(label="Category", options=all_categories, value=item.category, with_input=True)
+            .props("dense outlined")
+            .style("flex:1;")
+        )
         with ui.row().classes("gap-2").style("width:100%;"):
+            sprint_options_edit = {None: "Unplanned"}
+            for s in sorted({i.sprint_target for i in _items if i.sprint_target is not None}):
+                sprint_options_edit[s] = f"Sprint {s}"
             sprint_input = (
-                ui.number("Sprint", value=item.sprint_target, min=0, step=1)
-                .props("dense outlined clearable")
-                .style("min-width:100px;")
+                ui.select(label="Sprint", options=sprint_options_edit, value=item.sprint_target)
+                .props("dense outlined")
+                .style("min-width:120px;")
             )
             phase_input = (
                 ui.select(
                     label="Phase",
-                    options={None: "(none)", "plan": "plan", "build": "build", "review": "review"},
+                    options={None: "(none)", "plan": "plan", "spec": "spec", "build": "build", "review": "review"},
                     value=item.phase,
                 )
                 .props("dense outlined")
@@ -946,12 +957,20 @@ def kanban_page():
                             .props("dense outlined")
                             .style("min-width:100px;")
                         )
-                        add_category = ui.input("Category *").props("dense outlined").style("flex:1;")
+                        all_cats = sorted({i.category for i in all_items})
+                    add_category = (
+                        ui.select(label="Category *", options=all_cats, value=None, with_input=True)
+                        .props("dense outlined")
+                        .style("flex:1;")
+                    )
                     add_description = ui.textarea("Description").props("dense outlined autogrow").style("width:100%;")
+                    sprint_add_options = {None: "Backlog (no sprint)"}
+                    if current_sprint is not None:
+                        sprint_add_options[current_sprint] = f"Sprint {current_sprint} (current)"
                     add_sprint = (
-                        ui.number("Sprint target", value=None, min=0, step=1)
-                        .props("dense outlined clearable")
-                        .style("width:150px;")
+                        ui.select(label="Sprint target", options=sprint_add_options, value=None)
+                        .props("dense outlined")
+                        .style("width:200px;")
                     )
                     add_error = ui.label("").style("color:#f87171;font-size:11px;display:none;")
 
