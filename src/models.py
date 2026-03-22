@@ -36,7 +36,7 @@ class BacklogItem(BaseModel):
     acceptance_criteria: list[str] = Field(default_factory=list)
     test_plan: list[str] = Field(default_factory=list)
     notes: str = ""
-    phase: Literal["plan", "build", "review"] | None = None
+    phase: Literal["plan", "spec", "build", "review"] | None = None
     design_reviewed: bool = False
     code_reviewed: bool = False
     agent_notes: list[dict] = Field(default_factory=list)

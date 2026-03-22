@@ -15,7 +15,7 @@ description: Backlog column items don't have the same card styling as In Progres
 acceptance_criteria: []
 test_plan: []
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

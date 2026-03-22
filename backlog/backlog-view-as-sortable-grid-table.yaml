@@ -33,7 +33,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: toggle to backlog view, verify table renders, sort works'
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

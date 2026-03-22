@@ -75,7 +75,7 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), required=True)
 @click.option(
     "--phase",
-    type=click.Choice(["plan", "build", "review"]),
+    type=click.Choice(["plan", "spec", "build", "review"]),
     default=None,
     help="Workflow phase.",
 )
@@ -164,7 +164,7 @@ def show(item_id: str):
 @click.option("--test-plan", "test_plan", multiple=True, help="Test plan item (repeatable).")
 @click.option(
     "--phase",
-    type=click.Choice(["plan", "build", "review"]),
+    type=click.Choice(["plan", "spec", "build", "review"]),
     default=None,
 )
 @click.option("--design-reviewed", "design_reviewed", is_flag=True, default=None, help="Mark design as reviewed.")
