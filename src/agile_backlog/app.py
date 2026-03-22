@@ -1,6 +1,8 @@
 # src/app.py
 """NiceGUI Kanban board for agile-backlog — Mission Control dark theme."""
 
+from datetime import date, timedelta
+
 from nicegui import ui
 
 from agile_backlog.models import BacklogItem, slugify
@@ -182,6 +184,18 @@ def render_comment_html(comment: dict) -> str:
 def comment_thread_html(comments: list[dict]) -> str:
     """Render a full comment thread as HTML."""
     return "".join(render_comment_html(c) for c in comments)
+
+
+def is_recently_done(item: BacklogItem, days: int = 7) -> bool:
+    """Return True if item should be visible on the board.
+
+    Non-done items are always visible. Done items are visible only if
+    updated within the last `days` days.
+    """
+    if item.status != "done":
+        return True
+    cutoff = date.today() - timedelta(days=days)
+    return item.updated >= cutoff
 
 
 def render_backlog_card_html(item: BacklogItem) -> str:
@@ -1559,9 +1573,11 @@ def kanban_page():
                 "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
             )
 
-            # Show done checkbox
-            done_check = (
-                ui.checkbox("Show done", value=True).classes("mc-done-check").style("font-size:11px;color:#71717a;")
+            # Archive toggle
+            archive_toggle = (
+                ui.checkbox("Show archived", value=False)
+                .classes("mc-done-check")
+                .style("font-size:11px;color:#71717a;")
             )
 
         # === Filter Row 2 ===
@@ -1704,7 +1720,7 @@ def kanban_page():
             phf = phase_select.value
             tf_list = tag_select.value or []
             sq = search_input.value or ""
-            sd = done_check.value
+            show_archived = archive_toggle.value
 
             # Resolve "current" sprint value to actual sprint number
             resolved_sprints: list[int | str] = []
@@ -1716,7 +1732,7 @@ def kanban_page():
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
-            done_items = [i for i in items if i.status == "done"]
+            done_items = [i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=7))]
 
             # Apply search filter via filter_items (sprint handled below for multi-select)
             filtered_backlog = filter_items(backlog_items, search=sq)
@@ -1778,7 +1794,7 @@ def kanban_page():
             columns_map = {
                 "backlog": filtered_backlog,
                 "doing": filtered_doing,
-                "done": filtered_done if sd else [],
+                "done": filtered_done,
             }
 
             if view_mode["current"] == "backlog":
@@ -1823,8 +1839,8 @@ def kanban_page():
                                         if items
                                         else "No items yet \u2014 use `agile-backlog add` to create one."
                                     )
-                                elif col_status == "done" and not sd:
-                                    msg = "Done items hidden."
+                                elif col_status == "done" and not show_archived:
+                                    msg = "No recent done items. Toggle \u2018Show archived\u2019 to see older items."
                                 else:
                                     msg = "No items."
                                 ui.html(
@@ -1842,7 +1858,7 @@ def kanban_page():
         phase_select.on_value_change(lambda _: render_board.refresh())
         tag_select.on_value_change(lambda _: render_board.refresh())
         search_input.on_value_change(lambda _: render_board.refresh())
-        done_check.on_value_change(lambda _: render_board.refresh())
+        archive_toggle.on_value_change(lambda _: render_board.refresh())
 
         render_board()
 

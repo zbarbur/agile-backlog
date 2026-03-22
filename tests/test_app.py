@@ -1,5 +1,18 @@
 # tests/test_app.py
-from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section, render_comment_html, comment_thread_html, render_backlog_card_html
+from datetime import date, timedelta
+
+from agile_backlog.app import (
+    category_style,
+    comment_badge_html,
+    comment_thread_html,
+    detect_current_sprint,
+    filter_items,
+    group_items_by_section,
+    is_recently_done,
+    render_backlog_card_html,
+    render_card_html,
+    render_comment_html,
+)
 from agile_backlog.models import BacklogItem
 
 
@@ -363,7 +376,13 @@ class TestRenderBacklogCardHtml:
 
 class TestRenderCommentHtml:
     def test_basic_comment(self):
-        comment = {"text": "Hello world", "flagged": False, "resolved": False, "created": "2026-03-22", "author": "user"}
+        comment = {
+            "text": "Hello world",
+            "flagged": False,
+            "resolved": False,
+            "created": "2026-03-22",
+            "author": "user",
+        }
         html = render_comment_html(comment)
         assert "Hello world" in html
         assert "2026-03-22" in html
@@ -397,3 +416,17 @@ class TestCommentThreadHtml:
         html = comment_thread_html(comments)
         assert "First" in html
         assert "Second" in html
+
+
+class TestArchiveDone:
+    def test_recent_done_items_visible(self):
+        item = _item(status="done", updated=date.today())
+        assert is_recently_done(item, days=7)
+
+    def test_old_done_items_hidden(self):
+        item = _item(status="done", updated=date.today() - timedelta(days=10))
+        assert not is_recently_done(item, days=7)
+
+    def test_non_done_items_always_visible(self):
+        item = _item(status="doing", updated=date.today() - timedelta(days=30))
+        assert is_recently_done(item, days=7)
