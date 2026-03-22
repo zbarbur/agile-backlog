@@ -1,5 +1,5 @@
 title: Paste image when creating/editing items
-status: doing
+status: done
 priority: P3
 category: feature
 sprint_target: 12
@@ -24,10 +24,10 @@ acceptance_criteria:
 - Recommendation on NiceGUI ui.upload() vs clipboard API
 test_plan:
 - "No code \u2014 research output only for this sprint"
-notes: 'Flagged comment acknowledged: Will research clipboard paste API, file upload,
-  and screenshot-to-backlog workflows. Key consideration: images need to be stored
-  in backlog/images/ and referenced in YAML. NiceGUI supports ui.upload() for file
-  uploads.'
+notes: 'Research complete: Use file-based storage (backlog/images/{item-id}/), paste
+  via JavaScript Clipboard API + ui.run_javascript(), fallback ui.upload(). Add images:
+  list[dict] field to model. ~7-9 hours to implement. See flagged comment for user
+  context.'
 phase: spec
 design_reviewed: false
 code_reviewed: false
