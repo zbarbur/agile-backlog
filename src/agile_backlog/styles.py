@@ -122,22 +122,34 @@ body {
     border-color: #3f3f46;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.mc-card.mc-p1 {
-    border-left: 3px solid #ef4444 !important;
-}
-.mc-card.mc-p2 {
-    border-left: 3px solid #3b82f6 !important;
-}
-.mc-card.mc-p3 {
-    border-left: 3px solid #f59e0b !important;
-}
 .mc-card.mc-done {
-    opacity: 0.65;
+    opacity: 0.7;
     color: #71717a;
 }
 .mc-card.mc-done:hover {
     opacity: 1.0;
 }
+/* Unified card row */
+.mc-card-row { transition: background 0.1s; }
+.mc-card-row:hover { background: rgba(255,255,255,0.03) !important; }
+.mc-card-row.mc-selected { background: rgba(59,130,246,0.06) !important; border-left-color: #3b82f6 !important; }
+
+/* Hover move buttons */
+.mc-move-buttons { display:none; position:absolute; bottom:4px; right:8px; gap:3px; align-items:center; }
+.mc-card-row:hover .mc-move-buttons { display:flex; }
+.mc-card-row.mc-selected .mc-move-buttons { display:none; }
+
+/* Click-to-edit affordance */
+.mc-editable { border: 1px solid transparent; border-radius: 4px; cursor: pointer; transition: border-color 0.15s; }
+.mc-editable:hover { border-color: #27272a; }
+
+/* Resize handle */
+.mc-resize-handle { height: 3px; cursor: row-resize; position: relative; }
+.mc-resize-handle::after {
+    content: ''; position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%); width: 40px; height: 3px; border-radius: 2px; background: #1e1e23;
+}
+.mc-resize-handle:hover::after { background: #3b82f6; }
 .mc-move-btn {
     font-family: 'IBM Plex Mono', monospace !important;
     font-size: 9px !important;
@@ -204,24 +216,14 @@ body {
 .q-table td { border-color: #27272a !important; color: #d4d4d8 !important; font-size: 12px !important; }
 .q-table tbody tr:hover td { background: #1e1e23 !important; }
 .q-table .q-table__bottom { background: #111116 !important; color: #71717a !important; }
-/* Side panel styling */
+/* Side panel */
 .mc-side-panel {
-    background: #18181b;
-    border-left: 1px solid #27272a;
-    border-radius: 8px;
+    background: #0c0c0e;
+    border-left: 1px solid #1e1e23;
     overflow-y: auto;
-    max-height: calc(100vh - 160px);
 }
-.mc-side-panel::-webkit-scrollbar {
-    width: 6px;
-}
-.mc-side-panel::-webkit-scrollbar-thumb {
-    background: #27272a;
-    border-radius: 3px;
-}
-.mc-side-panel::-webkit-scrollbar-track {
-    background: transparent;
-}
+.mc-side-panel::-webkit-scrollbar { width: 4px; }
+.mc-side-panel::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
 </style>
 """
 )
