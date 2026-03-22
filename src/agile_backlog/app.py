@@ -186,6 +186,39 @@ def comment_thread_html(comments: list[dict]) -> str:
     return "".join(render_comment_html(c) for c in comments)
 
 
+def render_backlog_card_html(item: BacklogItem) -> str:
+    """Render a backlog card row as HTML for the planning view."""
+    pri_color = PRIORITY_COLORS.get(item.priority, ("#6b7280", "rgba(107,114,128,0.1)"))
+    bar_color = pri_color[0] if item.priority in ("P0", "P1") else "transparent"
+    cat_style = category_style(item.category)
+
+    badge = comment_badge_html(item.comments)
+    complexity = _complexity_badge(item.complexity) if item.complexity else ""
+
+    tag_chips = "".join(
+        f'<span style="font-size:10px;color:#9ca3af;background:rgba(156,163,175,0.10);'
+        f'padding:1px 6px;border-radius:4px;margin-right:4px;">{t}</span>'
+        for t in item.tags
+    )
+
+    cat_pill = (
+        f'<span style="font-size:10px;color:{cat_style[0]};background:{cat_style[1]};'
+        f'padding:1px 8px;border-radius:4px;margin-right:4px;">{item.category}</span>'
+    )
+
+    return (
+        f'<div style="border-left:3px solid {bar_color};padding:8px 12px;cursor:pointer;'
+        f'border-radius:6px;background:rgba(255,255,255,0.03);margin:2px 0;" '
+        f'class="backlog-card-row">'
+        f'<div style="display:flex;justify-content:space-between;align-items:center;">'
+        f'<span style="color:#e4e4e7;font-size:13px;">{item.title}</span>'
+        f'<span>{badge}{complexity}</span>'
+        f'</div>'
+        f'<div style="margin-top:4px;">{cat_pill}{tag_chips}</div>'
+        f'</div>'
+    )
+
+
 # ---------------------------------------------------------------------------
 # NiceGUI UI — Mission Control dark theme
 # ---------------------------------------------------------------------------

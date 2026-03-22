@@ -1,5 +1,5 @@
 # tests/test_app.py
-from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section, render_comment_html, comment_thread_html
+from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section, render_comment_html, comment_thread_html, render_backlog_card_html
 from agile_backlog.models import BacklogItem
 
 
@@ -321,6 +321,44 @@ class TestGroupItemsBySection:
         result = group_items_by_section(items, current_sprint=15)
         ids = [i.id for i in result["backlog"]]
         assert ids == ["high", "med", "low"]
+
+
+class TestRenderBacklogCardHtml:
+    def test_shows_title(self):
+        item = _item(title="My Task")
+        html = render_backlog_card_html(item)
+        assert "My Task" in html
+
+    def test_shows_category_pill(self):
+        item = _item(category="bug")
+        html = render_backlog_card_html(item)
+        assert "bug" in html
+
+    def test_shows_tags(self):
+        item = _item(tags=["ui", "planning"])
+        html = render_backlog_card_html(item)
+        assert "ui" in html
+        assert "planning" in html
+
+    def test_shows_priority_bar_for_p0(self):
+        item = _item(priority="P0")
+        html = render_backlog_card_html(item)
+        assert "#ef4444" in html  # P0 red
+
+    def test_no_priority_bar_for_p3(self):
+        item = _item(priority="P3")
+        html = render_backlog_card_html(item)
+        assert "transparent" in html  # no colored bar for P3
+
+    def test_shows_complexity_badge(self):
+        item = _item(complexity="M")
+        html = render_backlog_card_html(item)
+        assert "M" in html
+
+    def test_shows_comment_badge(self):
+        item = _item(comments=[{"text": "x", "flagged": True, "resolved": False}])
+        html = render_backlog_card_html(item)
+        assert "1" in html  # badge count
 
 
 class TestRenderCommentHtml:
