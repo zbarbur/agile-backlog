@@ -1,0 +1,28 @@
+title: Comments UX redesign
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Multiple comment UX issues need proper design:\n1. Agent response to\
+  \ a comment not visible \u2014 only the original comment shows, not the agent's\
+  \ reply/resolution\n2. Badge color should reflect status: red = unresolved flagged\
+  \ comment, green = all resolved, blue = comments exist but none flagged\n3. Need\
+  \ a way for agent to reply TO a specific comment (threaded or inline response)\n\
+  4. Need a way to mark individual comments as resolved from the UI (not just CLI)\n\
+  5. Comment dialog should show the full conversation thread, not just the original\
+  \ comment\n6. Consider a proper comment thread design (like GitHub issue comments)\n\
+  This needs a brainstorming/design session before implementation."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
