@@ -47,11 +47,10 @@ class BacklogItem(BaseModel):
         """Map old 8-value phase enum to new 3-value enum on load."""
         if isinstance(data, dict):
             old_phase = data.get("phase")
-            if old_phase and old_phase not in ("plan", "build", "review"):
+            if old_phase and old_phase not in ("plan", "spec", "build", "review"):
                 phase_map = {
                     "scoping": "plan",
-                    "spec": "plan",
-                    "spec-review": "plan",
+                    "spec-review": "spec",
                     "design": "plan",
                     "design-review": "plan",
                     "coding": "build",

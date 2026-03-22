@@ -82,8 +82,8 @@ class TestPhaseField:
     def test_phase_migration(self):
         """Old phase values are migrated to new 3-value enum on load."""
         assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="scoping").phase == "plan"
-        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec").phase == "plan"
-        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec-review").phase == "plan"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec").phase == "spec"
+        assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="spec-review").phase == "spec"
         assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="design").phase == "plan"
         assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="design-review").phase == "plan"
         assert BacklogItem(id="t", title="T", priority="P2", category="x", phase="coding").phase == "build"
