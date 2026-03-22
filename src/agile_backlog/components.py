@@ -7,14 +7,12 @@ from nicegui import ui
 from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
     category_style,
-    comment_badge_html,
     comment_thread_html,
     filter_items,
     group_items_by_section,
     relative_time,
     render_card_html,
 )
-from agile_backlog.styles import STATUSES
 from agile_backlog.tokens import PRIORITY_COLORS
 
 
@@ -37,101 +35,38 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
 
 
 def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None, on_card_click=None) -> None:
-    """Render a single Kanban card with Mission Control dark theme.
+    """Render a single Kanban card using the unified render_card_html design.
 
-    If on_card_click is provided, clicking opens side panel. Otherwise falls back to detail modal.
+    If on_card_click is provided, clicking opens side panel.
+    Move buttons appear below the card for non-done items.
     """
-    cat_color, cat_bg = category_style(item.category)
-    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
     is_done = status == "done"
+    move_btn_style = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;padding:1px 6px;"
+        "border-radius:3px;min-height:0;height:20px;"
+    )
 
-    card_css = "mc-card"
-    pri_class = {"P1": " mc-p1", "P2": " mc-p2", "P3": " mc-p3"}.get(item.priority, "")
-    card_css += pri_class
-    if is_done:
-        card_css += " mc-done"
+    with ui.element("div").style("margin:2px 0;"):
+        # Card (clickable)
+        card_container = ui.element("div").style("cursor:pointer;")
+        if on_card_click:
+            card_container.on("click", lambda _e, i=item: on_card_click(i))
+        with card_container:
+            ui.html(render_card_html(item))
 
-    card_el = ui.element("div").classes(card_css)
-
-    if on_card_click:
-        card_el.on("click", lambda _e, i=item: on_card_click(i))
-    else:
-        # Fallback: no-op (side panel should always be provided)
-        pass
-
-    with card_el:
-        # Row 1: title (left) + comment badge (top-right corner)
-        with ui.element("div").style("display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"):
-            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
-            if is_done:
-                title_style += "text-decoration:line-through;color:#52525b;"
-            else:
-                title_style += "color:#e4e4e7;"
-            ui.html(f'<div style="{title_style}">{item.title}</div>').style("flex:1;min-width:0;")
-
-            # Comment badge (top-right corner)
-            if item.comments:
-                has_flagged = any(n.get("flagged") and not n.get("resolved") for n in item.comments)
-                icon_color = "#f87171" if has_flagged else "#60a5fa"
-                badge_html = (
-                    f'<span style="position:relative;color:{icon_color};'
-                    f'font-size:14px;padding:2px 4px;">\U0001f4ac' + comment_badge_html(item.comments) + "</span>"
-                )
-                with ui.element("div").style("flex-shrink:0;"):
-                    ui.html(badge_html)
-
-        # Row 2: move buttons (left) + badges (right)
-        opacity = "opacity:0.5;" if is_done else ""
-        pill_base = (
-            "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-            "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
-        )
-
-        with ui.element("div").style("display:flex;align-items:center;justify-content:space-between;margin-top:5px;"):
-            # Move buttons (left)
-            if not is_done:
-                with ui.element("div").style("display:flex;gap:4px;"):
-                    other_statuses = [s for s in STATUSES if s != status]
-                    for target in other_statuses:
-                        arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
-                        ui.button(
-                            f"{arrow} {target}",
-                            on_click=lambda _e, i=item, t=target: move_fn(i, t),
-                        ).classes("mc-move-btn").props("flat dense unelevated no-caps")
-            else:
-                ui.element("div")  # spacer for done cards
-
-            # Badges (bottom-right)
-            badges_html = (
-                f'<span style="{pill_base}text-transform:uppercase;'
-                f'color:{cat_color};background:{cat_bg};{opacity}">{item.category}</span> '
-                f'<span style="{pill_base}text-transform:uppercase;'
-                f'color:{pri_color};background:{pri_bg};{opacity}">{item.priority}</span>'
-            )
-            if item.phase:
-                badges_html += (
-                    f' <span style="{pill_base}'
-                    f'font-style:italic;text-transform:none;color:#71717a;background:#1e1e23;">'
-                    f"{item.phase}</span>"
-                )
-            if item.sprint_target is not None:
-                sprint_opacity = "opacity:0.4;" if is_done else ""
-                badges_html += (
-                    f' <span style="{pill_base}font-weight:500;text-transform:none;'
-                    f'color:#52525b;background:transparent;border:1px solid #27272a;{sprint_opacity}">'
-                    f"S{item.sprint_target}</span>"
-                )
-            ui.html(f'<div style="display:flex;gap:4px;align-items:center;">{badges_html}</div>')
-
-        # Row 3: tags
-        if item.tags:
-            tags_html = " ".join(
-                f'<span style="font-size:8px;color:#6b7280;background:#1e1e23;'
-                f"padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;"
-                f'white-space:nowrap;">{tag}</span>'
-                for tag in item.tags
-            )
-            ui.html(f'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;">{tags_html}</div>')
+        # Move buttons for non-done items
+        if not is_done:
+            all_statuses = ["backlog", "doing", "done"]
+            other_statuses = [s for s in all_statuses if s != status]
+            with ui.element("div").style("display:flex;gap:4px;padding:2px 10px 4px;"):
+                for target in other_statuses:
+                    arrow = "\u2190" if all_statuses.index(target) < all_statuses.index(status) else "\u2192"
+                    ui.button(
+                        f"{arrow} {target}",
+                        on_click=lambda _e, i=item, t=target: move_fn(i, t),
+                    ).props("flat dense unelevated no-caps").style(
+                        f"{move_btn_style}color:#52525b;background:transparent;"
+                    )
 
 
 def _render_side_panel_content(
