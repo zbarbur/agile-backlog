@@ -1,0 +1,30 @@
+title: "Sprint planning tool \u2014 backlog sections + drag-and-drop"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Dedicated sprint planning feature combining:
+
+  1. Backlog view sections: Backlog (unplanned), Next Sprint (N+1), Future (N+2+)
+
+  2. Drag-and-drop or buttons to move items between sections
+
+  3. Auto-set sprint_target when moving to Next/Future
+
+  4. Ties together with drag-and-drop backlog item
+
+  5. Requires brainstorming session for UX design'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

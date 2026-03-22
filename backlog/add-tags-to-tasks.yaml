@@ -1,0 +1,24 @@
+title: Add tags to tasks
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Have the ability to add tags for tasks , so we can manage different
+  topics (like "infrastructure" , "UX" "Deployment" etc , have the ability for the
+  AI to automatically decide and assign the right tag
+
+  This would be very helpful in the backlog management '
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

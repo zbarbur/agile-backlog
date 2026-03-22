@@ -1,22 +1,30 @@
 title: Items in back log can be only targeted to next sprint or future sprint (Next
   +1)
-status: backlog
+status: doing
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 12
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Sprint target dropdown in edit/add dialogs should only offer current sprint,
+  next sprint, or unplanned
+complexity: S
+technical_specs:
+- Modify sprint options in _show_edit_dialog() and _show_add_dialog()
+- 'Options: None=Backlog, current_sprint, current_sprint+1'
 description: It doesn't make sense selecting for past sprints, this allow planning
   and grooming backlog for the coming sprints
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- 'Add dialog: options are Backlog, Sprint N (current), Sprint N+1 (next)'
+- 'Edit dialog: same options plus current item value'
+- No long list of old sprint numbers
+- Tests pass
+test_plan:
+- 'Manual: verify sprint dropdown shows only relevant options'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

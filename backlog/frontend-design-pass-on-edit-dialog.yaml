@@ -1,0 +1,36 @@
+title: Frontend design pass on edit dialog
+status: doing
+priority: P1
+category: feature
+sprint_target: 12
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: "Redesign edit dialog \u2014 bigger textareas, better layout, professional look\
+  \ using frontend-design skill"
+complexity: M
+technical_specs:
+- "Use rows=6 with autogrow (both work together \u2014 rows sets minimum, autogrow\
+  \ expands)"
+- "Fix category_input outside row \u2014 move inside priority row"
+- Widen complexity label to prevent truncation
+description: "Edit dialog needs a design overhaul:\n1. Textareas too small \u2014\
+  \ description, acceptance criteria, tech specs, test plan, notes all need bigger\
+  \ default height (rows=6 minimum)\n2. Overall layout needs polish \u2014 spacing,\
+  \ alignment, visual hierarchy\n3. Use the frontend-design skill for a professional\
+  \ redesign\n4. Complexity label truncated \u2014 needs more width\n5. Consider grouping\
+  \ fields logically (metadata row, then content sections)"
+acceptance_criteria:
+- All textareas have rows=6 minimum
+- Complexity label not truncated
+- Fields grouped logically (metadata, then content)
+- Professional dark theme styling
+- Tests pass
+test_plan:
+- 'Manual: verify all fields have adequate space'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
