@@ -242,6 +242,12 @@ body {
 .mc-card.mc-p1 {
     border-left: 3px solid #ef4444 !important;
 }
+.mc-card.mc-p2 {
+    border-left: 3px solid #3b82f6 !important;
+}
+.mc-card.mc-p3 {
+    border-left: 3px solid #f59e0b !important;
+}
 .mc-card.mc-done {
     opacity: 0.4;
 }
@@ -337,14 +343,14 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         comment_dialog,
         ui.card().style(
             "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:480px;width:480px;border-radius:8px;"
+            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
         ),
     ):
         ui.html(
             '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
             f"\U0001f4ac Comment on: {item.title}</div>"
         )
-        comment_text = ui.textarea("Comment").props("dense outlined autogrow").style("width:100%;")
+        comment_text = ui.textarea("Comment").props("outlined autogrow").style("width:100%;min-height:120px;")
         flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
 
         def _save_comment():
@@ -376,8 +382,8 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
     is_done = status == "done"
 
     card_css = "mc-card"
-    if item.priority == "P1":
-        card_css += " mc-p1"
+    pri_class = {"P1": " mc-p1", "P2": " mc-p2", "P3": " mc-p3"}.get(item.priority, "")
+    card_css += pri_class
     if is_done:
         card_css += " mc-done"
 
