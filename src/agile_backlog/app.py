@@ -31,10 +31,7 @@ def kanban_page():
 
     # --- Load data ---
     all_items = load_all()
-    # Config-based sprint takes precedence over inference
-    from agile_backlog.config import get_current_sprint
-
-    current_sprint = get_current_sprint() or detect_current_sprint(all_items)
+    current_sprint = detect_current_sprint(all_items)
 
     with ui.element("div").style("width:100%;padding:16px 24px;"):
         # === Header Row 1 ===

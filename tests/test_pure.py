@@ -253,32 +253,63 @@ class TestCommentBadgeHtml:
 
 
 class TestDetectCurrentSprint:
+    def test_config_takes_priority(self):
+        import unittest.mock
+
+        items = [_item(status="doing", sprint_target=13)]
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=15):
+            result = detect_current_sprint(items)
+        assert result == 15
+
+    def test_config_none_falls_back_to_inference(self):
+        import unittest.mock
+
+        items = [_item(status="doing", sprint_target=13)]
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            result = detect_current_sprint(items)
+        assert result == 13
+
     def test_detects_from_doing_items(self):
+        import unittest.mock
+
         items = [
             _item(id="a", status="doing", sprint_target=3),
             _item(id="b", status="doing", sprint_target=3),
             _item(id="c", status="backlog", sprint_target=4),
         ]
-        assert detect_current_sprint(items) == 3
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            assert detect_current_sprint(items) == 3
 
-    def test_fallback_to_highest_sprint_when_no_doing(self):
+    def test_fallback_to_none_when_no_doing(self):
+        import unittest.mock
+
         items = [_item(id="a", status="backlog", sprint_target=2)]
-        assert detect_current_sprint(items) == 2
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            assert detect_current_sprint(items) is None
 
     def test_returns_none_when_doing_has_no_sprint(self):
-        items = [_item(id="a", status="doing", sprint_target=None)]
-        assert detect_current_sprint(items) is None
+        import unittest.mock
 
-    def test_returns_most_common_sprint(self):
+        items = [_item(id="a", status="doing", sprint_target=None)]
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            assert detect_current_sprint(items) is None
+
+    def test_returns_max_doing_sprint(self):
+        import unittest.mock
+
         items = [
             _item(id="a", status="doing", sprint_target=3),
             _item(id="b", status="doing", sprint_target=3),
             _item(id="c", status="doing", sprint_target=2),
         ]
-        assert detect_current_sprint(items) == 3
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            assert detect_current_sprint(items) == 3
 
     def test_empty_list(self):
-        assert detect_current_sprint([]) is None
+        import unittest.mock
+
+        with unittest.mock.patch("agile_backlog.pure.get_current_sprint", return_value=None):
+            assert detect_current_sprint([]) is None
 
 
 class TestGroupItemsBySection:

@@ -2,6 +2,7 @@
 
 from datetime import date, timedelta
 
+from agile_backlog.config import get_current_sprint
 from agile_backlog.models import BacklogItem
 from agile_backlog.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
 
@@ -85,15 +86,12 @@ def render_card_html(item: BacklogItem) -> str:
 
 
 def detect_current_sprint(items: list[BacklogItem]) -> int | None:
-    """Detect the current sprint. Checks doing items first, then falls back to highest sprint number."""
-    doing_sprints = [i.sprint_target for i in items if i.status == "doing" and i.sprint_target is not None]
-    if doing_sprints:
-        from collections import Counter
-
-        return Counter(doing_sprints).most_common(1)[0][0]
-    # Fallback: highest sprint number across all items (sprint is active until closed)
-    all_sprints = [i.sprint_target for i in items if i.sprint_target is not None]
-    return max(all_sprints) if all_sprints else None
+    """Return the current sprint number. Checks config first, infers from doing items second."""
+    configured = get_current_sprint()
+    if configured is not None:
+        return configured
+    sprints = [i.sprint_target for i in items if i.status == "doing" and i.sprint_target]
+    return max(sprints) if sprints else None
 
 
 def _complexity_badge(complexity: str) -> str:
