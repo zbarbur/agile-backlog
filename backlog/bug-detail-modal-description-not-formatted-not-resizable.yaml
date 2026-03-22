@@ -1,0 +1,31 @@
+title: 'Bug: Detail modal description not formatted + not resizable'
+status: doing
+priority: P1
+category: bug
+sprint_target: 13
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: Fix description formatting in detail modal and make it scrollable
+complexity: S
+technical_specs:
+- Use ui.markdown() instead of ui.html() for description in _render_detail_modal_content()
+- Add max-height and overflow-y:auto to modal card style
+description: "Two issues with the detail modal:\n1. Description text shows as one\
+  \ continuous paragraph \u2014 numbered lists and line breaks from YAML are lost.\
+  \ Need to render with markdown or preserve newlines (white-space: pre-wrap or use\
+  \ ui.markdown).\n2. Modal is fixed size \u2014 should be scrollable and ideally\
+  \ resizable/draggable to see more content.\n3. Overall detail view is too busy \u2014\
+  \ needs better visual hierarchy between sections."
+acceptance_criteria:
+- Description renders with line breaks preserved (newlines shown)
+- Modal is scrollable when content exceeds viewport
+- Tests pass
+test_plan:
+- 'Manual: verify long descriptions render with line breaks'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
