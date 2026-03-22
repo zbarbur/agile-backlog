@@ -39,7 +39,7 @@ class BacklogItem(BaseModel):
     phase: Literal["plan", "spec", "build", "review"] | None = None
     design_reviewed: bool = False
     code_reviewed: bool = False
-    agent_notes: list[dict] = Field(default_factory=list)
+    comments: list[dict] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -81,6 +81,18 @@ class BacklogItem(BaseModel):
             data["tags"] = tags
         elif cat not in ("bug", "feature", "docs", "chore"):
             data["category"] = "chore"
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_agent_notes_to_comments(cls, data: dict) -> dict:
+        """Migrate old agent_notes field to comments."""
+        if not isinstance(data, dict):
+            return data
+        if "agent_notes" in data and "comments" not in data:
+            data["comments"] = data.pop("agent_notes")
+        elif "agent_notes" in data:
+            data.pop("agent_notes")
         return data
 
     def to_dict(self) -> dict:

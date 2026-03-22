@@ -155,9 +155,9 @@ def show(item_id: str, output_json: bool):
             click.echo(f"  - {tp}")
     if item.notes:
         click.echo(f"\nNotes:\n{item.notes}")
-    if item.agent_notes:
-        click.echo("\nAgent Notes:")
-        for n in item.agent_notes:
+    if item.comments:
+        click.echo("\nComments:")
+        for n in item.comments:
             flag_marker = " [FLAGGED]" if n.get("flagged") else ""
             resolved_marker = " [resolved]" if n.get("resolved") else ""
             click.echo(f"  - {n['text']} ({n['created']}){flag_marker}{resolved_marker}")
@@ -203,7 +203,7 @@ def edit(item_id, resolve_notes: bool, **kwargs):
                 setattr(item, field, value)
 
     if resolve_notes:
-        for n in item.agent_notes:
+        for n in item.comments:
             if n.get("flagged"):
                 n["resolved"] = True
 
@@ -221,7 +221,7 @@ def note(item_id: str, text: str, flag: bool):
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
-    item.agent_notes.append(
+    item.comments.append(
         {
             "text": text,
             "flagged": flag,
@@ -239,7 +239,7 @@ def note(item_id: str, text: str, flag: bool):
 def flagged(output_json: bool):
     """List items with unresolved flagged notes."""
     items = load_all()
-    flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.agent_notes)]
+    flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.comments)]
 
     if output_json:
         result = [
@@ -247,7 +247,7 @@ def flagged(output_json: bool):
                 "id": item.id,
                 "title": item.title,
                 "status": item.status,
-                "flagged_notes": [n for n in item.agent_notes if n.get("flagged") and not n.get("resolved")],
+                "flagged_notes": [n for n in item.comments if n.get("flagged") and not n.get("resolved")],
             }
             for item in flagged_items
         ]
@@ -259,7 +259,7 @@ def flagged(output_json: bool):
         return
     for item in flagged_items:
         click.echo(f"\n{item.id} ({item.status}):")
-        for n in item.agent_notes:
+        for n in item.comments:
             if n.get("flagged") and not n.get("resolved"):
                 click.echo(f"  🚩 {n['text']} ({n['created']})")
 
@@ -273,9 +273,9 @@ def resolve_note(item_id: str, note_index: int):
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
-    if note_index < 0 or note_index >= len(item.agent_notes):
-        raise SystemExit(f"Error: note index {note_index} out of range (item has {len(item.agent_notes)} notes).")
-    item.agent_notes[note_index]["resolved"] = True
+    if note_index < 0 or note_index >= len(item.comments):
+        raise SystemExit(f"Error: note index {note_index} out of range (item has {len(item.comments)} notes).")
+    item.comments[note_index]["resolved"] = True
     save_item(item)
     click.echo(f"Resolved note {note_index} on {item_id}")
 

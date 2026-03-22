@@ -256,7 +256,7 @@ class TestJsonOutput:
         assert len(data) == 1
         assert "title" in data[0]
         assert "priority" in data[0]
-        assert "agent_notes" in data[0]  # ALL fields present
+        assert "comments" in data[0]  # ALL fields present
 
     def test_show_json(self, backlog_dir):
         """show --json returns valid JSON object with all fields."""

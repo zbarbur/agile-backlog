@@ -113,12 +113,12 @@ def _complexity_badge(complexity: str) -> str:
     )
 
 
-def comment_badge_html(agent_notes: list[dict]) -> str:
+def comment_badge_html(comments: list[dict]) -> str:
     """Return HTML for the comment badge on a card."""
-    if not agent_notes:
+    if not comments:
         return ""
-    flagged_count = sum(1 for n in agent_notes if n.get("flagged") and not n.get("resolved"))
-    total_count = len(agent_notes)
+    flagged_count = sum(1 for n in comments if n.get("flagged") and not n.get("resolved"))
+    total_count = len(comments)
     _badge = "border-radius:9999px;padding:1px 7px;font-size:11px;margin-left:6px;color:#fff;"
     if flagged_count > 0:
         # Red badge for unresolved flagged
@@ -377,9 +377,9 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
             f"\U0001f4ac Comment on: {item.title}</div>"
         )
         # Show existing comments first
-        if item.agent_notes:
+        if item.comments:
             ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">COMMENTS</div>')
-            for idx, note in enumerate(item.agent_notes):
+            for idx, note in enumerate(item.comments):
                 icon = "\U0001f916" if note.get("flagged") else "\U0001f4ac"
                 resolved_style = "opacity:0.5;text-decoration:line-through;" if note.get("resolved") else ""
                 author = note.get("author", "")
@@ -398,7 +398,7 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
                     if not note.get("resolved"):
 
                         def _resolve_note(note_idx=idx):
-                            item.agent_notes[note_idx]["resolved"] = True
+                            item.comments[note_idx]["resolved"] = True
                             save_fn(item)
                             comment_dialog.close()
                             refresh_fn()
@@ -418,7 +418,7 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
             text = (comment_text.value or "").strip()
             if not text:
                 return
-            item.agent_notes.append(
+            item.comments.append(
                 {
                     "text": text,
                     "flagged": flag_check.value,
@@ -488,12 +488,12 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
 
             # Comment button (top-right corner)
             if not is_done and save_fn and refresh_fn:
-                comment_count = len(item.agent_notes)
-                has_flagged = any(n.get("flagged") and not n.get("resolved") for n in item.agent_notes)
+                comment_count = len(item.comments)
+                has_flagged = any(n.get("flagged") and not n.get("resolved") for n in item.comments)
                 icon_color = "#f87171" if has_flagged else "#52525b" if comment_count == 0 else "#60a5fa"
                 badge_html = (
                     f'<span style="position:relative;cursor:pointer;color:{icon_color};'
-                    f'font-size:14px;padding:2px 4px;">\U0001f4ac' + comment_badge_html(item.agent_notes) + "</span>"
+                    f'font-size:14px;padding:2px 4px;">\U0001f4ac' + comment_badge_html(item.comments) + "</span>"
                 )
                 comment_btn = ui.element("div").style("flex-shrink:0;")
                 comment_btn.on("click.stop", lambda _e, i=item: _show_comment_dialog(i, save_fn, refresh_fn))
@@ -662,10 +662,10 @@ def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> No
         ui.html(f'<div style="{label_style}">Depends on</div>')
         ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
 
-    # Comments (agent_notes)
-    if item.agent_notes:
+    # Comments
+    if item.comments:
         ui.html(f'<div style="{label_style}">Comments</div>')
-        for note in item.agent_notes:
+        for note in item.comments:
             flagged = note.get("flagged", False)
             resolved = note.get("resolved", False)
             text = note.get("text", "")

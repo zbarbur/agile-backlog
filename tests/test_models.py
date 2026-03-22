@@ -133,14 +133,42 @@ class TestTaskDefinitionFields:
 class TestAgentNotes:
     def test_agent_notes_default_empty(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
-        assert item.agent_notes == []
+        assert item.comments == []
 
     def test_agent_notes_round_trip(self):
         item = BacklogItem(id="test", title="Test", priority="P2", category="feature")
         note = {"text": "Focus on filters first", "flagged": True, "resolved": False, "created": "2026-03-22"}
-        item.agent_notes.append(note)
+        item.comments.append(note)
         d = item.to_yaml_dict()
-        assert d["agent_notes"] == [note]
+        assert d["comments"] == [note]
+
+
+class TestCommentsField:
+    def test_comments_field_exists(self):
+        item = BacklogItem(id="x", title="x", priority="P2", category="bug")
+        assert item.comments == []
+
+    def test_comments_field_populated(self):
+        item = BacklogItem(
+            id="x",
+            title="x",
+            priority="P2",
+            category="bug",
+            comments=[{"text": "hello", "flagged": False, "resolved": False}],
+        )
+        assert len(item.comments) == 1
+
+    def test_agent_notes_migrates_to_comments(self):
+        """Old YAML files with agent_notes key should load into comments field."""
+        item = BacklogItem(
+            id="x",
+            title="x",
+            priority="P2",
+            category="bug",
+            agent_notes=[{"text": "old note", "flagged": True, "resolved": False}],
+        )
+        assert len(item.comments) == 1
+        assert item.comments[0]["text"] == "old note"
 
 
 class TestCategoryMigration:
