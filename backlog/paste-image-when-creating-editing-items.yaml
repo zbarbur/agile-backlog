@@ -36,7 +36,7 @@ agent_notes:
     usable and efficient to paste images of issues, as this is very useful to share
     the exact points in the UI that need attention
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-22'
 - text: 'Research complete: Recommended approach is file-based storage (backlog/images/{item-id}/)
     + JavaScript clipboard paste API via ui.run_javascript(). Fallback: ui.upload().
@@ -44,3 +44,9 @@ agent_notes:
   flagged: false
   resolved: false
   created: '2026-03-22'
+- text: I want also to research after adding the images , what's the best way to display
+    them, is there a way I can mark a specific place to focus on ?
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
+  author: user

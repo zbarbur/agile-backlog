@@ -1,0 +1,30 @@
+title: 'Bug: Comment badge counts total instead of unresolved flagged'
+status: backlog
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Badge shows total comment count (blue 3) instead of unresolved flagged
+  count (red 1). Logic should be:
+
+  - Red badge with count of unresolved+flagged comments
+
+  - Blue badge with total count if no unresolved flagged
+
+  - No badge if no comments
+
+  Also: agent reply should auto-resolve the original flagged comment, or agent should
+  explicitly resolve via CLI.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

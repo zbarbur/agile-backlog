@@ -1,0 +1,26 @@
+title: when in development, the UI keeps reloading
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: I want to be able to add and modify items while there's development happing
+  , what's the best way to do it and still maintain data integrity?
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes:
+- text: this is is for us to talk about more
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
+  author: user
