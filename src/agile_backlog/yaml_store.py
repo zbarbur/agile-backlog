@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from src.models import BacklogItem
+from agile_backlog.models import BacklogItem
 
 
 def _git_root() -> Path:

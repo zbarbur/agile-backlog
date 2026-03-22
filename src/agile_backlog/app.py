@@ -3,8 +3,8 @@
 
 from nicegui import ui
 
-from src.models import BacklogItem, slugify
-from src.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
+from agile_backlog.models import BacklogItem, slugify
+from agile_backlog.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
 
 # ---------------------------------------------------------------------------
 # Pure functions — importable, framework-independent, fully tested
@@ -716,7 +716,7 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         ui.html('<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Edit Item</div>')
 
         title_input = ui.input("Title", value=item.title).props("dense outlined").style("width:100%;")
-        from src.yaml_store import load_all as _load_all
+        from agile_backlog.yaml_store import load_all as _load_all
 
         _items = _load_all()
         all_categories = sorted({i.category for i in _items})
@@ -1012,7 +1012,7 @@ def _render_backlog_list(
 @ui.page("/")
 def kanban_page():
     """Render the Kanban board — Mission Control dark theme."""
-    from src.yaml_store import item_exists, load_all, save_item
+    from agile_backlog.yaml_store import item_exists, load_all, save_item
 
     # --- Inject global styles ---
     ui.add_head_html(GLOBAL_CSS)
@@ -1020,7 +1020,7 @@ def kanban_page():
     # --- Load data ---
     all_items = load_all()
     # Config-based sprint takes precedence over inference
-    from src.config import get_current_sprint
+    from agile_backlog.config import get_current_sprint
 
     current_sprint = get_current_sprint() or detect_current_sprint(all_items)
 

@@ -4,8 +4,8 @@ from datetime import date
 
 import click
 
-from src.models import BacklogItem, slugify
-from src.yaml_store import item_exists, load_all, load_item, save_item
+from agile_backlog.models import BacklogItem, slugify
+from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
 
 @click.group()
@@ -256,7 +256,7 @@ def resolve_note(item_id: str, note_index: int):
 @click.argument("number", type=int)
 def set_sprint(number: int):
     """Set the current sprint number."""
-    from src.config import set_current_sprint
+    from agile_backlog.config import set_current_sprint
 
     set_current_sprint(number)
     click.echo(f"Current sprint set to {number}")
@@ -268,6 +268,6 @@ def set_sprint(number: int):
 @click.option("--no-reload", is_flag=True, help="Disable hot reload.")
 def serve(port: int, host: str, no_reload: bool):
     """Open the Kanban board in the browser."""
-    from src.app import run_app
+    from agile_backlog.app import run_app
 
     run_app(host=host, port=port, reload=not no_reload)
