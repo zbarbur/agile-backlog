@@ -1,0 +1,34 @@
+title: 'Bug: Comment icon doesn''t indicate open comments'
+status: done
+priority: P1
+category: bug
+sprint_target: 12
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: Comment icon shows badge count and clicking shows existing comments before new
+  comment form
+complexity: M
+technical_specs:
+- "Modify _render_card() \u2014 check len(item.agent_notes) for badge"
+- "Modify _show_comment_dialog() \u2014 render existing comments above the new comment\
+  \ form"
+- "Style flagged comments with \U0001F916 icon, resolved with \u2713 dimmed"
+description: "Two issues with comments UX:\n1. The \U0001F4AC icon on cards looks\
+  \ the same whether there are 0 or 5 comments. Should show a badge count or change\
+  \ color when there are flagged/unresolved comments.\n2. Clicking \U0001F4AC opens\
+  \ a blank new comment form. It should show existing comments first, with option\
+  \ to add a new one."
+acceptance_criteria:
+- "\U0001F4AC icon shows count badge when item has comments"
+- Flagged comments show different color on badge (red/amber)
+- "Clicking \U0001F4AC shows existing comments list first, then add-new section"
+- Tests pass
+test_plan:
+- 'Manual: add comments, verify badge count and existing comments shown'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

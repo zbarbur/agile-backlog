@@ -1,0 +1,22 @@
+title: Add flagged comments check to sprint-start process
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The sprint-start skill should check for flagged comments (agile-backlog
+  flagged) as part of the sprint planning process. Agent should review and acknowledge
+  flagged comments before scoping.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

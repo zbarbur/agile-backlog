@@ -279,8 +279,8 @@ body {
     background: #18181b !important;
     border: 1px solid #27272a !important;
     color: #e4e4e7 !important;
-    max-width: 640px !important;
-    width: 640px !important;
+    max-width: 720px !important;
+    width: 720px !important;
 }
 /* Active filter chip styling */
 .mc-filter-chip {
@@ -343,13 +343,29 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         comment_dialog,
         ui.card().style(
             "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
         ),
     ):
         ui.html(
             '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
             f"\U0001f4ac Comment on: {item.title}</div>"
         )
+        # Show existing comments first
+        if item.agent_notes:
+            ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">COMMENTS</div>')
+            for note in item.agent_notes:
+                icon = "\U0001f916" if note.get("flagged") else "\U0001f4ac"
+                resolved_style = "opacity:0.5;text-decoration:line-through;" if note.get("resolved") else ""
+                ui.html(
+                    f'<div style="font-size:12px;color:#d4d4d8;margin-bottom:6px;padding:6px 8px;'
+                    f'background:#111116;border-radius:4px;{resolved_style}">'
+                    f"{icon} {note['text']}"
+                    f'<span style="font-size:9px;color:#52525b;margin-left:8px;">{note.get("created", "")}</span>'
+                    f"</div>"
+                )
+            ui.html('<div style="border-top:1px solid #27272a;margin:10px 0;"></div>')
+
+        ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">ADD COMMENT</div>')
         comment_text = ui.textarea("Comment").props("outlined rows=8").style("width:100%;")
         flag_check = ui.checkbox("Flag for AI").style("font-size:11px;color:#a1a1aa;")
 
@@ -393,7 +409,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         detail_dialog,
         ui.card().style(
             "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
         ),
     ):
         _render_detail_modal_content(item, is_done)
@@ -425,15 +441,24 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
 
             # Comment button (top-right corner)
             if not is_done and save_fn and refresh_fn:
+                comment_count = len(item.agent_notes)
+                has_flagged = any(n.get("flagged") and not n.get("resolved") for n in item.agent_notes)
+                icon_color = "#f87171" if has_flagged else "#52525b" if comment_count == 0 else "#60a5fa"
+                badge_html = (
+                    f'<span style="position:relative;cursor:pointer;color:{icon_color};'
+                    f'font-size:14px;padding:2px 4px;">\U0001f4ac'
+                )
+                if comment_count > 0:
+                    badge_html += (
+                        f'<span style="position:absolute;top:-4px;right:-4px;font-size:8px;'
+                        f"background:#3b82f6;color:white;border-radius:50%;width:14px;height:14px;"
+                        f'display:flex;align-items:center;justify-content:center;">{comment_count}</span>'
+                    )
+                badge_html += "</span>"
                 comment_btn = ui.element("div").style("flex-shrink:0;")
                 comment_btn.on("click.stop", lambda _e, i=item: _show_comment_dialog(i, save_fn, refresh_fn))
                 with comment_btn:
-                    ui.html(
-                        '<span style="cursor:pointer;color:#52525b;font-size:14px;'
-                        'padding:2px 4px;border-radius:4px;" '
-                        "onmouseover=\"this.style.color='#a1a1aa'\" "
-                        "onmouseout=\"this.style.color='#52525b'\">\U0001f4ac</span>"
-                    )
+                    ui.html(badge_html)
 
         # Row 2: move buttons (left) + badges (right)
         opacity = "opacity:0.5;" if is_done else ""
@@ -644,31 +669,35 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         edit_dialog,
         ui.card().style(
             "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+            "padding:20px;max-width:720px;width:720px;border-radius:8px;"
         ),
     ):
         ui.html('<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Edit Item</div>')
 
         title_input = ui.input("Title", value=item.title).props("dense outlined").style("width:100%;")
+        from src.yaml_store import load_all as _load_all
+
+        _items = _load_all()
+        all_categories = sorted({i.category for i in _items})
         with ui.row().classes("gap-2").style("width:100%;"):
             priority_input = (
                 ui.select(label="Priority", options=["P1", "P2", "P3"], value=item.priority)
                 .props("dense outlined")
                 .style("min-width:100px;")
             )
-            from src.yaml_store import load_all as _load_all
-
-        _items = _load_all()
-        all_categories = sorted({i.category for i in _items})
-        category_input = (
-            ui.select(label="Category", options=all_categories, value=item.category, with_input=True)
-            .props("dense outlined")
-            .style("flex:1;")
-        )
+            category_input = (
+                ui.select(label="Category", options=all_categories, value=item.category, with_input=True)
+                .props("dense outlined")
+                .style("flex:1;")
+            )
         with ui.row().classes("gap-2").style("width:100%;"):
-            sprint_options_edit = {None: "Unplanned"}
-            for s in sorted({i.sprint_target for i in _items if i.sprint_target is not None}):
-                sprint_options_edit[s] = f"Sprint {s}"
+            current = detect_current_sprint(_items)
+            sprint_options_edit = {None: "Backlog (unplanned)"}
+            if current is not None:
+                sprint_options_edit[current] = f"Sprint {current} (current)"
+                sprint_options_edit[current + 1] = f"Sprint {current + 1} (next)"
+            if item.sprint_target is not None and item.sprint_target not in sprint_options_edit:
+                sprint_options_edit[item.sprint_target] = f"Sprint {item.sprint_target}"
             sprint_input = (
                 ui.select(label="Sprint", options=sprint_options_edit, value=item.sprint_target)
                 .props("dense outlined")
@@ -690,28 +719,28 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
                     value=item.complexity,
                 )
                 .props("dense outlined")
-                .style("min-width:100px;")
+                .style("min-width:140px;")
             )
         goal_input = ui.textarea("Goal", value=item.goal).props("dense outlined autogrow").style("width:100%;")
         description_input = (
-            ui.textarea("Description", value=item.description).props("dense outlined autogrow").style("width:100%;")
+            ui.textarea("Description", value=item.description).props("outlined autogrow rows=6").style("width:100%;")
         )
         ac_input = (
             ui.textarea("Acceptance Criteria (one per line)", value="\n".join(item.acceptance_criteria))
-            .props("dense outlined autogrow")
+            .props("outlined autogrow rows=6")
             .style("width:100%;")
         )
         ts_input = (
             ui.textarea("Technical Specs (one per line)", value="\n".join(item.technical_specs))
-            .props("dense outlined autogrow")
+            .props("outlined autogrow rows=6")
             .style("width:100%;")
         )
         tp_input = (
             ui.textarea("Test Plan (one per line)", value="\n".join(item.test_plan))
-            .props("dense outlined autogrow")
+            .props("outlined autogrow rows=6")
             .style("width:100%;")
         )
-        notes_input = ui.textarea("Notes", value=item.notes).props("dense outlined autogrow").style("width:100%;")
+        notes_input = ui.textarea("Notes", value=item.notes).props("outlined autogrow rows=6").style("width:100%;")
 
         def _split_lines(text: str) -> list[str]:
             return [line.strip() for line in text.split("\n") if line.strip()] if text else []
@@ -901,7 +930,7 @@ def _render_backlog_list(
             detail_dialog,
             ui.card().style(
                 "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-                "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+                "padding:20px;max-width:720px;width:720px;border-radius:8px;"
             ),
         ):
             _render_detail_modal_content(item, False)
@@ -997,7 +1026,7 @@ def kanban_page():
                     add_dialog,
                     ui.card().style(
                         "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-                        "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+                        "padding:20px;max-width:720px;width:720px;border-radius:8px;"
                     ),
                 ):
                     ui.html(
@@ -1017,13 +1046,14 @@ def kanban_page():
                             .props("dense outlined")
                             .style("flex:1;")
                         )
-                        sprint_target_label = f"Sprint {current_sprint}" if current_sprint else "Backlog"
+                        add_sprint_options = {None: "Backlog (unplanned)"}
+                        if current_sprint is not None:
+                            add_sprint_options[current_sprint] = f"Sprint {current_sprint} (current)"
+                            add_sprint_options[current_sprint + 1] = f"Sprint {current_sprint + 1} (next)"
                         add_sprint = (
                             ui.select(
                                 label="Target",
-                                options={None: "Backlog", current_sprint: sprint_target_label}
-                                if current_sprint
-                                else {None: "Backlog"},
+                                options=add_sprint_options,
                                 value=None,
                             )
                             .props("dense outlined")

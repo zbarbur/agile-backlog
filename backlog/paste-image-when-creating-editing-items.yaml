@@ -1,22 +1,40 @@
 title: Paste image when creating/editing items
-status: backlog
+status: done
 priority: P3
 category: feature
-sprint_target: null
+sprint_target: 12
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Research best approach for image pasting in backlog items \u2014 per flagged\
+  \ comment, focus on usability"
+complexity: S
+technical_specs:
+- 'Research: NiceGUI file upload capabilities'
+- 'Research: browser clipboard paste API for images'
+- 'Design: storage in backlog/images/ referenced in YAML'
+- 'Output: recommendation in item notes or spec doc'
 description: Allow pasting or uploading screenshots/images when creating or editing
   backlog items. Useful for bug reports (paste screenshot of UI issue) and design
   feedback. Store images in backlog/images/ directory, reference in YAML.
-acceptance_criteria: []
-test_plan: []
-notes: ''
-phase: null
+acceptance_criteria:
+- Research doc with approach recommendation
+- Covers clipboard paste API, file upload, storage strategy
+- Recommendation on NiceGUI ui.upload() vs clipboard API
+test_plan:
+- "No code \u2014 research output only for this sprint"
+notes: 'Research complete: Use file-based storage (backlog/images/{item-id}/), paste
+  via JavaScript Clipboard API + ui.run_javascript(), fallback ui.upload(). Add images:
+  list[dict] field to model. ~7-9 hours to implement. See flagged comment for user
+  context.'
+phase: spec
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+agent_notes:
+- text: I want to run a research on what's the best way to do it, how to make this
+    usable and efficient to paste images of issues, as this is very useful to share
+    the exact points in the UI that need attention
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
