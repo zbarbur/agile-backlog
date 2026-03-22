@@ -176,11 +176,11 @@ def render_comment_html(comment: dict) -> str:
     return (
         f'<div style="display:flex;flex-direction:column;max-width:82%;align-self:{align};{opacity}">'
         f'<div style="font-size:9px;color:#3f3f46;margin-bottom:2px;padding:0 4px;{meta_align}">'
-        f'{icon} {author} · {created}{"  · 🚩" if flagged and not resolved else ""}</div>'
+        f"{icon} {author} · {created}{'  · 🚩' if flagged and not resolved else ''}</div>"
         f'<div style="padding:8px 12px;border-radius:12px;{flat_corner}'
         f'background:{bg};color:#d4d4d8;font-size:12px;line-height:1.5;{border}">'
-        f'{text}</div>'
-        f'</div>'
+        f"{text}</div>"
+        f"</div>"
     )
 
 
@@ -211,5 +211,3 @@ def relative_time(dt: date) -> str:
     if days <= 28:
         return f"{days // 7}w"
     return dt.strftime("%b %-d")
-
-
