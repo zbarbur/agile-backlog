@@ -408,84 +408,71 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
     card_el.on("click", lambda _e, d=detail_dialog: d.open())
 
     with card_el:
-        # Row 1: title only (full width)
-        title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
-        if is_done:
-            title_style += "text-decoration:line-through;color:#52525b;"
-        else:
-            title_style += "color:#e4e4e7;"
-        ui.html(f'<div style="{title_style}">{item.title}</div>')
+        # Row 1: title (left) + comment button (top-right)
+        with ui.element("div").style("display:flex;align-items:flex-start;gap:6px;"):
+            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;flex:1;"
+            if is_done:
+                title_style += "text-decoration:line-through;color:#52525b;"
+            else:
+                title_style += "color:#e4e4e7;"
+            ui.html(f'<span style="{title_style}">{item.title}</span>')
 
-        # Row 2: badges left-aligned
+            # Comment button (top-right)
+            if not is_done and save_fn and refresh_fn:
+
+                def _open_comment(_e, i=item):
+                    _e.args = None
+                    _show_comment_dialog(i, save_fn, refresh_fn)
+
+                comment_btn = (
+                    ui.button("\U0001f4ac", on_click=_open_comment)
+                    .props("flat dense unelevated no-caps round size=xs")
+                    .style("color:#52525b;min-width:0;padding:2px;")
+                )
+                comment_btn.on("click.stop", lambda _e: None)
+
+        # Row 2: move buttons (left) + badges (right)
         opacity = "opacity:0.5;" if is_done else ""
         pill_base = (
             "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
             "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
         )
-        with ui.element("div").style("display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;"):
-            # Category
-            ui.html(
+
+        with ui.element("div").style("display:flex;align-items:center;justify-content:space-between;margin-top:5px;"):
+            # Move buttons (left)
+            if not is_done:
+                with ui.element("div").style("display:flex;gap:4px;"):
+                    other_statuses = [s for s in STATUSES if s != status]
+                    for target in other_statuses:
+                        arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
+                        ui.button(
+                            f"{arrow} {target}",
+                            on_click=lambda _e, i=item, t=target: move_fn(i, t),
+                        ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+            else:
+                ui.element("div")  # spacer for done cards
+
+            # Badges (bottom-right)
+            badges_html = (
                 f'<span style="{pill_base}text-transform:uppercase;'
-                f'color:{cat_color};background:{cat_bg};{opacity}">{item.category}</span>'
-            )
-            # Priority
-            ui.html(
+                f'color:{cat_color};background:{cat_bg};{opacity}">{item.category}</span> '
                 f'<span style="{pill_base}text-transform:uppercase;'
                 f'color:{pri_color};background:{pri_bg};{opacity}">{item.priority}</span>'
             )
-            # Phase
             if item.phase:
-                ui.html(
-                    f'<span style="{pill_base}'
+                badges_html += (
+                    f' <span style="{pill_base}'
                     f'font-style:italic;text-transform:none;color:#71717a;background:#1e1e23;">'
                     f"{item.phase}</span>"
                 )
-            # Review badges
-            if item.design_reviewed:
-                ui.html(
-                    f'<span style="{pill_base}font-size:8px;'
-                    f'color:#4ade80;background:rgba(74,222,128,0.1);">&#10003; design</span>'
-                )
-            if item.code_reviewed:
-                ui.html(
-                    f'<span style="{pill_base}font-size:8px;'
-                    f'color:#4ade80;background:rgba(74,222,128,0.1);">&#10003; code</span>'
-                )
-            # Sprint
             if item.sprint_target is not None:
                 sprint_opacity = "opacity:0.4;" if is_done else ""
-                ui.html(
-                    f'<span style="{pill_base}font-weight:500;text-transform:none;'
+                badges_html += (
+                    f' <span style="{pill_base}font-weight:500;text-transform:none;'
                     f'color:#52525b;background:transparent;border:1px solid #27272a;{sprint_opacity}">'
                     f"S{item.sprint_target}</span>"
                 )
-
-        # Row 3: move buttons + comment button (not for done cards)
-        if not is_done:
-            with ui.element("div").style("display:flex;align-items:center;gap:4px;margin-top:5px;"):
-                other_statuses = [s for s in STATUSES if s != status]
-                for target in other_statuses:
-                    arrow = "\u2190" if STATUSES.index(target) < STATUSES.index(status) else "\u2192"
-                    ui.button(
-                        f"{arrow} {target}",
-                        on_click=lambda _e, i=item, t=target: move_fn(i, t),
-                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
-                # Comment button
-                if save_fn and refresh_fn:
-
-                    def _open_comment(_e, i=item):
-                        _e.args = None  # prevent propagation to card click
-                        _show_comment_dialog(i, save_fn, refresh_fn)
-
-                    comment_btn = (
-                        ui.button(
-                            "\U0001f4ac",
-                            on_click=_open_comment,
-                        )
-                        .classes("mc-move-btn")
-                        .props("flat dense unelevated no-caps")
-                    )
-                    comment_btn.on("click.stop", lambda _e: None)
+            ui.html(f'<div style="display:flex;gap:4px;align-items:center;">{badges_html}</div>')
 
 
 def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
