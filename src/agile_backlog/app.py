@@ -158,6 +158,34 @@ def group_items_by_section(
     return {"backlog": backlog, "vnext": vnext, "vfuture": vfuture}
 
 
+def render_comment_html(comment: dict) -> str:
+    """Render a single comment as an HTML bubble."""
+    author = comment.get("author", "agent")
+    text = comment.get("text", "")
+    created = comment.get("created", "")
+    flagged = comment.get("flagged", False)
+    resolved = comment.get("resolved", False)
+
+    icon = "👤" if author == "user" else "🤖"
+    border_color = "#f87171" if flagged and not resolved else "transparent"
+    opacity = "0.5" if resolved else "1.0"
+    text_style = "text-decoration:line-through;" if resolved else ""
+
+    return (
+        f'<div style="border-left:3px solid {border_color};padding:8px 12px;'
+        f'margin:4px 0;border-radius:6px;background:rgba(255,255,255,0.04);opacity:{opacity};">'
+        f'<div style="font-size:11px;color:#71717a;margin-bottom:4px;">'
+        f'{icon} {author} &nbsp; {created}</div>'
+        f'<div style="{text_style}color:#d4d4d8;font-size:13px;">{text}</div>'
+        f'</div>'
+    )
+
+
+def comment_thread_html(comments: list[dict]) -> str:
+    """Render a full comment thread as HTML."""
+    return "".join(render_comment_html(c) for c in comments)
+
+
 # ---------------------------------------------------------------------------
 # NiceGUI UI — Mission Control dark theme
 # ---------------------------------------------------------------------------

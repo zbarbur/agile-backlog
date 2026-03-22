@@ -1,5 +1,5 @@
 # tests/test_app.py
-from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section
+from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html, group_items_by_section, render_comment_html, comment_thread_html
 from agile_backlog.models import BacklogItem
 
 
@@ -321,3 +321,41 @@ class TestGroupItemsBySection:
         result = group_items_by_section(items, current_sprint=15)
         ids = [i.id for i in result["backlog"]]
         assert ids == ["high", "med", "low"]
+
+
+class TestRenderCommentHtml:
+    def test_basic_comment(self):
+        comment = {"text": "Hello world", "flagged": False, "resolved": False, "created": "2026-03-22", "author": "user"}
+        html = render_comment_html(comment)
+        assert "Hello world" in html
+        assert "2026-03-22" in html
+
+    def test_flagged_comment_highlighted(self):
+        comment = {"text": "Check this", "flagged": True, "resolved": False, "created": "2026-03-22", "author": "agent"}
+        html = render_comment_html(comment)
+        assert "#f87171" in html  # red border for flagged
+
+    def test_resolved_comment_faded(self):
+        comment = {"text": "Done", "flagged": True, "resolved": True, "created": "2026-03-22", "author": "agent"}
+        html = render_comment_html(comment)
+        assert "opacity" in html
+        assert "line-through" in html
+
+    def test_user_vs_agent_icons(self):
+        user_html = render_comment_html({"text": "x", "author": "user", "flagged": False, "resolved": False})
+        agent_html = render_comment_html({"text": "x", "author": "agent", "flagged": False, "resolved": False})
+        assert user_html != agent_html
+
+
+class TestCommentThreadHtml:
+    def test_empty_thread(self):
+        assert comment_thread_html([]) == ""
+
+    def test_multiple_comments(self):
+        comments = [
+            {"text": "First", "flagged": False, "resolved": False, "author": "user"},
+            {"text": "Second", "flagged": True, "resolved": False, "author": "agent"},
+        ]
+        html = comment_thread_html(comments)
+        assert "First" in html
+        assert "Second" in html
