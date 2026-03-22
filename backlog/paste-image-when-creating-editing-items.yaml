@@ -1,0 +1,22 @@
+title: Paste image when creating/editing items
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Allow pasting or uploading screenshots/images when creating or editing
+  backlog items. Useful for bug reports (paste screenshot of UI issue) and design
+  feedback. Store images in backlog/images/ directory, reference in YAML.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

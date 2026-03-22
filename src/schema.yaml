@@ -90,7 +90,7 @@ fields:
 
   phase:
     type: string
-    enum: [plan, build, review]
+    enum: [plan, spec, build, review]
     nullable: true
     description: Workflow phase for items in 'doing' status
 

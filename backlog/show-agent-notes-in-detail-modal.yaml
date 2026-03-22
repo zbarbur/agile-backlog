@@ -1,5 +1,5 @@
 title: Show agent notes in detail modal
-status: doing
+status: done
 priority: P1
 category: bug
 sprint_target: 10
@@ -22,7 +22,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: add a flagged note via CLI, verify it shows in detail modal'
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

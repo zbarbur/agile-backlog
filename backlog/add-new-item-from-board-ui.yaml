@@ -1,5 +1,5 @@
 title: Add new item from board UI
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 10
@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: create item from UI, verify YAML created'
 notes: ''
-phase: plan
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

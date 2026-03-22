@@ -3,7 +3,7 @@
 
 from nicegui import ui
 
-from src.models import BacklogItem
+from src.models import BacklogItem, slugify
 from src.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
 
 # ---------------------------------------------------------------------------
@@ -536,6 +536,43 @@ def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> No
         ui.html(f'<div style="{label_style}">Depends on</div>')
         ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
 
+    # Agent Notes
+    if item.agent_notes:
+        ui.html(f'<div style="{label_style}">Agent Notes</div>')
+        for note in item.agent_notes:
+            flagged = note.get("flagged", False)
+            resolved = note.get("resolved", False)
+            text = note.get("text", "")
+            created = note.get("created", "")
+
+            if resolved:
+                icon = "&#10003;"
+                row_style = "opacity:0.5;text-decoration:line-through;"
+                icon_style = "color:#71717a;margin-right:6px;"
+            elif flagged:
+                icon = "\U0001f6a9"
+                row_style = ""
+                icon_style = "color:#f87171;margin-right:6px;"
+            else:
+                icon = ""
+                row_style = ""
+                icon_style = ""
+
+            note_html = (
+                f'<div style="display:flex;align-items:baseline;gap:4px;font-size:11px;'
+                f'color:#a1a1aa;margin-bottom:3px;{row_style}">'
+            )
+            if icon:
+                note_html += f'<span style="{icon_style}">{icon}</span>'
+            note_html += f"<span>{text}</span>"
+            if created:
+                note_html += (
+                    f'<span style="margin-left:auto;font-size:9px;color:#3f3f46;'
+                    f"font-family:'IBM Plex Mono',monospace;white-space:nowrap;\">{created}</span>"
+                )
+            note_html += "</div>"
+            ui.html(note_html)
+
     # Footer
     ui.html(
         '<div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #1e1e23;">'
@@ -733,8 +770,8 @@ def _render_backlog_list(
     save_fn,
     refresh_fn,
 ) -> None:
-    """Render the backlog management list view."""
-    # Sort controls
+    """Render the backlog management list view as a sortable table."""
+    # Header
     with ui.element("div").style("display:flex;align-items:center;gap:10px;margin-bottom:10px;"):
         ui.html(
             "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
@@ -746,119 +783,87 @@ def _render_backlog_list(
             f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
             f'border-radius:4px;">{len(backlog_items)}</span>'
         )
-        ui.element("div").style("flex:1;")
-        sort_select = (
-            ui.select(label="Sort by", options=BACKLOG_SORT_OPTIONS, value="priority")
-            .props("dense outlined")
-            .classes("mc-select")
-            .style("width:140px;")
-        )
 
-    # Sort items
-    sort_key = sort_select.value or "priority"
-    if sort_key == "priority":
-        sorted_items = sorted(backlog_items, key=lambda i: PRIORITY_ORDER.get(i.priority, 99))
-    elif sort_key == "category":
-        sorted_items = sorted(backlog_items, key=lambda i: i.category.lower())
-    else:
-        sorted_items = sorted(backlog_items, key=lambda i: i.title.lower())
-
-    sort_select.on_value_change(lambda _: refresh_fn())
-
-    target_sprint = current_sprint or 1
-
-    if not sorted_items:
+    if not backlog_items:
         ui.html(
             '<div style="font-size:11px;color:#52525b;padding:8px 6px;'
             "font-style:italic;font-family:'DM Sans',sans-serif;\">No backlog items match filters.</div>"
         )
         return
 
-    with ui.element("div").style("background:#111116;border-radius:8px;padding:8px;"):
-        for item in sorted_items:
-            cat_color, cat_bg = category_style(item.category)
-            pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+    # Build item lookup for row-click
+    item_lookup = {item.id: item for item in backlog_items}
 
-            # Build detail dialog for click
-            detail_dialog = ui.dialog().classes("mc-detail-dialog")
-            with (
-                detail_dialog,
-                ui.card().style(
-                    "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
-                    "padding:20px;max-width:640px;width:640px;border-radius:8px;"
-                ),
-            ):
-                _render_detail_modal_content(item, False)
-                with ui.row().classes("gap-2").style("margin-top:12px;"):
-                    if save_fn and refresh_fn:
-                        ui.button(
-                            "Edit",
-                            on_click=lambda d=detail_dialog, i=item: (
-                                d.close(),
-                                _show_edit_dialog(i, save_fn, refresh_fn),
-                            ),
-                        ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
-                    ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
-                        "color:#a1a1aa;font-size:11px;"
-                    )
+    # Table columns
+    columns = [
+        {"name": "title", "label": "Title", "field": "title", "sortable": True, "align": "left"},
+        {"name": "priority", "label": "Priority", "field": "priority", "sortable": True},
+        {"name": "category", "label": "Category", "field": "category", "sortable": True},
+        {"name": "sprint", "label": "Sprint", "field": "sprint", "sortable": True},
+        {"name": "phase", "label": "Phase", "field": "phase", "sortable": True},
+        {"name": "complexity", "label": "Complexity", "field": "complexity", "sortable": True},
+        {"name": "created", "label": "Created", "field": "created", "sortable": True},
+    ]
+    rows = [
+        {
+            "id": item.id,
+            "title": item.title,
+            "priority": item.priority,
+            "category": item.category,
+            "sprint": f"S{item.sprint_target}" if item.sprint_target is not None else "",
+            "phase": item.phase or "",
+            "complexity": item.complexity or "",
+            "created": str(item.created),
+        }
+        for item in backlog_items
+    ]
 
-            card_css = "mc-card"
-            if item.priority == "P1":
-                card_css += " mc-p1"
+    # Inject dark table CSS
+    ui.add_head_html("""<style>
+    .mc-backlog-table .q-table { background: #18181b !important; color: #e4e4e7 !important; }
+    .mc-backlog-table .q-table th { color: #71717a !important; background: #111116 !important; }
+    .mc-backlog-table .q-table td { border-color: #27272a !important; }
+    .mc-backlog-table .q-table tbody tr:hover { background: #27272a !important; cursor: pointer; }
+    .mc-backlog-table .q-table thead tr { border-bottom: 1px solid #27272a !important; }
+    .mc-backlog-table .q-table__bottom { background: #111116 !important; color: #71717a !important; }
+    </style>""")
 
-            card_el = ui.element("div").classes(card_css)
-            card_el.on("click", lambda _e, d=detail_dialog: d.open())
-
-            with card_el:
-                with ui.element("div").style("display:flex;align-items:center;gap:8px;flex-wrap:wrap;"):
-                    # Title
-                    ui.html(
-                        f'<span style="font-size:12.5px;font-weight:600;color:#e4e4e7;'
-                        f"line-height:1.3;font-family:'DM Sans',sans-serif;flex:1;min-width:200px;\">"
-                        f"{item.title}</span>"
-                    )
-                    # Badges
-                    pill_base = (
-                        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
-                        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
-                    )
-                    ui.html(
-                        f'<span style="{pill_base}text-transform:uppercase;'
-                        f'color:{pri_color};background:{pri_bg}">{item.priority}</span>'
-                    )
-                    ui.html(
-                        f'<span style="{pill_base}text-transform:uppercase;'
-                        f'color:{cat_color};background:{cat_bg}">{item.category}</span>'
-                    )
-                    if item.sprint_target is not None:
-                        ui.html(
-                            f'<span style="{pill_base}font-weight:500;text-transform:none;'
-                            f'color:#52525b;background:transparent;border:1px solid #27272a;">'
-                            f"S{item.sprint_target}</span>"
-                        )
-
-                    # Stage for sprint button
-                    def _stage(i=item, s=target_sprint):
-                        i.sprint_target = s
-                        save_fn(i)
-                        refresh_fn()
-
+    def open_detail_modal(item_id: str):
+        item = item_lookup.get(item_id)
+        if not item:
+            return
+        detail_dialog = ui.dialog().classes("mc-detail-dialog")
+        with (
+            detail_dialog,
+            ui.card().style(
+                "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+                "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+            ),
+        ):
+            _render_detail_modal_content(item, False)
+            with ui.row().classes("gap-2").style("margin-top:12px;"):
+                if save_fn and refresh_fn:
                     ui.button(
-                        f"Stage S{target_sprint}",
-                        on_click=lambda _e, fn=_stage: fn(),
-                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+                        "Edit",
+                        on_click=lambda d=detail_dialog, i=item: (
+                            d.close(),
+                            _show_edit_dialog(i, save_fn, refresh_fn),
+                        ),
+                    ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
+                ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
+                    "color:#a1a1aa;font-size:11px;"
+                )
+        detail_dialog.open()
 
-                    # Move to doing button
-                    ui.button(
-                        "\u2192 doing",
-                        on_click=lambda _e, i=item: move_fn(i, "doing"),
-                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+    with ui.element("div").classes("mc-backlog-table"):
+        table = ui.table(columns=columns, rows=rows, row_key="id").props("flat bordered dense")
+        table.on("row-click", lambda e: open_detail_modal(e.args[1]["id"]))
 
 
 @ui.page("/")
 def kanban_page():
     """Render the Kanban board — Mission Control dark theme."""
-    from src.yaml_store import load_all, save_item
+    from src.yaml_store import item_exists, load_all, save_item
 
     # --- Inject global styles ---
     ui.add_head_html(GLOBAL_CSS)
@@ -920,6 +925,78 @@ def kanban_page():
                         "background:transparent;color:#71717a;min-height:0;"
                     )
                 )
+
+            # Add Item button
+            def _show_add_dialog():
+                add_dialog = ui.dialog().classes("mc-detail-dialog")
+                with (
+                    add_dialog,
+                    ui.card().style(
+                        "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+                        "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+                    ),
+                ):
+                    ui.html(
+                        '<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Add Item</div>'
+                    )
+                    add_title = ui.input("Title *").props("dense outlined").style("width:100%;")
+                    with ui.row().classes("gap-2").style("width:100%;"):
+                        add_priority = (
+                            ui.select(label="Priority", options=["P1", "P2", "P3"], value="P2")
+                            .props("dense outlined")
+                            .style("min-width:100px;")
+                        )
+                        add_category = ui.input("Category *").props("dense outlined").style("flex:1;")
+                    add_description = ui.textarea("Description").props("dense outlined autogrow").style("width:100%;")
+                    add_sprint = (
+                        ui.number("Sprint target", value=None, min=0, step=1)
+                        .props("dense outlined clearable")
+                        .style("width:150px;")
+                    )
+                    add_error = ui.label("").style("color:#f87171;font-size:11px;display:none;")
+
+                    def _save_new_item():
+                        title = (add_title.value or "").strip()
+                        cat = (add_category.value or "").strip()
+                        if not title or not cat:
+                            add_error.style("display:block;")
+                            add_error.set_text("Title and Category are required.")
+                            return
+                        item_id = slugify(title)
+                        if not item_id:
+                            add_error.style("display:block;")
+                            add_error.set_text("Title produces an invalid ID.")
+                            return
+                        # Handle slug collision
+                        base_id = item_id
+                        counter = 2
+                        while item_exists(item_id):
+                            item_id = f"{base_id}-{counter}"
+                            counter += 1
+                        sprint_val = add_sprint.value
+                        new_item = BacklogItem(
+                            id=item_id,
+                            title=title,
+                            priority=add_priority.value,
+                            category=cat,
+                            description=add_description.value or "",
+                            sprint_target=int(sprint_val) if sprint_val is not None and sprint_val != "" else None,
+                        )
+                        save_item(new_item)
+                        add_dialog.close()
+                        render_board.refresh()
+
+                    with ui.row().classes("gap-2 mt-3"):
+                        ui.button("Save", on_click=_save_new_item).props("flat dense no-caps").style("color:#3b82f6;")
+                        ui.button("Cancel", on_click=add_dialog.close).props("flat dense no-caps").style(
+                            "color:#a1a1aa;"
+                        )
+                add_dialog.open()
+
+            ui.button("+ Add Item", on_click=_show_add_dialog).props("flat dense no-caps unelevated").style(
+                "font-size:11px;font-weight:600;color:#3b82f6;background:rgba(59,130,246,0.08);"
+                "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
+            )
 
             # Show done checkbox
             done_check = (
