@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -240,3 +241,40 @@ class TestServe:
         assert calls[0]["host"] == "127.0.0.1"
         assert calls[0]["port"] == 8501
         assert calls[0]["reload"] is True
+
+
+class TestJsonOutput:
+    def test_list_json(self, backlog_dir):
+        """list --json returns valid JSON array with all fields."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        result = runner.invoke(main, ["list", "--json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert "title" in data[0]
+        assert "priority" in data[0]
+        assert "agent_notes" in data[0]  # ALL fields present
+
+    def test_show_json(self, backlog_dir):
+        """show --json returns valid JSON object with all fields."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        result = runner.invoke(main, ["show", "--json", "test-item"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, dict)
+        assert data["title"] == "Test Item"
+        assert "acceptance_criteria" in data
+
+    def test_flagged_json(self, backlog_dir):
+        """flagged --json returns valid JSON."""
+        runner = CliRunner()
+        runner.invoke(main, ["add", "Test Item", "--category", "feature"])
+        runner.invoke(main, ["note", "test-item", "check this", "--flag"])
+        result = runner.invoke(main, ["flagged", "--json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, list)
+        assert len(data) == 1

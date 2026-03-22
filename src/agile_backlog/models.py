@@ -60,6 +60,14 @@ class BacklogItem(BaseModel):
                 data["phase"] = phase_map.get(old_phase, "plan")
         return data
 
+    def to_dict(self) -> dict:
+        """Return dict with all fields, dates serialized to ISO strings."""
+        data = self.model_dump()
+        for key in ("created", "updated"):
+            if isinstance(data.get(key), date):
+                data[key] = data[key].isoformat()
+        return data
+
     def to_yaml_dict(self) -> dict:
         """Serialize to dict for YAML output, excluding id (derived from filename)."""
         d = self.model_dump()

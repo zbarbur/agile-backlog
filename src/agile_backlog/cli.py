@@ -1,5 +1,6 @@
 """Click CLI for agile-backlog."""
 
+import json
 from datetime import date
 
 import click
@@ -47,7 +48,10 @@ def add(title: str, priority: str, category: str, description: str, sprint_targe
 @click.option("--priority", type=click.Choice(["P1", "P2", "P3"]), default=None)
 @click.option("--category", default=None)
 @click.option("--sprint", "sprint_target", type=int, default=None)
-def list_items(status: str | None, priority: str | None, category: str | None, sprint_target: int | None):
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def list_items(
+    status: str | None, priority: str | None, category: str | None, sprint_target: int | None, output_json: bool
+):  # noqa: E501
     """List backlog items with optional filters."""
     items = load_all()
 
@@ -59,6 +63,10 @@ def list_items(status: str | None, priority: str | None, category: str | None, s
         items = [i for i in items if i.category == category]
     if sprint_target is not None:
         items = [i for i in items if i.sprint_target == sprint_target]
+
+    if output_json:
+        click.echo(json.dumps([item.to_dict() for item in items], indent=2))
+        return
 
     if not items:
         click.echo("No items found.")
@@ -97,12 +105,17 @@ def move(item_id: str, status: str, phase: str | None):
 
 @main.command()
 @click.argument("item_id")
-def show(item_id: str):
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def show(item_id: str, output_json: bool):
     """Show full details for a backlog item."""
     try:
         item = load_item(item_id)
     except FileNotFoundError:
         raise SystemExit(f"Error: item '{item_id}' not found.")
+
+    if output_json:
+        click.echo(json.dumps(item.to_dict(), indent=2))
+        return
 
     click.echo(f"ID:          {item.id}")
     click.echo(f"Title:       {item.title}")
@@ -222,10 +235,25 @@ def note(item_id: str, text: str, flag: bool):
 
 
 @main.command()
-def flagged():
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON.")
+def flagged(output_json: bool):
     """List items with unresolved flagged notes."""
     items = load_all()
     flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.agent_notes)]
+
+    if output_json:
+        result = [
+            {
+                "id": item.id,
+                "title": item.title,
+                "status": item.status,
+                "flagged_notes": [n for n in item.agent_notes if n.get("flagged") and not n.get("resolved")],
+            }
+            for item in flagged_items
+        ]
+        click.echo(json.dumps(result, indent=2))
+        return
+
     if not flagged_items:
         click.echo("No flagged notes.")
         return
