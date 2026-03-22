@@ -2,18 +2,25 @@ title: Show agent notes in detail modal
 status: doing
 priority: P1
 category: bug
-sprint_target: null
+sprint_target: 10
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Display agent notes in the read-only detail modal, not just in edit mode
+complexity: S
+technical_specs:
+- Add notes rendering to _render_detail_modal_content()
+- Style flagged notes with accent color, resolved with dimmed opacity
 description: Agent notes are only visible when editing an item. They should also be
   shown in the read-only detail modal view, with flagged/resolved status indicators.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Detail modal shows agent notes section
+- Flagged notes have visual indicator
+- Resolved notes shown as dimmed/strikethrough
+- Tests pass
+test_plan:
+- 'Manual: add a flagged note via CLI, verify it shows in detail modal'
 notes: ''
 phase: plan
 design_reviewed: false

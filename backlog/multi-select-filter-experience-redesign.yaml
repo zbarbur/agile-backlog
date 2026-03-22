@@ -2,14 +2,19 @@ title: Multi-select filter experience redesign
 status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 10
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Multi-select filters with OR logic within field, AND across fields, dismissible
+  chips
+complexity: M
+technical_specs:
+- Use ui.select(multiple=True).props('use-chips') for priority and category
+- Update render_board filter logic for list-based values
+- Add dismissible ui.chip for active filters
+- CSS for dark dropdown menus (.q-menu, .q-item)
 description: 'Complete redesign of the filter/search bar:
 
   1. Multi-select for priority (select P1 AND P2 together)
@@ -27,8 +32,15 @@ description: 'Complete redesign of the filter/search bar:
   7. Search text combines with filters
 
   8. Clear all filters button'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Priority filter allows selecting multiple values (P1+P2)
+- Category filter allows selecting multiple values
+- Active filters shown as dismissible chips
+- Clear all button
+- Dark themed dropdown menus
+- Tests pass
+test_plan:
+- 'Manual: select multiple priorities, verify OR logic, dismiss chips'
 notes: ''
 phase: plan
 design_reviewed: false

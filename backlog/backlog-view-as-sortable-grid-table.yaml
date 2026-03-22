@@ -2,14 +2,17 @@ title: Backlog view as sortable grid/table
 status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 10
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Replace backlog card list with a sortable data grid for efficient grooming
+complexity: M
+technical_specs:
+- Use NiceGUI ui.table with columns and rows
+- Sort by clicking column headers
+- Row selection opens existing detail modal
 description: 'In backlog management mode, show items in a data grid/table with columns:
 
   1. Title, Priority, Category, Sprint, Phase, Complexity, Created
@@ -21,8 +24,14 @@ description: 'In backlog management mode, show items in a data grid/table with c
   4. Row click opens detail/edit modal
 
   5. More information-dense than card view for grooming'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Backlog view shows items in table with columns (Title, Priority, Category, Sprint,
+  Phase, Complexity)
+- Column headers clickable to sort
+- Row click opens detail/edit modal
+- Tests pass
+test_plan:
+- 'Manual: toggle to backlog view, verify table renders, sort works'
 notes: ''
 phase: plan
 design_reviewed: false

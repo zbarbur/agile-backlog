@@ -2,19 +2,27 @@ title: Add new item from board UI
 status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 10
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add button to create new backlog items from the board UI via dialog
+complexity: M
+technical_specs:
+- Add ui.button in header area
+- Use ui.dialog with form fields similar to edit dialog
+- Call save_item() with new BacklogItem, then refresh
 description: Add a button to create new backlog items directly from the board UI.
   A dialog with fields for title, priority, category, description. Currently items
   can only be added via CLI.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Add Item button visible in header or backlog column
+- Dialog with title, priority, category, description fields
+- Save creates YAML file and refreshes board
+- Tests pass
+test_plan:
+- 'Manual: create item from UI, verify YAML created'
 notes: ''
 phase: plan
 design_reviewed: false
