@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from agile_backlog.cli import main
@@ -28,7 +29,7 @@ def runner() -> CliRunner:
 
 class TestAdd:
     def test_add_basic(self, runner: CliRunner, backlog_dir: Path):
-        result = runner.invoke(main, ["add", "Fix auth leak", "--priority", "P1", "--category", "security"])
+        result = runner.invoke(main, ["add", "Fix auth leak", "--priority", "P1", "--category", "bug"])
         assert result.exit_code == 0
         assert "fix-auth-leak" in result.output
         assert (backlog_dir / "fix-auth-leak.yaml").exists()
@@ -86,11 +87,10 @@ class TestList:
         assert "chill" not in result.output
 
     def test_list_filter_by_category(self, runner: CliRunner):
-        # "security" migrates to "feature" on load; filter by the canonical category
-        runner.invoke(main, ["add", "Sec item", "--category", "security"])
+        runner.invoke(main, ["add", "Feature item", "--category", "feature"])
         runner.invoke(main, ["add", "Doc item", "--category", "docs"])
         result = runner.invoke(main, ["list", "--category", "feature"])
-        assert "sec-item" in result.output
+        assert "feature-item" in result.output
         assert "doc-item" not in result.output
 
     def test_list_filter_by_sprint(self, runner: CliRunner):
@@ -144,12 +144,12 @@ class TestMove:
 
 class TestShow:
     def test_show_item(self, runner: CliRunner):
-        runner.invoke(main, ["add", "Task A", "--priority", "P1", "--category", "security"])
+        runner.invoke(main, ["add", "Task A", "--priority", "P1", "--category", "bug"])
         result = runner.invoke(main, ["show", "task-a"])
         assert result.exit_code == 0
         assert "Task A" in result.output
         assert "P1" in result.output
-        assert "security" in result.output
+        assert "bug" in result.output
 
     def test_show_nonexistent(self, runner: CliRunner):
         result = runner.invoke(main, ["show", "nope"])
@@ -279,3 +279,32 @@ class TestJsonOutput:
         data = json.loads(result.output)
         assert isinstance(data, list)
         assert len(data) == 1
+
+
+class TestTagsFilter:
+    def test_list_filter_by_tag(self, runner, backlog_dir):
+        (backlog_dir / "a.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "A",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "feature",
+                    "tags": ["ui", "planning"],
+                }
+            )
+        )
+        (backlog_dir / "b.yaml").write_text(
+            yaml.dump(
+                {
+                    "title": "B",
+                    "status": "backlog",
+                    "priority": "P2",
+                    "category": "feature",
+                    "tags": ["cli"],
+                }
+            )
+        )
+        result = runner.invoke(main, ["list", "--tags", "ui"])
+        assert "A" in result.output
+        assert "B" not in result.output
