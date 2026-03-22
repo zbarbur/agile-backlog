@@ -10,12 +10,13 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: the grid layout not great, the priority, category, phase are lacking
-  design , make it look like a professional board
+description: 'the grid layout not great, the priority, category, phase are lacking
+  design , make it look like a professional board, it should also have the comments
+  mechanism there '
 acceptance_criteria: []
 test_plan: []
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

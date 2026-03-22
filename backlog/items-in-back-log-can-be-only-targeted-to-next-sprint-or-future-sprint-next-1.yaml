@@ -1,0 +1,22 @@
+title: Items in back log can be only targeted to next sprint or future sprint (Next
+  +1)
+status: backlog
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: It doesn't make sense selecting for past sprints, this allow planning
+  and grooming backlog for the coming sprints
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+agent_notes: []
