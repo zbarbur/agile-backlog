@@ -7,13 +7,20 @@ created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix backlog cards to have the same styling as In Progress cards
+complexity: S
+technical_specs:
+- "Debug render_board() \u2014 check if backlog column uses same _render_card function"
+- Ensure mc-card CSS class applied to all columns
 description: Backlog column items don't have the same card styling as In Progress
   items. Cards should look identical across all columns (except done which is dimmed).
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Backlog cards have same dark card styling as In Progress cards
+- P1 red left border shows on backlog cards
+- Click to open detail modal works on backlog cards
+- Tests pass
+test_plan:
+- 'Manual: compare backlog and in-progress card rendering'
 notes: ''
 phase: spec
 design_reviewed: false
