@@ -11,10 +11,10 @@ goal: Enable tags on items with UI support for adding, displaying, and filtering
   tags
 complexity: M
 technical_specs:
-- "BacklogItem already has tags: list[str] field \u2014 just need UI"
-- Add tag pills to _render_card() badge row
-- Add tag input to edit dialog
-- Add tag filter to filter bar (multi-select with chips)
+- Freeform tags (no predefined vocabulary for now)
+- AI auto-assign tags deferred to future sprint
+- Tag input in edit dialog using ui.select with new_value_mode
+- Tag filter in filter bar as multi-select
 description: 'Have the ability to add tags for tasks , so we can manage different
   topics (like "infrastructure" , "UX" "Deployment" etc , have the ability for the
   AI to automatically decide and assign the right tag

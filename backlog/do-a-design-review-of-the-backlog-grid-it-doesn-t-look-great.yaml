@@ -7,9 +7,9 @@ created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: "Redesign backlog table for dark theme readability \u2014 brainstorming session\
-  \ per flagged comment"
-complexity: M
+goal: "Dark theme styling for backlog table only \u2014 sections/planning deferred\
+  \ to sprint-planning-tool item"
+complexity: S
 technical_specs:
 - Inject dark CSS for .q-table, th, td, tbody tr:hover
 - Use brainstorming skill if design direction unclear
@@ -19,7 +19,7 @@ description: 'the grid layout not great, the priority, category, phase are lacki
   sprint , so the backlog could be groomed for next sprint and then there will be
   automatic sprint candidate'
 acceptance_criteria:
-- Table styled properly for dark theme
+- Table styled for dark theme (bg, text, borders)
 - Row hover effects visible
 - Column headers readable
 - Tests pass

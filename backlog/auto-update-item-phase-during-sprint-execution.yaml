@@ -8,11 +8,12 @@ updated: 2026-03-22
 depends_on: []
 tags: []
 goal: Sprint execution automatically progresses item phases as work happens
-complexity: M
+complexity: S
 technical_specs:
-- Update sprint-start skill to set phase=build after speccing
-- Update subagent-driven-development workflow to set phase=review
-- Document phase transitions in sprint process
+- "Modify .claude/skills/sprint-start/SKILL.md \u2014 add phase transitions after\
+  \ spec step"
+- "Modify .claude/skills/sprint-end/SKILL.md \u2014 verify phases before closing"
+- 'Phase transitions are manual CLI calls: agile-backlog edit <id> --phase build'
 description: "Items stay in 'plan' phase even after work is done. The process should\
   \ auto-update phases:\n1. When spec is written \u2192 move to 'build' phase\n2.\
   \ When code is committed \u2192 move to 'review' phase  \n3. When moved to done\
