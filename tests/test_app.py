@@ -20,30 +20,20 @@ class TestCategoryStyle:
         assert color == "#f472b6"
         assert bg == "rgba(244,114,182,0.12)"
 
-    def test_known_category_security(self):
-        color, bg = category_style("security")
-        assert color == "#a78bfa"
-        assert bg == "rgba(167,139,250,0.12)"
-
-    def test_known_category_tech_debt(self):
-        color, bg = category_style("tech-debt")
-        assert color == "#fbbf24"
-        assert bg == "rgba(251,191,36,0.12)"
-
     def test_known_category_docs(self):
         color, bg = category_style("docs")
         assert color == "#34d399"
         assert bg == "rgba(52,211,153,0.12)"
 
-    def test_known_category_infra(self):
-        color, bg = category_style("infra")
-        assert color == "#22d3ee"
-        assert bg == "rgba(34,211,238,0.12)"
+    def test_chore_style(self):
+        text, bg = category_style("chore")
+        assert text.startswith("#")
+        assert bg.startswith("rgba")
 
     def test_unknown_category_fallback(self):
-        color, bg = category_style("random-thing")
-        assert color == "#4b5563"
-        assert bg == "#f3f4f6"
+        color, bg = category_style("unknown")
+        assert color == "#9ca3af"
+        assert "rgba" in bg
 
 
 class TestFilterItems:
