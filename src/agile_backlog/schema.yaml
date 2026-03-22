@@ -23,12 +23,13 @@ fields:
 
   priority:
     type: string
-    enum: [P1, P2, P3]
-    description: P1=critical, P2=important, P3=nice-to-have
+    enum: [P0, P1, P2, P3, P4]
+    description: P0=critical/drop-everything, P1=high/must-do-this-sprint, P2=medium/should-do-soon, P3=low/nice-to-have, P4=icebox/acknowledged-not-planned
 
   category:
     type: string
-    examples: [security, scanner, api, infra, tech-debt, docs, feature]
+    enum: [bug, feature, docs, chore]
+    description: Category type — bug, feature, docs, or chore
 
   sprint_target:
     type: integer
@@ -104,7 +105,7 @@ fields:
     default: false
     description: Whether code review has been completed
 
-  agent_notes:
+  comments:
     type: list
     items:
       type: object
@@ -113,4 +114,5 @@ fields:
         flagged: { type: boolean, default: false }
         resolved: { type: boolean, default: false }
         created: { type: date }
-    description: Notes for human-to-agent communication. Flagged notes are for agent attention.
+        author: { type: string, enum: [user, agent] }
+    description: Comments for human-agent communication. Flagged comments are for agent attention.
