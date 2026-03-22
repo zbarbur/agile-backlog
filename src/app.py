@@ -408,16 +408,16 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
     card_el.on("click", lambda _e, d=detail_dialog: d.open())
 
     with card_el:
-        # Row 1: title (left) + comment button (top-right)
-        with ui.element("div").style("display:flex;align-items:flex-start;gap:6px;"):
-            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;flex:1;"
+        # Row 1: title (left) + comment button (top-right corner)
+        with ui.element("div").style("display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"):
+            title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
             if is_done:
                 title_style += "text-decoration:line-through;color:#52525b;"
             else:
                 title_style += "color:#e4e4e7;"
-            ui.html(f'<span style="{title_style}">{item.title}</span>')
+            ui.html(f'<div style="{title_style}">{item.title}</div>').style("flex:1;min-width:0;")
 
-            # Comment button (top-right)
+            # Comment button (top-right corner)
             if not is_done and save_fn and refresh_fn:
 
                 def _open_comment(_e, i=item):
@@ -427,7 +427,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                 comment_btn = (
                     ui.button("\U0001f4ac", on_click=_open_comment)
                     .props("flat dense unelevated no-caps round size=xs")
-                    .style("color:#52525b;min-width:0;padding:2px;")
+                    .style("color:#52525b;min-width:0;padding:2px;flex-shrink:0;")
                 )
                 comment_btn.on("click.stop", lambda _e: None)
 
