@@ -363,16 +363,35 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         # Show existing comments first
         if item.agent_notes:
             ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">COMMENTS</div>')
-            for note in item.agent_notes:
+            for idx, note in enumerate(item.agent_notes):
                 icon = "\U0001f916" if note.get("flagged") else "\U0001f4ac"
                 resolved_style = "opacity:0.5;text-decoration:line-through;" if note.get("resolved") else ""
-                ui.html(
-                    f'<div style="font-size:12px;color:#d4d4d8;margin-bottom:6px;padding:6px 8px;'
-                    f'background:#111116;border-radius:4px;{resolved_style}">'
-                    f"{icon} {note['text']}"
-                    f'<span style="font-size:9px;color:#52525b;margin-left:8px;">{note.get("created", "")}</span>'
-                    f"</div>"
-                )
+                author = note.get("author", "")
+                author_label = f' <span style="font-size:8px;color:#52525b;">[{author}]</span>' if author else ""
+                with ui.element("div").style(
+                    f"display:flex;align-items:center;gap:6px;font-size:12px;color:#d4d4d8;"
+                    f"margin-bottom:6px;padding:6px 8px;background:#111116;border-radius:4px;{resolved_style}"
+                ):
+                    ui.html(
+                        f'<div style="flex:1;">'
+                        f"{icon} {note['text']}{author_label}"
+                        f'<span style="font-size:9px;color:#52525b;margin-left:8px;">'
+                        f"{note.get('created', '')}</span>"
+                        f"</div>"
+                    )
+                    if not note.get("resolved"):
+
+                        def _resolve_note(note_idx=idx):
+                            item.agent_notes[note_idx]["resolved"] = True
+                            save_fn(item)
+                            comment_dialog.close()
+                            refresh_fn()
+                            _show_comment_dialog(item, save_fn, refresh_fn)
+
+                        ui.button(
+                            "\u2713",
+                            on_click=_resolve_note,
+                        ).props("flat dense no-caps").style("color:#4ade80;font-size:12px;min-width:24px;padding:2px;")
             ui.html('<div style="border-top:1px solid #27272a;margin:10px 0;"></div>')
 
         ui.html('<div style="font-size:11px;font-weight:600;color:#71717a;margin-bottom:6px;">ADD COMMENT</div>')
@@ -389,6 +408,7 @@ def _show_comment_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
                     "flagged": flag_check.value,
                     "resolved": False,
                     "created": str(date.today()),
+                    "author": "user",
                 }
             )
             save_fn(item)
@@ -513,6 +533,16 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                     f"S{item.sprint_target}</span>"
                 )
             ui.html(f'<div style="display:flex;gap:4px;align-items:center;">{badges_html}</div>')
+
+        # Row 3: tags
+        if item.tags:
+            tags_html = " ".join(
+                f'<span style="font-size:8px;color:#6b7280;background:#1e1e23;'
+                f"padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;"
+                f'white-space:nowrap;">{tag}</span>'
+                for tag in item.tags
+            )
+            ui.html(f'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;">{tags_html}</div>')
 
 
 def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
@@ -732,6 +762,20 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
                 .props("dense outlined")
                 .style("min-width:140px;")
             )
+        all_tags = sorted({t for i in _items for t in i.tags})
+        tag_input = (
+            ui.select(
+                label="Tags",
+                options=all_tags,
+                multiple=True,
+                value=list(item.tags),
+                with_input=True,
+                new_value_mode="add-unique",
+            )
+            .props("dense outlined use-chips")
+            .classes("mc-select")
+            .style("width:100%;")
+        )
         goal_input = ui.textarea("Goal", value=item.goal).props("dense outlined autogrow").style("width:100%;")
         description_input = (
             ui.textarea("Description", value=item.description).props("outlined autogrow rows=6").style("width:100%;")
@@ -764,6 +808,7 @@ def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
             item.sprint_target = int(sprint_val) if sprint_val is not None and sprint_val != "" else None
             item.phase = phase_input.value
             item.complexity = complexity_input.value
+            item.tags = list(tag_input.value or [])
             item.goal = goal_input.value or ""
             item.description = description_input.value or ""
             item.acceptance_criteria = _split_lines(ac_input.value)
@@ -974,7 +1019,10 @@ def kanban_page():
 
     # --- Load data ---
     all_items = load_all()
-    current_sprint = detect_current_sprint(all_items)
+    # Config-based sprint takes precedence over inference
+    from src.config import get_current_sprint
+
+    current_sprint = get_current_sprint() or detect_current_sprint(all_items)
 
     with ui.element("div").style("width:100%;padding:16px 24px;"):
         # === Header Row 1 ===
@@ -1134,6 +1182,7 @@ def kanban_page():
             sprint_options[s] = f"Sprint {s}"
         phases = sorted({i.phase for i in all_items if i.phase})
         phase_options = {None: "All phases", **{p: p for p in phases}}
+        all_tags_filter = sorted({t for i in all_items for t in i.tags})
 
         with ui.element("div").style(
             "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
@@ -1162,6 +1211,12 @@ def kanban_page():
                 .props("dense outlined")
                 .classes("mc-select")
                 .style("width:130px;")
+            )
+            tag_select = (
+                ui.select(label="Tags", options=all_tags_filter, multiple=True, value=[])
+                .props("dense outlined use-chips")
+                .classes("mc-select")
+                .style("min-width:130px;")
             )
             search_input = (
                 ui.input(placeholder="Search by title, description, tags...")
@@ -1215,6 +1270,16 @@ def kanban_page():
                         "remove",
                         lambda _e: (phase_select.set_value(None), render_board.refresh()),
                     )
+                tvals = tag_select.value or []
+                for tv in tvals:
+                    chip = ui.chip(f"Tag: {tv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e, v=tv: (
+                            tag_select.set_value([x for x in (tag_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
+                    )
                 sq = search_input.value or ""
                 if sq:
                     chip = ui.chip(f'Search: "{sq}"', removable=True, color="blue-grey-9").classes("mc-filter-chip")
@@ -1242,6 +1307,7 @@ def kanban_page():
             cf_list = category_select.value or []
             sf_list = sprint_select.value or []
             phf = phase_select.value
+            tf_list = tag_select.value or []
             sq = search_input.value or ""
             sd = done_check.value
 
@@ -1292,6 +1358,13 @@ def kanban_page():
                 filtered_backlog = [i for i in filtered_backlog if i.phase == phf]
                 filtered_doing = [i for i in filtered_doing if i.phase == phf]
                 filtered_done = [i for i in filtered_done if i.phase == phf]
+
+            # Multi-select tag filter (ANY match)
+            if tf_list:
+                tf_set = set(tf_list)
+                filtered_backlog = [i for i in filtered_backlog if tf_set & set(i.tags)]
+                filtered_doing = [i for i in filtered_doing if tf_set & set(i.tags)]
+                filtered_done = [i for i in filtered_done if tf_set & set(i.tags)]
 
             # Apply search to doing/done too
             if sq:
@@ -1362,6 +1435,7 @@ def kanban_page():
         category_select.on_value_change(lambda _: render_board.refresh())
         sprint_select.on_value_change(lambda _: render_board.refresh())
         phase_select.on_value_change(lambda _: render_board.refresh())
+        tag_select.on_value_change(lambda _: render_board.refresh())
         search_input.on_value_change(lambda _: render_board.refresh())
         done_check.on_value_change(lambda _: render_board.refresh())
 

@@ -214,6 +214,7 @@ def note(item_id: str, text: str, flag: bool):
             "flagged": flag,
             "resolved": False,
             "created": str(date.today()),
+            "author": "agent",
         }
     )
     save_item(item)
@@ -233,6 +234,32 @@ def flagged():
         for n in item.agent_notes:
             if n.get("flagged") and not n.get("resolved"):
                 click.echo(f"  🚩 {n['text']} ({n['created']})")
+
+
+@main.command("resolve-note")
+@click.argument("item_id")
+@click.argument("note_index", type=int)
+def resolve_note(item_id: str, note_index: int):
+    """Resolve a specific note by index (0-based)."""
+    try:
+        item = load_item(item_id)
+    except FileNotFoundError:
+        raise SystemExit(f"Error: item '{item_id}' not found.")
+    if note_index < 0 or note_index >= len(item.agent_notes):
+        raise SystemExit(f"Error: note index {note_index} out of range (item has {len(item.agent_notes)} notes).")
+    item.agent_notes[note_index]["resolved"] = True
+    save_item(item)
+    click.echo(f"Resolved note {note_index} on {item_id}")
+
+
+@main.command("set-sprint")
+@click.argument("number", type=int)
+def set_sprint(number: int):
+    """Set the current sprint number."""
+    from src.config import set_current_sprint
+
+    set_current_sprint(number)
+    click.echo(f"Current sprint set to {number}")
 
 
 @main.command()
