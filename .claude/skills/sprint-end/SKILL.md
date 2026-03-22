@@ -37,6 +37,10 @@ agile-backlog show <item-id>
 
 Report: which items are complete (all acceptance criteria met), which are still in progress.
 
+Verify item phases are appropriate before closing:
+- Done items should have phase `review` or `build` (work was completed)
+- If phase is still `plan` or `spec`, ask if the item was actually implemented
+
 For incomplete items, ask: move to done (if actually complete) or defer to next sprint (move back to backlog)?
 
 ### Move Completed Items

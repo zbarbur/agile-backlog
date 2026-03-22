@@ -1,5 +1,5 @@
 title: The done item look deleted and faded
-status: doing
+status: done
 priority: P1
 category: bug
 sprint_target: 13
@@ -11,8 +11,9 @@ goal: "Done items should look completed not deleted \u2014 reduce opacity fade, 
   \ readable"
 complexity: S
 technical_specs:
-- "Adjust .mc-done CSS \u2014 change opacity from 0.4 to 0.6 or 0.7"
-- Consider muted text color instead of heavy opacity
+- Change .mc-done opacity from 0.4 to 0.65
+- Change hover opacity from 0.8 to 1.0 for clear feedback
+- 'Add muted text color #71717a on title instead of relying only on opacity'
 description: this is not good UX, we know they're done, I still want to view them
 acceptance_criteria:
 - Done items clearly readable (not nearly invisible)

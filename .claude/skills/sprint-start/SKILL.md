@@ -76,6 +76,11 @@ agile-backlog edit <item-id> \
 
 Present each task spec to the user for review. Adjust as needed.
 
+After speccing all items, update their phase to `spec`:
+```bash
+agile-backlog edit <item-id> --phase spec
+```
+
 **Move items to doing with phase:**
 
 ```bash
@@ -102,6 +107,11 @@ git add backlog/
 git commit -m "chore: start Sprint N — <theme>"
 git checkout -b sprintN/main
 git push -u origin sprintN/main
+```
+
+Move items to `build` phase as implementation begins:
+```bash
+agile-backlog edit <item-id> --phase build
 ```
 
 ## Step 7: Confirm Ready

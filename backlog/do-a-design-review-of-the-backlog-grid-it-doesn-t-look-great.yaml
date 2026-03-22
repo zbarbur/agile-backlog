@@ -1,5 +1,5 @@
 title: do a design review of the backlog grid , it doesn't look great
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 13
@@ -7,19 +7,29 @@ created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: "Redesign backlog table for dark theme readability \u2014 brainstorming session\
-  \ per flagged comment"
-complexity: M
+goal: "Dark theme styling for backlog table only \u2014 sections/planning deferred\
+  \ to sprint-planning-tool item"
+complexity: S
 technical_specs:
 - Inject dark CSS for .q-table, th, td, tbody tr:hover
 - Use brainstorming skill if design direction unclear
-description: 'the grid layout not great, the priority, category, phase are lacking
-  design , make it look like a professional board, it should also have the comments
-  mechanism there , the backlog grid should have sections: backlog, next sprint, future
-  sprint , so the backlog could be groomed for next sprint and then there will be
-  automatic sprint candidate'
+description: 'Styling-only pass on the backlog grid/table:
+
+  1. Dark theme CSS for table background, text, borders
+
+  2. Priority/category columns with colored pills (matching card design)
+
+  3. Row hover effects
+
+  4. Readable column headers
+
+  5. Phase column styled consistently
+
+
+  Note: Backlog sections (Backlog/Next/Future) and sprint planning features are in
+  the separate sprint-planning-tool item.'
 acceptance_criteria:
-- Table styled properly for dark theme
+- Table styled for dark theme (bg, text, borders)
 - Row hover effects visible
 - Column headers readable
 - Tests pass

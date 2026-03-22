@@ -1,5 +1,5 @@
 title: Comments UX redesign
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 13
@@ -11,10 +11,12 @@ goal: Redesign comments as threaded conversations with status-colored badges and
   from UI
 complexity: L
 technical_specs:
-- Redesign _show_comment_dialog() to show conversation thread
-- Add resolve button per comment in dialog
-- Update badge rendering in _render_card() for status colors
-- Consider adding author field to comment schema (user vs agent)
+- 'Comment schema: {text, author (user/agent), flagged, resolved, created, reply_to
+  (optional)}'
+- Add model_validator to migrate old agent_notes format
+- 'Badge color logic: red if any unresolved+flagged, green if all resolved, blue if
+  comments exist'
+- Resolve button per comment in dialog
 description: "Multiple comment UX issues need proper design:\n1. Agent response to\
   \ a comment not visible \u2014 only the original comment shows, not the agent's\
   \ reply/resolution\n2. Badge color should reflect status: red = unresolved flagged\
