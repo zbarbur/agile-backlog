@@ -1,6 +1,6 @@
-title: Swap JetBrains Mono for distinctive monospace font
+title: Add new item from board UI
 status: doing
-priority: P2
+priority: P1
 category: feature
 sprint_target: null
 created: 2026-03-22
@@ -10,8 +10,9 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: JetBrains Mono is overused. Swap to IBM Plex Mono, Iosevka, or another
-  distinctive monospace font. Update Google Fonts import and all CSS references.
+description: Add a button to create new backlog items directly from the board UI.
+  A dialog with fields for title, priority, category, description. Currently items
+  can only be added via CLI.
 acceptance_criteria: []
 test_plan: []
 notes: ''

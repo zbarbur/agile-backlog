@@ -1,0 +1,30 @@
+title: Backlog view as sortable grid/table
+status: doing
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'In backlog management mode, show items in a data grid/table with columns:
+
+  1. Title, Priority, Category, Sprint, Phase, Complexity, Created
+
+  2. Column headers clickable to sort ascending/descending
+
+  3. Use NiceGUI ui.table or ag-grid for proper table behavior
+
+  4. Row click opens detail/edit modal
+
+  5. More information-dense than card view for grooming'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

@@ -1,0 +1,36 @@
+title: Multi-select filter experience redesign
+status: doing
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Complete redesign of the filter/search bar:
+
+  1. Multi-select for priority (select P1 AND P2 together)
+
+  2. Multi-select for category (select feature AND bug together)
+
+  3. Same field multiple values = OR logic
+
+  4. Different fields = AND logic
+
+  5. Active filters shown as dismissible chips
+
+  6. Dark themed dropdown menus that match the board
+
+  7. Search text combines with filters
+
+  8. Clear all filters button'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

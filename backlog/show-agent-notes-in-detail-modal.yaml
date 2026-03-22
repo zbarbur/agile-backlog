@@ -1,7 +1,7 @@
-title: Swap JetBrains Mono for distinctive monospace font
+title: Show agent notes in detail modal
 status: doing
-priority: P2
-category: feature
+priority: P1
+category: bug
 sprint_target: null
 created: 2026-03-22
 updated: 2026-03-22
@@ -10,8 +10,8 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: JetBrains Mono is overused. Swap to IBM Plex Mono, Iosevka, or another
-  distinctive monospace font. Update Google Fonts import and all CSS references.
+description: Agent notes are only visible when editing an item. They should also be
+  shown in the read-only detail modal view, with flagged/resolved status indicators.
 acceptance_criteria: []
 test_plan: []
 notes: ''
