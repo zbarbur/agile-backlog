@@ -1,5 +1,5 @@
 title: "Expand priority levels \u2014 add P0 (critical) and P4 (icebox)"
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: null
@@ -21,4 +21,10 @@ notes: ''
 phase: plan
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+agent_notes:
+- text: Folded into sprint-planning-tool-backlog-sections-drag-and-drop for Sprint
+    15
+  flagged: false
+  resolved: false
+  created: '2026-03-22'
+  author: agent
