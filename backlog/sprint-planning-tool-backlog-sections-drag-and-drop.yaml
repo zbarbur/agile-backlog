@@ -27,4 +27,10 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+agent_notes:
+- text: Perform a research on on backlog grooming and sprint planning best practices
+    and what are the best ways to visualize, consider also the automatic AI tagging
+    capabilities and AI effort scoping capabilities to make this a strong feature
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
