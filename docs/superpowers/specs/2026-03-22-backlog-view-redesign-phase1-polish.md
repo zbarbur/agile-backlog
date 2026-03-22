@@ -23,7 +23,7 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 | Comments | iMessage chat layout — user right (blue), agent left (gray) |
 | Filter chips | Inline in filter bar (no duplicate row) |
 | Sorting | Sort button in filter bar with active sort label |
-| Timestamps | Relative time on each card ("2h", "3d", "1w"), muted |
+| Timestamps | Relative time on each card ("today", "3d", "1w"), muted |
 
 ## Bugs Fixed
 
@@ -76,9 +76,9 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 ├──────────────────────────────┬──────────────────────────────┤
 │ ▼ BACKLOG              14 ⤢ │  ✕                           │
 │ ┌──────────────────────────┐│  Title (click to edit)       │
-│ │ Item title    bug P1  2h ││                              │
+│ │ Item title  bug P1 today ││                              │
 │ │  [ui]                    ││  [backlog][plan][P1][S][bug]  │
-│ ├──────────────────────────┤│  [ui][design][+ tag]  2h ago │
+│ ├──────────────────────────┤│  [ui][design][+ tag]   1d ago│
 │ │ Item title  feat P2  3d  ││  ─────────────────────────── │
 │ │  [ui][planning]          ││  DESCRIPTION                 │
 │ └──────────────────────────┘│  Click to edit...            │
@@ -102,13 +102,14 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 └─────────────────────────────────────────────────────────┘
 ```
 
-- Left border: 2px, colored for P0 (#ef4444) and P1 (#f87171), transparent for P2+
+- Left border: 2px (changed from 3px for a cleaner look), colored for P0 (#ef4444) and P1 (#f87171), transparent for P2+
 - Comment badge: red dot + count for unresolved flagged, blue for total, hidden if none
 - Category badge: colored pill (bug=pink, feature=blue, docs=green, chore=purple)
 - Priority badge: colored pill (P0=red, P1=red, P2=amber, P3=gray, P4=dim gray)
 - Tags: muted gray pills
-- Timestamp: very muted, right-aligned ("2h", "3d", "1w", "Mar 15")
+- Timestamp: very muted, right-aligned ("today", "3d", "1w", "Mar 15")
 - P3 items: muted title text color (#71717a)
+- **Unified badges (both views):** The unified card includes: comment badge, category badge, priority badge, complexity badge (if set), sprint badge (if set, board view). Phase and review badges are removed from cards — they're visible in the side panel metadata pills instead. This reduces card noise.
 
 ## Click-to-Edit Behavior
 
@@ -128,6 +129,7 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 
 **Dropdown behavior:**
 - Appears below the pill, floating over content (no layout shift)
+- **Implementation:** Use NiceGUI `ui.select` with Quasar styling overrides (existing `.mc-select` CSS pattern) or `ui.menu` with `ui.menu_item` for custom dropdowns. Prefer native Quasar components with CSS overrides over custom HTML/JS.
 - Dark background (#18181b), subtle border, shadow
 - Options show color dots for priority/category
 - Current value marked with checkmark
@@ -143,6 +145,7 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 
 ## Resizable Sections
 
+- **Implementation:** Use NiceGUI's `ui.splitter` component for vertical splitting with drag handles (built-in support). If `ui.splitter` doesn't support triple-split, use nested splitters or custom JS via `ui.run_javascript` with mousedown/mousemove/mouseup handlers.
 - Drag handles between sections: thin line, highlights blue on hover
 - Cursor changes to `row-resize` on hover
 - Drag to adjust vertical space allocation
@@ -206,29 +209,39 @@ Implemented as a pure function: `relative_time(dt: date) -> str`. Note: BacklogI
 | Hover affordance border | #27272a |
 | Resize handle (hover) | #3b82f6 |
 
-### Category Colors (unchanged)
-| Category | Text | Background |
-|----------|------|------------|
-| bug | #f472b6 | rgba(244,114,182,0.08) |
-| feature | #60a5fa | rgba(59,130,246,0.08) |
-| docs | #34d399 | rgba(52,211,153,0.08) |
-| chore | #a78bfa | rgba(167,139,250,0.08) |
+### Category Colors (lowered alpha for subtlety — update tokens.py)
+| Category | Text | Background | Previous |
+|----------|------|------------|----------|
+| bug | #f472b6 | rgba(244,114,182,0.08) | was 0.12 |
+| feature | #60a5fa | rgba(59,130,246,0.08) | was 0.15 |
+| docs | #34d399 | rgba(52,211,153,0.08) | was 0.12 |
+| chore | #a78bfa | rgba(167,139,250,0.08) | was 0.12 |
 
-### Priority Colors (unchanged)
-| Priority | Text | Background |
-|----------|------|------------|
-| P0 | #ef4444 | rgba(239,68,68,0.1) |
-| P1 | #f87171 | rgba(248,113,113,0.1) |
-| P2 | #fbbf24 | rgba(251,191,36,0.1) |
-| P3 | #6b7280 | rgba(107,114,128,0.08) |
-| P4 | #4b5563 | rgba(75,85,99,0.08) |
+### Priority Colors (lowered alpha for subtlety — update tokens.py)
+| Priority | Text | Background | Previous |
+|----------|------|------------|----------|
+| P0 | #ef4444 | rgba(239,68,68,0.10) | was 0.18 |
+| P1 | #f87171 | rgba(248,113,113,0.10) | was 0.15 |
+| P2 | #fbbf24 | rgba(251,191,36,0.10) | was 0.12 |
+| P3 | #6b7280 | rgba(107,114,128,0.08) | was 0.10 |
+| P4 | #4b5563 | rgba(75,85,99,0.08) | unchanged |
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/agile_backlog/app.py` | Replace `_render_backlog_list`, `_render_side_panel_content`, `render_backlog_card_html`, `render_comment_html`, `comment_thread_html`. Update `kanban_page` header/filter rendering. Add `relative_time` pure function. Add click-to-edit NiceGUI components. |
-| `tests/test_app.py` | Update tests for `render_backlog_card_html` (new structure), `render_comment_html` (chat style), add tests for `relative_time`, `comment_thread_html` updates. |
+| `src/agile_backlog/app.py` | Merge `render_card_html` + `render_backlog_card_html` into unified `render_card_html`. Replace `_render_backlog_list`, `_render_side_panel_content`. Remove `_render_detail_modal_content`, `_show_edit_dialog`. Rewrite `render_comment_html`, `comment_thread_html`. Update `_render_card` (board) to use unified card + side panel. Update `kanban_page` header/filter rendering. Add `relative_time` pure function. Add click-to-edit NiceGUI components. Fix `detect_current_sprint()` to check config first. |
+| `src/agile_backlog/tokens.py` | Update category and priority background alpha values (lowered for subtlety). |
+| `tests/test_app.py` | Update `TestRenderCardHtml` (unified card structure). Update `TestRenderCommentHtml` (chat style — remove `line-through` assertion for resolved, update opacity from 0.5 to 0.35). Update `TestCommentBadgeHtml`. Add `TestRelativeTime`. Update `TestDetectCurrentSprint` (config check). |
+
+### Test Changes Required
+
+Tests that must change due to behavioral differences:
+- `test_resolved_comment_faded`: Currently asserts `"line-through" in html`. Change to assert `"opacity" in html` and `"0.35" in html`. No strikethrough in new design.
+- `test_p1_card_has_red_left_border`: Currently asserts `border-left:3px`. Change to `border-left:2px`.
+- `test_p2_card_no_left_border`: Should still pass (transparent border).
+- Any test referencing `agent_notes` parameter name in `comment_badge_html` — already updated in earlier tasks.
+- Board-specific tests referencing `_show_edit_dialog` or `_render_detail_modal_content` — remove or replace.
 
 ## Board View Impact
 
@@ -254,6 +267,12 @@ The board (Kanban columns) adopts the same card design AND edit experience as th
 - Data model — no schema changes
 - CLI — no changes
 - YAML files — no migration needed
+
+## Remaining for Phase 2
+
+This spec pulls inline editing from the original Phase 2 into this phase. Remaining Phase 2 items:
+- **Drag-and-drop** between sections (replacing move-to buttons)
+- **Keyboard navigation** (up/down arrows between items with panel open)
 
 ## Verification
 
