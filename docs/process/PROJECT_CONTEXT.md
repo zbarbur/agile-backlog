@@ -2,26 +2,28 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 14 Planning |
+| **Status** | Sprint 15 Planning |
 | **Last Sync** | 2026-03-22 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
 
 Single Python package with three interfaces:
-- **CLI** (`src/cli.py`) — Click-based: add, list, move, edit, show, serve, note, flagged, set-sprint, resolve-note
-- **Web UI** (`src/app.py`) — NiceGUI dark theme Kanban board with comments, tags, filters
+- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, show, serve, note, flagged, set-sprint, resolve-note
+- **Web UI** (`src/agile_backlog/app.py`) — NiceGUI dark theme Kanban board with comments, tags, filters
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
 Data: YAML files in `backlog/`, config in `.agile-backlog.yaml`. Single source of truth.
 
-Key modules: `src/models.py` (Pydantic), `src/yaml_store.py` (persistence), `src/tokens.py` (design), `src/config.py` (sprint config).
+Key modules: `src/agile_backlog/models.py` (Pydantic), `src/agile_backlog/yaml_store.py` (persistence), `src/agile_backlog/tokens.py` (design), `src/agile_backlog/config.py` (sprint config).
+
+Package installable from git: `pip install git+https://github.com/zbarbur/agile-backlog.git`
 
 ## Test Coverage
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 110 |
+| **Tests** | 117 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -42,3 +44,4 @@ Key modules: `src/models.py` (Pydantic), `src/yaml_store.py` (persistence), `src
 | 11 | Comments + sprint multi-select | 110 | #11 |
 | 12 | Comment UX + edit dialog + sprint target | 110 | #12 |
 | 13 | Comments resolve + tags + sprint config | 110 | #13 |
+| 14 | Package portability + backlog planning design | 117 | — |

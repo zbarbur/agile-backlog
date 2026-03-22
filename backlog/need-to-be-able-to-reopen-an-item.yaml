@@ -1,4 +1,4 @@
-title: Add flagged comments check to sprint-start process
+title: need to be able to reopen an item
 status: backlog
 priority: P2
 category: feature
@@ -10,9 +10,7 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: The sprint-start skill should check for flagged comments (agile-backlog
-  flagged) as part of the sprint planning process. Agent should review and acknowledge
-  flagged comments before scoping.
+description: 'when something wasn''t done. need to the able to reopen it with a reason '
 acceptance_criteria: []
 test_plan: []
 notes: ''
