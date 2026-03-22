@@ -157,25 +157,30 @@ def group_items_by_section(items: list[BacklogItem], current_sprint: int | None)
 
 
 def render_comment_html(comment: dict) -> str:
-    """Render a single comment as an HTML bubble."""
+    """Render a single comment as an iMessage-style chat bubble."""
     author = comment.get("author", "agent")
     text = comment.get("text", "")
     created = comment.get("created", "")
     flagged = comment.get("flagged", False)
     resolved = comment.get("resolved", False)
 
-    icon = "\U0001f464" if author == "user" else "\U0001f916"
-    border_color = "#f87171" if flagged and not resolved else "transparent"
-    opacity = "0.5" if resolved else "1.0"
-    text_style = "text-decoration:line-through;" if resolved else ""
+    is_user = author == "user"
+    align = "flex-end" if is_user else "flex-start"
+    icon = "👤" if is_user else "🤖"
+    bg = "rgba(59,130,246,0.12)" if is_user else "#18181b"
+    flat_corner = "border-bottom-right-radius:4px;" if is_user else "border-bottom-left-radius:4px;"
+    meta_align = "text-align:right;" if is_user else "text-align:left;"
+    border = "border-left:2px solid #f87171;" if flagged and not resolved else ""
+    opacity = "opacity:0.35;" if resolved else ""
 
     return (
-        f'<div style="border-left:3px solid {border_color};padding:8px 12px;'
-        f'margin:4px 0;border-radius:6px;background:rgba(255,255,255,0.04);opacity:{opacity};">'
-        f'<div style="font-size:11px;color:#71717a;margin-bottom:4px;">'
-        f"{icon} {author} &nbsp; {created}</div>"
-        f'<div style="{text_style}color:#d4d4d8;font-size:13px;">{text}</div>'
-        f"</div>"
+        f'<div style="display:flex;flex-direction:column;max-width:82%;align-self:{align};{opacity}">'
+        f'<div style="font-size:9px;color:#3f3f46;margin-bottom:2px;padding:0 4px;{meta_align}">'
+        f'{icon} {author} · {created}{"  · 🚩" if flagged and not resolved else ""}</div>'
+        f'<div style="padding:8px 12px;border-radius:12px;{flat_corner}'
+        f'background:{bg};color:#d4d4d8;font-size:12px;line-height:1.5;{border}">'
+        f'{text}</div>'
+        f'</div>'
     )
 
 

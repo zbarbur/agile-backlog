@@ -342,33 +342,42 @@ class TestGroupItemsBySection:
 
 
 class TestRenderCommentHtml:
-    def test_basic_comment(self):
-        comment = {
-            "text": "Hello world",
-            "flagged": False,
-            "resolved": False,
-            "created": "2026-03-22",
-            "author": "user",
-        }
+    def test_user_comment_right_aligned(self):
+        comment = {"text": "Hello", "author": "user", "flagged": False, "resolved": False}
+        html = render_comment_html(comment)
+        assert "flex-end" in html
+
+    def test_agent_comment_left_aligned(self):
+        comment = {"text": "Hello", "author": "agent", "flagged": False, "resolved": False}
+        html = render_comment_html(comment)
+        assert "flex-start" in html
+
+    def test_user_blue_background(self):
+        comment = {"text": "Hello", "author": "user", "flagged": False, "resolved": False}
+        html = render_comment_html(comment)
+        assert "59,130,246" in html
+
+    def test_agent_gray_background(self):
+        comment = {"text": "Hello", "author": "agent", "flagged": False, "resolved": False}
+        html = render_comment_html(comment)
+        assert "#18181b" in html
+
+    def test_flagged_has_red_border(self):
+        comment = {"text": "Check", "flagged": True, "resolved": False, "author": "user"}
+        html = render_comment_html(comment)
+        assert "#f87171" in html
+
+    def test_resolved_has_opacity(self):
+        comment = {"text": "Done", "flagged": True, "resolved": True, "author": "agent"}
+        html = render_comment_html(comment)
+        assert "0.35" in html
+        assert "line-through" not in html
+
+    def test_shows_text_and_date(self):
+        comment = {"text": "Hello world", "created": "2026-03-22", "author": "user", "flagged": False, "resolved": False}
         html = render_comment_html(comment)
         assert "Hello world" in html
         assert "2026-03-22" in html
-
-    def test_flagged_comment_highlighted(self):
-        comment = {"text": "Check this", "flagged": True, "resolved": False, "created": "2026-03-22", "author": "agent"}
-        html = render_comment_html(comment)
-        assert "#f87171" in html  # red border for flagged
-
-    def test_resolved_comment_faded(self):
-        comment = {"text": "Done", "flagged": True, "resolved": True, "created": "2026-03-22", "author": "agent"}
-        html = render_comment_html(comment)
-        assert "opacity" in html
-        assert "line-through" in html
-
-    def test_user_vs_agent_icons(self):
-        user_html = render_comment_html({"text": "x", "author": "user", "flagged": False, "resolved": False})
-        agent_html = render_comment_html({"text": "x", "author": "agent", "flagged": False, "resolved": False})
-        assert user_html != agent_html
 
 
 class TestCommentThreadHtml:
@@ -377,12 +386,14 @@ class TestCommentThreadHtml:
 
     def test_multiple_comments(self):
         comments = [
-            {"text": "First", "flagged": False, "resolved": False, "author": "user"},
-            {"text": "Second", "flagged": True, "resolved": False, "author": "agent"},
+            {"text": "First", "author": "user", "flagged": False, "resolved": False},
+            {"text": "Second", "author": "agent", "flagged": False, "resolved": False},
         ]
         html = comment_thread_html(comments)
         assert "First" in html
         assert "Second" in html
+        assert "flex-end" in html
+        assert "flex-start" in html
 
 
 class TestRelativeTime:
