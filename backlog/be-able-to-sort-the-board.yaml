@@ -1,0 +1,22 @@
+title: be able to sort the board
+status: doing
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: the board now appears at an arbitrary oder, I want some sorting capabilities
+  (like priority) , what's the best way to do it, we have filtering. but how to do
+  sorts as well?
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

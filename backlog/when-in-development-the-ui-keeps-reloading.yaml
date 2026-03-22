@@ -1,5 +1,5 @@
 title: when in development, the UI keeps reloading
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: null
@@ -15,7 +15,7 @@ description: I want to be able to add and modify items while there's development
 acceptance_criteria: []
 test_plan: []
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 agent_notes:
