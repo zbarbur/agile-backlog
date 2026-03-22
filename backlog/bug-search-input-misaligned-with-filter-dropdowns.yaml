@@ -1,0 +1,21 @@
+title: 'Bug: Search input misaligned with filter dropdowns'
+status: done
+priority: P1
+category: bug
+sprint_target: 9
+created: 2026-03-22
+updated: 2026-03-22
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Search input is vertically misaligned with the filter dropdowns in the
+  header. Needs to match the height and alignment of the select boxes.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+agent_notes: []

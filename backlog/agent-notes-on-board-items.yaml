@@ -1,15 +1,18 @@
 title: Agent notes on board items
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 9
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Human-to-agent async communication via flagged notes on board items
+complexity: M
+technical_specs:
+- 'Add agent_notes: list[dict] field to BacklogItem (text, flagged, resolved, timestamp)'
+- Add --list-flagged to CLI for agent to read
+- Add notes section in edit modal with flag toggle
 description: 'Add a notes/comments system on board items for human-to-agent communication:
 
   1. Add a note with a text area in the card detail view
@@ -23,9 +26,18 @@ description: 'Add a notes/comments system on board items for human-to-agent comm
   5. Notes history preserved in the YAML item
 
   This enables async communication between human and AI agent via the board.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Can add a note with text from the edit modal
+- Can flag a note for agent attention
+- Agent can list flagged items via CLI
+- Agent can mark notes as resolved
+- Notes history preserved in YAML
+- Tests pass
+test_plan:
+- 'tests/test_models.py: test agent_notes field'
+- 'tests/test_cli.py: test list-flagged command'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
+agent_notes: []

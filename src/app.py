@@ -127,7 +127,7 @@ COLUMN_STYLES = {
 # Global CSS injected into the page head
 GOOGLE_FONTS_URL = (
     "https://fonts.googleapis.com/css2"
-    "?family=JetBrains+Mono:wght@400;500;600;700"
+    "?family=IBM+Plex+Mono:wght@400;500;600;700"
     "&family=DM+Sans:wght@400;500;600;700&display=swap"
 )
 GLOBAL_CSS = (
@@ -145,23 +145,41 @@ body {
 .q-card {
     box-shadow: none !important;
 }
-.q-expansion-item .q-item {
-    min-height: 0 !important;
-    padding: 0 !important;
+/* Dark dropdown menus */
+.q-menu {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
 }
-.q-expansion-item .q-item__section {
-    padding: 0 !important;
+.q-item {
+    color: #e4e4e7 !important;
 }
-.q-expansion-item .q-expansion-item__content {
-    padding: 0 !important;
+.q-item:hover, .q-item--active {
+    background: #27272a !important;
+}
+.q-item__label {
+    color: #e4e4e7 !important;
+}
+/* Dark select field text */
+.q-field__native, .q-field__input {
+    color: #e4e4e7 !important;
+}
+/* Multi-select chips dark styling */
+.mc-select .q-chip {
+    background: rgba(59,130,246,0.12) !important;
+    color: #93c5fd !important;
+    font-size: 10px !important;
+    height: 20px !important;
+}
+.mc-select .q-chip__icon {
+    color: #93c5fd !important;
 }
 .mc-search .q-field__control {
     background: #18181b !important;
     border: 1px solid #27272a !important;
     border-radius: 6px !important;
     color: #d4d4d8 !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    height: 32px !important;
+    min-height: 32px !important;
 }
 .mc-search .q-field__control:focus-within {
     border-color: #3b82f6 !important;
@@ -184,8 +202,7 @@ body {
     border: 1px solid #27272a !important;
     border-radius: 6px !important;
     color: #a1a1aa !important;
-    height: 28px !important;
-    min-height: 28px !important;
+    min-height: 32px !important;
 }
 .mc-select .q-field__native,
 .mc-select .q-select__dropdown-icon {
@@ -214,7 +231,7 @@ body {
     padding: 8px 10px;
     margin-bottom: 4px;
     transition: all 0.15s;
-    cursor: default;
+    cursor: pointer;
 }
 .mc-card:hover {
     border-color: #3f3f46;
@@ -230,7 +247,7 @@ body {
     opacity: 0.8;
 }
 .mc-move-btn {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'IBM Plex Mono', monospace !important;
     font-size: 9px !important;
     font-weight: 500 !important;
     padding: 2px 7px !important;
@@ -249,6 +266,43 @@ body {
     color: #a1a1aa !important;
     background: #1e1e23 !important;
 }
+/* Detail modal dark styling */
+.mc-detail-dialog .q-card {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    color: #e4e4e7 !important;
+    max-width: 640px !important;
+    width: 640px !important;
+}
+/* Active filter chip styling */
+.mc-filter-chip {
+    font-size: 10px !important;
+    height: 24px !important;
+}
+.mc-filter-chip .q-chip__content {
+    color: #93c5fd !important;
+}
+.mc-filter-chip .q-chip__icon--remove {
+    color: #93c5fd !important;
+    opacity: 0.7;
+}
+/* Dark form inputs for edit dialogs */
+.q-field--outlined .q-field__control {
+    border-color: #27272a !important;
+    background: #111116 !important;
+}
+.q-field--outlined .q-field__control:hover {
+    border-color: #3f3f46 !important;
+}
+.q-field--outlined.q-field--focused .q-field__control {
+    border-color: #3b82f6 !important;
+}
+.q-textarea .q-field__native {
+    color: #e4e4e7 !important;
+}
+.q-field__label {
+    color: #71717a !important;
+}
 </style>
 """
 )
@@ -258,7 +312,7 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     """Render a small badge pill using ui.html with inline styles."""
     style = (
         "display:inline-flex;align-items:center;height:18px;"
-        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.03em;"
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.03em;"
         f"padding:1px 5px;border-radius:3px;white-space:nowrap;color:{text_color};"
     )
     if outlined:
@@ -272,8 +326,8 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     ui.html(f'<span style="{style}">{text}</span>')
 
 
-def _render_card(item: BacklogItem, status: str, move_fn) -> None:
-    """Render a single Kanban card with Mission Control dark theme."""
+def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None) -> None:
+    """Render a single Kanban card with Mission Control dark theme — click opens detail modal."""
     cat_color, cat_bg = category_style(item.category)
     pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
     is_done = status == "done"
@@ -284,7 +338,33 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
     if is_done:
         card_css += " mc-done"
 
-    with ui.element("div").classes(card_css):
+    # Build the detail dialog
+    detail_dialog = ui.dialog().classes("mc-detail-dialog")
+    with (
+        detail_dialog,
+        ui.card().style(
+            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+        ),
+    ):
+        _render_detail_modal_content(item, is_done)
+        with ui.row().classes("gap-2").style("margin-top:12px;"):
+            if not is_done and save_fn and refresh_fn:
+                ui.button(
+                    "Edit",
+                    on_click=lambda d=detail_dialog, i=item: (
+                        d.close(),
+                        _show_edit_dialog(i, save_fn, refresh_fn),
+                    ),
+                ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
+            ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
+                "color:#a1a1aa;font-size:11px;"
+            )
+
+    card_el = ui.element("div").classes(card_css)
+    card_el.on("click", lambda _e, d=detail_dialog: d.open())
+
+    with card_el:
         # Row 1: title + badges inline
         with ui.element("div").style("display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"):
             title_style = "font-size:12.5px;font-weight:600;line-height:1.3;font-family:'DM Sans',sans-serif;"
@@ -296,7 +376,7 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
 
             opacity = "opacity:0.5;" if is_done else ""
             pill_base = (
-                "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+                "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
                 "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
             )
             # Category
@@ -336,7 +416,7 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
                     f"S{item.sprint_target}</span>"
                 )
 
-        # Row 2: move buttons + details (not for done cards)
+        # Row 2: move buttons (not for done cards) — no details link
         if not is_done:
             with ui.element("div").style("display:flex;align-items:center;gap:4px;margin-top:5px;"):
                 other_statuses = [s for s in STATUSES if s != status]
@@ -347,45 +427,225 @@ def _render_card(item: BacklogItem, status: str, move_fn) -> None:
                         on_click=lambda _e, i=item, t=target: move_fn(i, t),
                     ).classes("mc-move-btn").props("flat dense unelevated no-caps")
 
-                # Details toggle
-                detail_visible = {"v": False}
-                detail_container = ui.element("div").style("display:none;")
-                details_label = ui.label("\u25be details").style(
-                    "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                    "font-size:9px;color:#3f3f46;cursor:pointer;"
+
+def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> None:
+    """Render the content inside the detail modal dialog."""
+    cat_color, cat_bg = category_style(item.category)
+    pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+
+    label_style = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
+        "margin-top:10px;margin-bottom:3px;"
+    )
+    value_style = "color:#d4d4d8;font-size:12px;font-family:'DM Sans',sans-serif;"
+
+    # Title
+    title_style = "font-size:16px;font-weight:700;color:#e4e4e7;line-height:1.3;font-family:'DM Sans',sans-serif;"
+    if is_done:
+        title_style += "text-decoration:line-through;color:#52525b;"
+    ui.html(f'<div style="{title_style}">{item.title}</div>')
+
+    # Badges row
+    pill_base = (
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+    )
+    badges_html = (
+        f'<span style="{pill_base}text-transform:uppercase;color:{cat_color};background:{cat_bg}">'
+        f"{item.category}</span> "
+        f'<span style="{pill_base}text-transform:uppercase;color:{pri_color};background:{pri_bg}">'
+        f"{item.priority}</span>"
+    )
+    if item.phase:
+        badges_html += (
+            f' <span style="{pill_base}font-style:italic;text-transform:none;'
+            f'color:#71717a;background:#1e1e23;">{item.phase}</span>'
+        )
+    if item.design_reviewed:
+        badges_html += (
+            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
+            f'background:rgba(74,222,128,0.1);">&#10003; design</span>'
+        )
+    if item.code_reviewed:
+        badges_html += (
+            f' <span style="{pill_base}font-size:8px;color:#4ade80;'
+            f'background:rgba(74,222,128,0.1);">&#10003; code</span>'
+        )
+    if item.sprint_target is not None:
+        badges_html += (
+            f' <span style="{pill_base}font-weight:500;text-transform:none;'
+            f'color:#52525b;background:transparent;border:1px solid #27272a;">'
+            f"S{item.sprint_target}</span>"
+        )
+    ui.html(f'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">{badges_html}</div>')
+
+    # Detail fields
+    if item.goal:
+        ui.html(f'<div style="{label_style}">Goal</div>')
+        ui.html(f'<div style="{value_style}">{item.goal}</div>')
+
+    if item.complexity:
+        ui.html(f'<div style="{label_style}">Complexity</div>')
+        ui.html(
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
+            f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
+            f"{item.complexity}</span>"
+        )
+
+    if item.description:
+        ui.html(f'<div style="{label_style}">Description</div>')
+        ui.html(f'<div style="{value_style}">{item.description}</div>')
+
+    if item.acceptance_criteria:
+        ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ac}</li>' for ac in item.acceptance_criteria
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.technical_specs:
+        ui.html(f'<div style="{label_style}">Technical Specs</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{ts}</li>' for ts in item.technical_specs
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.test_plan:
+        ui.html(f'<div style="{label_style}">Test Plan</div>')
+        li_items = "".join(
+            f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{tp}</li>' for tp in item.test_plan
+        )
+        ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>')
+
+    if item.notes:
+        ui.html(f'<div style="{label_style}">Notes</div>')
+        ui.html(f'<div style="{value_style}">{item.notes}</div>')
+
+    if item.tags:
+        ui.html(f'<div style="{label_style}">Tags</div>')
+        tag_html = " ".join(
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+            f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
+            f'border-radius:3px;margin-right:2px;">{t}</span>'
+            for t in item.tags
+        )
+        ui.html(tag_html)
+
+    if item.depends_on:
+        ui.html(f'<div style="{label_style}">Depends on</div>')
+        ui.html(f'<div style="{value_style}">{", ".join(item.depends_on)}</div>')
+
+    # Footer
+    ui.html(
+        '<div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #1e1e23;">'
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Created: {item.created}</span>"
+        "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
+        f"Updated: {item.updated}</span>"
+        "</div>"
+    )
+
+
+def _show_edit_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
+    """Open an edit dialog for the given backlog item."""
+    edit_dialog = ui.dialog().classes("mc-detail-dialog")
+    with (
+        edit_dialog,
+        ui.card().style(
+            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+            "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+        ),
+    ):
+        ui.html('<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Edit Item</div>')
+
+        title_input = ui.input("Title", value=item.title).props("dense outlined").style("width:100%;")
+        with ui.row().classes("gap-2").style("width:100%;"):
+            priority_input = (
+                ui.select(label="Priority", options=["P1", "P2", "P3"], value=item.priority)
+                .props("dense outlined")
+                .style("min-width:100px;")
+            )
+            category_input = ui.input("Category", value=item.category).props("dense outlined").style("flex:1;")
+        with ui.row().classes("gap-2").style("width:100%;"):
+            sprint_input = (
+                ui.number("Sprint", value=item.sprint_target, min=0, step=1)
+                .props("dense outlined clearable")
+                .style("min-width:100px;")
+            )
+            phase_input = (
+                ui.select(
+                    label="Phase",
+                    options={None: "(none)", "plan": "plan", "build": "build", "review": "review"},
+                    value=item.phase,
                 )
+                .props("dense outlined")
+                .style("min-width:120px;")
+            )
+            complexity_input = (
+                ui.select(
+                    label="Complexity",
+                    options={None: "(none)", "S": "S", "M": "M", "L": "L"},
+                    value=item.complexity,
+                )
+                .props("dense outlined")
+                .style("min-width:100px;")
+            )
+        goal_input = ui.textarea("Goal", value=item.goal).props("dense outlined autogrow").style("width:100%;")
+        description_input = (
+            ui.textarea("Description", value=item.description).props("dense outlined autogrow").style("width:100%;")
+        )
+        ac_input = (
+            ui.textarea("Acceptance Criteria (one per line)", value="\n".join(item.acceptance_criteria))
+            .props("dense outlined autogrow")
+            .style("width:100%;")
+        )
+        ts_input = (
+            ui.textarea("Technical Specs (one per line)", value="\n".join(item.technical_specs))
+            .props("dense outlined autogrow")
+            .style("width:100%;")
+        )
+        tp_input = (
+            ui.textarea("Test Plan (one per line)", value="\n".join(item.test_plan))
+            .props("dense outlined autogrow")
+            .style("width:100%;")
+        )
+        notes_input = ui.textarea("Notes", value=item.notes).props("dense outlined autogrow").style("width:100%;")
 
-            # Detail panel (outside row2 but inside card)
-            with detail_container:
-                _render_detail_panel(item)
+        def _split_lines(text: str) -> list[str]:
+            return [line.strip() for line in text.split("\n") if line.strip()] if text else []
 
-            def make_toggle(lbl, container, state):
-                def toggle(_e):
-                    state["v"] = not state["v"]
-                    if state["v"]:
-                        container.style("display:block;")
-                        lbl.text = "\u25b4 details"
-                        lbl.style(
-                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                            "font-size:9px;color:#71717a;cursor:pointer;"
-                        )
-                    else:
-                        container.style("display:none;")
-                        lbl.text = "\u25be details"
-                        lbl.style(
-                            "margin-left:auto;font-family:'JetBrains Mono',monospace;"
-                            "font-size:9px;color:#3f3f46;cursor:pointer;"
-                        )
+        def save_and_close():
+            item.title = title_input.value or item.title
+            item.priority = priority_input.value
+            item.category = category_input.value or item.category
+            sprint_val = sprint_input.value
+            item.sprint_target = int(sprint_val) if sprint_val is not None and sprint_val != "" else None
+            item.phase = phase_input.value
+            item.complexity = complexity_input.value
+            item.goal = goal_input.value or ""
+            item.description = description_input.value or ""
+            item.acceptance_criteria = _split_lines(ac_input.value)
+            item.technical_specs = _split_lines(ts_input.value)
+            item.test_plan = _split_lines(tp_input.value)
+            item.notes = notes_input.value or ""
+            save_fn(item)
+            edit_dialog.close()
+            refresh_fn()
 
-                return toggle
+        with ui.row().classes("gap-2 mt-3"):
+            ui.button("Save", on_click=save_and_close).props("flat dense no-caps").style("color:#3b82f6;")
+            ui.button("Cancel", on_click=edit_dialog.close).props("flat dense no-caps").style("color:#a1a1aa;")
 
-            details_label.on("click", make_toggle(details_label, detail_container, detail_visible))
+    edit_dialog.open()
 
 
 def _render_detail_panel(item: BacklogItem) -> None:
     """Render the expandable details section of a card."""
     label_style = (
-        "font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;"
+        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
         "color:#52525b;text-transform:uppercase;letter-spacing:0.08em;"
         "margin-top:6px;margin-bottom:2px;"
     )
@@ -401,7 +661,7 @@ def _render_detail_panel(item: BacklogItem) -> None:
         if item.complexity:
             ui.html(f'<div style="{label_style}">Complexity</div>')
             ui.html(
-                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;"
+                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;"
                 f'padding:1px 6px;border-radius:3px;background:rgba(59,130,246,0.12);color:#60a5fa;">'
                 f"{item.complexity}</span>"
             )
@@ -439,7 +699,7 @@ def _render_detail_panel(item: BacklogItem) -> None:
         if item.tags:
             ui.html(f'<div style="{label_style}">Tags</div>')
             tag_html = " ".join(
-                "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
+                "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
                 f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
                 f'border-radius:3px;margin-right:2px;">{t}</span>'
                 for t in item.tags
@@ -453,14 +713,146 @@ def _render_detail_panel(item: BacklogItem) -> None:
         # Footer
         ui.html(
             '<div style="display:flex;gap:12px;margin-top:8px;padding-top:6px;border-top:1px solid #1e1e23;">'
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Sprint: {item.sprint_target or 'Unplanned'}</span>"
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Created: {item.created}</span>"
-            "<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;color:#3f3f46;\">"
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;color:#3f3f46;\">"
             f"Updated: {item.updated}</span>"
             "</div>"
         )
+
+
+BACKLOG_SORT_OPTIONS = {"priority": "Priority", "category": "Category", "title": "Title"}
+
+
+def _render_backlog_list(
+    backlog_items: list[BacklogItem],
+    current_sprint: int | None,
+    move_fn,
+    save_fn,
+    refresh_fn,
+) -> None:
+    """Render the backlog management list view."""
+    # Sort controls
+    with ui.element("div").style("display:flex;align-items:center;gap:10px;margin-bottom:10px;"):
+        ui.html(
+            "<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+            "font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+            'color:#71717a;">BACKLOG</span>'
+        )
+        ui.html(
+            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+            f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+            f'border-radius:4px;">{len(backlog_items)}</span>'
+        )
+        ui.element("div").style("flex:1;")
+        sort_select = (
+            ui.select(label="Sort by", options=BACKLOG_SORT_OPTIONS, value="priority")
+            .props("dense outlined")
+            .classes("mc-select")
+            .style("width:140px;")
+        )
+
+    # Sort items
+    sort_key = sort_select.value or "priority"
+    if sort_key == "priority":
+        sorted_items = sorted(backlog_items, key=lambda i: PRIORITY_ORDER.get(i.priority, 99))
+    elif sort_key == "category":
+        sorted_items = sorted(backlog_items, key=lambda i: i.category.lower())
+    else:
+        sorted_items = sorted(backlog_items, key=lambda i: i.title.lower())
+
+    sort_select.on_value_change(lambda _: refresh_fn())
+
+    target_sprint = current_sprint or 1
+
+    if not sorted_items:
+        ui.html(
+            '<div style="font-size:11px;color:#52525b;padding:8px 6px;'
+            "font-style:italic;font-family:'DM Sans',sans-serif;\">No backlog items match filters.</div>"
+        )
+        return
+
+    with ui.element("div").style("background:#111116;border-radius:8px;padding:8px;"):
+        for item in sorted_items:
+            cat_color, cat_bg = category_style(item.category)
+            pri_color, pri_bg = PRIORITY_COLORS.get(item.priority, ("#888", "#f3f4f6"))
+
+            # Build detail dialog for click
+            detail_dialog = ui.dialog().classes("mc-detail-dialog")
+            with (
+                detail_dialog,
+                ui.card().style(
+                    "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+                    "padding:20px;max-width:640px;width:640px;border-radius:8px;"
+                ),
+            ):
+                _render_detail_modal_content(item, False)
+                with ui.row().classes("gap-2").style("margin-top:12px;"):
+                    if save_fn and refresh_fn:
+                        ui.button(
+                            "Edit",
+                            on_click=lambda d=detail_dialog, i=item: (
+                                d.close(),
+                                _show_edit_dialog(i, save_fn, refresh_fn),
+                            ),
+                        ).props("flat dense no-caps").style("color:#3b82f6;font-size:11px;")
+                    ui.button("Close", on_click=detail_dialog.close).props("flat dense no-caps").style(
+                        "color:#a1a1aa;font-size:11px;"
+                    )
+
+            card_css = "mc-card"
+            if item.priority == "P1":
+                card_css += " mc-p1"
+
+            card_el = ui.element("div").classes(card_css)
+            card_el.on("click", lambda _e, d=detail_dialog: d.open())
+
+            with card_el:
+                with ui.element("div").style("display:flex;align-items:center;gap:8px;flex-wrap:wrap;"):
+                    # Title
+                    ui.html(
+                        f'<span style="font-size:12.5px;font-weight:600;color:#e4e4e7;'
+                        f"line-height:1.3;font-family:'DM Sans',sans-serif;flex:1;min-width:200px;\">"
+                        f"{item.title}</span>"
+                    )
+                    # Badges
+                    pill_base = (
+                        "font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;"
+                        "padding:1px 5px;border-radius:3px;letter-spacing:0.03em;white-space:nowrap;"
+                    )
+                    ui.html(
+                        f'<span style="{pill_base}text-transform:uppercase;'
+                        f'color:{pri_color};background:{pri_bg}">{item.priority}</span>'
+                    )
+                    ui.html(
+                        f'<span style="{pill_base}text-transform:uppercase;'
+                        f'color:{cat_color};background:{cat_bg}">{item.category}</span>'
+                    )
+                    if item.sprint_target is not None:
+                        ui.html(
+                            f'<span style="{pill_base}font-weight:500;text-transform:none;'
+                            f'color:#52525b;background:transparent;border:1px solid #27272a;">'
+                            f"S{item.sprint_target}</span>"
+                        )
+
+                    # Stage for sprint button
+                    def _stage(i=item, s=target_sprint):
+                        i.sprint_target = s
+                        save_fn(i)
+                        refresh_fn()
+
+                    ui.button(
+                        f"Stage S{target_sprint}",
+                        on_click=lambda _e, fn=_stage: fn(),
+                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
+
+                    # Move to doing button
+                    ui.button(
+                        "\u2192 doing",
+                        on_click=lambda _e, i=item: move_fn(i, "doing"),
+                    ).classes("mc-move-btn").props("flat dense unelevated no-caps")
 
 
 @ui.page("/")
@@ -485,7 +877,7 @@ def kanban_page():
             )
             if current_sprint is not None:
                 ui.html(
-                    f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;"
+                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;"
                     f"color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);"
                     f'padding:2px 10px;border-radius:4px;letter-spacing:0.05em;">'
                     f"SPRINT {current_sprint}</span>"
@@ -493,15 +885,40 @@ def kanban_page():
 
             ui.element("div").style("flex:1;")
 
-            # View toggle
-            with ui.element("div").style(
+            # View toggle — track state in a mutable dict
+            view_mode = {"current": "board"}
+
+            toggle_container = ui.element("div").style(
                 "display:flex;background:#18181b;border:1px solid #27272a;border-radius:6px;overflow:hidden;"
-            ):
-                ui.html(
-                    '<span style="font-size:11px;font-weight:600;padding:4px 14px;'
-                    'background:#fafafa;color:#09090b;cursor:pointer;">Board</span>'
-                    '<span style="font-size:11px;font-weight:600;padding:4px 14px;'
-                    'color:#71717a;cursor:pointer;">Backlog</span>'
+            )
+
+            def _set_view(mode: str):
+                view_mode["current"] = mode
+                # Update button styles
+                if mode == "board":
+                    board_btn_el.style("background:#fafafa;color:#09090b;")
+                    backlog_btn_el.style("background:transparent;color:#71717a;")
+                else:
+                    board_btn_el.style("background:transparent;color:#71717a;")
+                    backlog_btn_el.style("background:#fafafa;color:#09090b;")
+                render_board.refresh()
+
+            with toggle_container:
+                board_btn_el = (
+                    ui.button("Board", on_click=lambda: _set_view("board"))
+                    .props("flat dense no-caps unelevated")
+                    .style(
+                        "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
+                        "background:#fafafa;color:#09090b;min-height:0;"
+                    )
+                )
+                backlog_btn_el = (
+                    ui.button("Backlog", on_click=lambda: _set_view("backlog"))
+                    .props("flat dense no-caps unelevated")
+                    .style(
+                        "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
+                        "background:transparent;color:#71717a;min-height:0;"
+                    )
                 )
 
             # Show done checkbox
@@ -510,9 +927,9 @@ def kanban_page():
             )
 
         # === Filter Row 2 ===
-        priority_options = {None: "All priorities", "P1": "P1 only", "P2+": "P1 & P2", "P3+": "All (P1-P3)"}
+        priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
         categories = sorted({i.category for i in all_items})
-        category_options = {None: "All categories", **{c: c for c in categories}}
+        category_options = {c: c for c in categories}
         sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_options = {None: "All sprints", "unplanned": "Unplanned", **{s: f"Sprint {s}" for s in sprints}}
         phases = sorted({i.phase for i in all_items if i.phase})
@@ -520,19 +937,19 @@ def kanban_page():
 
         with ui.element("div").style(
             "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
-            "margin-bottom:14px;align-items:flex-end;"
+            "margin-bottom:4px;align-items:end;"
         ):
             priority_select = (
-                ui.select(label="Priority", options=priority_options, value=None)
-                .props("dense outlined")
+                ui.select(label="Priority", options=priority_options, multiple=True, value=[])
+                .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:130px;")
             )
             category_select = (
-                ui.select(label="Category", options=category_options, value=None)
-                .props("dense outlined")
+                ui.select(label="Category", options=category_options, multiple=True, value=[])
+                .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:130px;")
             )
             sprint_select = (
                 ui.select(label="Sprint", options=sprint_options, value=None)
@@ -550,8 +967,57 @@ def kanban_page():
                 ui.input(placeholder="Search by title, description, tags...")
                 .props("dense outlined")
                 .classes("mc-search")
-                .style("flex:1;")
+                .style("flex:1;min-height:32px;")
             )
+
+        # === Active Filter Chips ===
+        filter_chips_row = ui.row().classes("gap-1 flex-wrap").style("margin-bottom:10px;")
+
+        def _refresh_chips():
+            filter_chips_row.clear()
+            with filter_chips_row:
+                pvals = priority_select.value or []
+                for pv in pvals:
+                    chip = ui.chip(f"Priority: {pv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e, v=pv: (
+                            priority_select.set_value([x for x in (priority_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
+                    )
+                cvals = category_select.value or []
+                for cv in cvals:
+                    chip = ui.chip(f"Category: {cv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e, v=cv: (
+                            category_select.set_value([x for x in (category_select.value or []) if x != v]),
+                            render_board.refresh(),
+                        ),
+                    )
+                if sprint_select.value is not None:
+                    sv = sprint_options.get(sprint_select.value, str(sprint_select.value))
+                    chip = ui.chip(f"Sprint: {sv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e: (sprint_select.set_value(None), render_board.refresh()),
+                    )
+                if phase_select.value is not None:
+                    chip = ui.chip(f"Phase: {phase_select.value}", removable=True, color="blue-grey-9").classes(
+                        "mc-filter-chip"
+                    )
+                    chip.on(
+                        "remove",
+                        lambda _e: (phase_select.set_value(None), render_board.refresh()),
+                    )
+                sq = search_input.value or ""
+                if sq:
+                    chip = ui.chip(f'Search: "{sq}"', removable=True, color="blue-grey-9").classes("mc-filter-chip")
+                    chip.on(
+                        "remove",
+                        lambda _e: (search_input.set_value(""), render_board.refresh()),
+                    )
 
         # === Board ===
         def move_item(item: BacklogItem, target: str):
@@ -565,10 +1031,11 @@ def kanban_page():
 
         @ui.refreshable
         def render_board():
+            _refresh_chips()
             items = load_all()
 
-            pf = priority_select.value
-            cf = category_select.value
+            pf_list = priority_select.value or []
+            cf_list = category_select.value or []
             sf = sprint_select.value
             phf = phase_select.value
             sq = search_input.value or ""
@@ -578,21 +1045,48 @@ def kanban_page():
             doing_items = [i for i in items if i.status == "doing"]
             done_items = [i for i in items if i.status == "done"]
 
-            filtered_backlog = filter_items(backlog_items, priority=pf, category=cf, sprint=sf, search=sq)
+            # Apply filters — multi-select priority/category handled here, rest via filter_items
+            filtered_backlog = filter_items(backlog_items, sprint=sf, search=sq)
             filtered_doing = doing_items
             filtered_done = done_items
 
+            # Multi-select priority filter
+            if pf_list:
+                filtered_backlog = [i for i in filtered_backlog if i.priority in pf_list]
+                filtered_doing = [i for i in filtered_doing if i.priority in pf_list]
+                filtered_done = [i for i in filtered_done if i.priority in pf_list]
+
+            # Multi-select category filter
+            if cf_list:
+                filtered_backlog = [i for i in filtered_backlog if i.category in cf_list]
+                filtered_doing = [i for i in filtered_doing if i.category in cf_list]
+                filtered_done = [i for i in filtered_done if i.category in cf_list]
+
             if sf == "unplanned":
-                filtered_doing = [i for i in doing_items if i.sprint_target is None]
-                filtered_done = [i for i in done_items if i.sprint_target is None]
+                filtered_doing = [i for i in filtered_doing if i.sprint_target is None]
+                filtered_done = [i for i in filtered_done if i.sprint_target is None]
             elif sf is not None:
-                filtered_doing = [i for i in doing_items if i.sprint_target == sf]
-                filtered_done = [i for i in done_items if i.sprint_target == sf]
+                filtered_doing = [i for i in filtered_doing if i.sprint_target == sf]
+                filtered_done = [i for i in filtered_done if i.sprint_target == sf]
 
             if phf is not None:
                 filtered_backlog = [i for i in filtered_backlog if i.phase == phf]
                 filtered_doing = [i for i in filtered_doing if i.phase == phf]
                 filtered_done = [i for i in filtered_done if i.phase == phf]
+
+            # Apply search to doing/done too
+            if sq:
+                q = sq.lower()
+                filtered_doing = [
+                    i
+                    for i in filtered_doing
+                    if q in i.title.lower() or q in i.description.lower() or any(q in t.lower() for t in i.tags)
+                ]
+                filtered_done = [
+                    i
+                    for i in filtered_done
+                    if q in i.title.lower() or q in i.description.lower() or any(q in t.lower() for t in i.tags)
+                ]
 
             columns_map = {
                 "backlog": filtered_backlog,
@@ -600,43 +1094,50 @@ def kanban_page():
                 "done": filtered_done if sd else [],
             }
 
-            with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;"):
-                for col_status in STATUSES:
-                    items_in_col = columns_map[col_status]
-                    col_style, label_color = COLUMN_STYLES[col_status]
+            if view_mode["current"] == "backlog":
+                # --- Backlog management view ---
+                _render_backlog_list(filtered_backlog, current_sprint, move_item, save_item, render_board.refresh)
+            else:
+                # --- Kanban board view ---
+                with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;"):
+                    for col_status in STATUSES:
+                        items_in_col = columns_map[col_status]
+                        col_style, label_color = COLUMN_STYLES[col_status]
 
-                    with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
-                        with ui.element("div").style("display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"):
-                            ui.html(
-                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:10px;"
-                                f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
-                                f'color:{label_color};">{LABELS[col_status]}</span>'
-                            )
-                            ui.html(
-                                f"<span style=\"font-family:'JetBrains Mono',monospace;font-size:9px;"
-                                f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
-                                f'border-radius:4px;">{len(items_in_col)}</span>'
-                            )
-
-                        if not items_in_col:
-                            if col_status == "backlog":
-                                msg = (
-                                    "No items match filters."
-                                    if items
-                                    else "No items yet \u2014 use `agile-backlog add` to create one."
+                        with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
+                            with ui.element("div").style(
+                                "display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"
+                            ):
+                                ui.html(
+                                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+                                    f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+                                    f'color:{label_color};">{LABELS[col_status]}</span>'
                                 )
-                            elif col_status == "done" and not sd:
-                                msg = "Done items hidden."
-                            else:
-                                msg = "No items."
-                            ui.html(
-                                f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
-                                f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
-                            )
-                            continue
+                                ui.html(
+                                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+                                    f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+                                    f'border-radius:4px;">{len(items_in_col)}</span>'
+                                )
 
-                        for card_item in items_in_col:
-                            _render_card(card_item, col_status, move_item)
+                            if not items_in_col:
+                                if col_status == "backlog":
+                                    msg = (
+                                        "No items match filters."
+                                        if items
+                                        else "No items yet \u2014 use `agile-backlog add` to create one."
+                                    )
+                                elif col_status == "done" and not sd:
+                                    msg = "Done items hidden."
+                                else:
+                                    msg = "No items."
+                                ui.html(
+                                    f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
+                                    f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
+                                )
+                                continue
+
+                            for card_item in items_in_col:
+                                _render_card(card_item, col_status, move_item, save_item, render_board.refresh)
 
         priority_select.on_value_change(lambda _: render_board.refresh())
         category_select.on_value_change(lambda _: render_board.refresh())

@@ -103,3 +103,14 @@ fields:
     type: boolean
     default: false
     description: Whether code review has been completed
+
+  agent_notes:
+    type: list
+    items:
+      type: object
+      properties:
+        text: { type: string }
+        flagged: { type: boolean, default: false }
+        resolved: { type: boolean, default: false }
+        created: { type: date }
+    description: Notes for human-to-agent communication. Flagged notes are for agent attention.

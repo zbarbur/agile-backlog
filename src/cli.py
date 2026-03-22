@@ -142,6 +142,12 @@ def show(item_id: str):
             click.echo(f"  - {tp}")
     if item.notes:
         click.echo(f"\nNotes:\n{item.notes}")
+    if item.agent_notes:
+        click.echo("\nAgent Notes:")
+        for n in item.agent_notes:
+            flag_marker = " [FLAGGED]" if n.get("flagged") else ""
+            resolved_marker = " [resolved]" if n.get("resolved") else ""
+            click.echo(f"  - {n['text']} ({n['created']}){flag_marker}{resolved_marker}")
 
 
 @main.command()
@@ -166,7 +172,10 @@ def show(item_id: str):
 @click.option("--tags", multiple=True)
 @click.option("--depends-on", "depends_on", multiple=True)
 @click.option("--notes", default=None)
-def edit(item_id, **kwargs):
+@click.option(
+    "--resolve-notes", "resolve_notes", is_flag=True, default=False, help="Mark all flagged notes as resolved."
+)
+def edit(item_id, resolve_notes: bool, **kwargs):
     """Edit fields on a backlog item."""
     try:
         item = load_item(item_id)
@@ -180,8 +189,50 @@ def edit(item_id, **kwargs):
             else:
                 setattr(item, field, value)
 
+    if resolve_notes:
+        for n in item.agent_notes:
+            if n.get("flagged"):
+                n["resolved"] = True
+
     save_item(item)
     click.echo(f"Updated: {item_id}")
+
+
+@main.command()
+@click.argument("item_id")
+@click.argument("text")
+@click.option("--flag", is_flag=True, help="Flag this note for agent attention.")
+def note(item_id: str, text: str, flag: bool):
+    """Add a note to a backlog item."""
+    try:
+        item = load_item(item_id)
+    except FileNotFoundError:
+        raise SystemExit(f"Error: item '{item_id}' not found.")
+    item.agent_notes.append(
+        {
+            "text": text,
+            "flagged": flag,
+            "resolved": False,
+            "created": str(date.today()),
+        }
+    )
+    save_item(item)
+    click.echo(f"Note added to {item_id}" + (" [FLAGGED]" if flag else ""))
+
+
+@main.command()
+def flagged():
+    """List items with unresolved flagged notes."""
+    items = load_all()
+    flagged_items = [i for i in items if any(n.get("flagged") and not n.get("resolved") for n in i.agent_notes)]
+    if not flagged_items:
+        click.echo("No flagged notes.")
+        return
+    for item in flagged_items:
+        click.echo(f"\n{item.id} ({item.status}):")
+        for n in item.agent_notes:
+            if n.get("flagged") and not n.get("resolved"):
+                click.echo(f"  🚩 {n['text']} ({n['created']})")
 
 
 @main.command()

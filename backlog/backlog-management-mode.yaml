@@ -1,33 +1,35 @@
 title: Backlog management mode
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: 8
+sprint_target: 9
 created: 2026-03-21
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: "Dedicated view for backlog grooming \u2014 review, prioritize, stage items\
-  \ for next sprint"
+goal: "Dedicated backlog view for grooming \u2014 list format with sorting and sprint\
+  \ staging"
 complexity: M
 technical_specs:
-- Add @ui.page('/backlog') or tab/toggle in kanban_page()
-- Use ui.table or card list for backlog items
-- Add sprint staging controls
+- Add backlog view rendering in kanban_page() toggled by view state
+- Use ui.table or vertical card list
+- Reuse detail modal from inline editing
 description: "A dedicated view for backlog grooming:\n1. Show only backlog items (no\
   \ doing/done columns)\n2. Sort/group by priority, category, or sprint candidate\n\
   3. Bulk actions \u2014 tag items for next sprint, change priority\n4. Review item\
   \ details inline\n5. Stage items as sprint candidates (mark with sprint_target)\n\
   6. Toggle between Kanban view and Backlog view"
 acceptance_criteria:
-- Toggle between Kanban view and Backlog view
-- Backlog view shows only backlog items in a list/table format
-- Sort by priority, category, or sprint candidate
-- Stage items for next sprint (set sprint_target)
-- Tests pass (pytest tests/ -v)
+- Board/Backlog toggle switches between views
+- Backlog view shows items in sortable list/table
+- Can sort by priority, category, sprint
+- Can stage items for next sprint
+- Click item opens same detail/edit modal
+- Tests pass
 test_plan:
-- 'Manual: verify backlog view renders and staging works'
+- 'Manual: toggle to backlog view, sort, stage items'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
+agent_notes: []
