@@ -36,7 +36,7 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 4. **backlog-section-header-missing** — Each section has a prominent header: arrow icon (▼/▶) + section label (uppercase, colored) + item count badge + zoom button. Colors: Backlog=#71717a (gray), vNext=#ca8a04 (gold), vFuture=#22c55e (green).
 
 ### Card Design
-5. **backlog-cards-missing-priority-border-priority-badge-tags** — Unify card design. Two-line cards with: left border (colored for P0/P1, transparent for P2+), title + badges on row 1 (comment badge + category + priority), tags + relative timestamp on row 2. P3 items have muted title text.
+5. **backlog-cards-missing-priority-border-priority-badge-tags** — Unify card design. Two-line cards with: left border (colored for P0/P1, transparent for P2+), title + badges on row 1 (comment badge + category + priority), tags + relative timestamp on row 2. P3 items have muted title text. **Also fixes board bug:** current `render_card_html` only applies left border for P1, missing P0. The unified function handles both P0 and P1.
 6. **move-to-buttons-should-be-at-bottom-of-card** — Move buttons hidden by default, appear on hover as a floating action bar at bottom-right of card. Not shown on selected card.
 
 ### Side Panel
@@ -64,7 +64,7 @@ Fix all UI bugs from the Phase 1 smoke test and elevate the backlog planning vie
 
 ### Additional Polish
 13. **done-item-still-look-deleted-an-faded** — In scope (card styles are being unified). Done items on board should look complete with a subtle green-gray tint, not deleted/faded. Reduce opacity to 0.7 (not 0.65) and use a muted green-tinged text color instead of pure gray.
-14. **we-re-in-sprint-15-but-it-s-displayed-sprint-13** — Fix `detect_current_sprint()` function to check `config.get_current_sprint()` first, fall back to inference from doing items second. Currently the config check happens at call sites, not in the function itself. Move it into the function for a single source of truth.
+14. **we-re-in-sprint-15-but-it-s-displayed-sprint-13** — Fix `detect_current_sprint()` function to check `config.get_current_sprint()` first, fall back to inference from doing items second. Currently the config check happens at call sites (e.g. `_render_backlog_list` line ~1434), not in the function itself. **Implementation:** Add `from agile_backlog.config import get_current_sprint` import inside `detect_current_sprint()` and call it first. If config returns a value, return it; otherwise fall back to the existing inference logic. Remove redundant config checks at call sites. This gives a single source of truth and fixes all callers (including `_show_edit_dialog` line ~864 which currently skips the config check).
 
 ## Layout Architecture
 
@@ -217,7 +217,7 @@ Implemented as a pure function: `relative_time(dt: date) -> str`. Note: BacklogI
 | docs | #34d399 | rgba(52,211,153,0.08) | was 0.12 |
 | chore | #a78bfa | rgba(167,139,250,0.08) | was 0.12 |
 
-### Priority Colors (lowered alpha for subtlety — update tokens.py)
+### Priority Colors (lowered alpha for P0-P3, P4 unchanged — update tokens.py)
 | Priority | Text | Background | Previous |
 |----------|------|------------|----------|
 | P0 | #ef4444 | rgba(239,68,68,0.10) | was 0.18 |
@@ -241,7 +241,9 @@ Tests that must change due to behavioral differences:
 - `test_p1_card_has_red_left_border`: Currently asserts `border-left:3px`. Change to `border-left:2px`.
 - `test_p2_card_no_left_border`: Should still pass (transparent border).
 - Any test referencing `agent_notes` parameter name in `comment_badge_html` — already updated in earlier tasks.
-- Board-specific tests referencing `_show_edit_dialog` or `_render_detail_modal_content` — remove or replace.
+- `test_render_card_with_phase`, `test_render_card_without_phase`: Remove — phase badges no longer on cards (shown in panel instead).
+- `test_design_reviewed_badge_shown_when_true`, `test_code_reviewed_badge_shown_when_true`: Remove — review badges no longer on cards.
+- Any tests referencing `_show_edit_dialog` or `_render_detail_modal_content` — remove (these functions are deleted).
 
 ## Board View Impact
 
