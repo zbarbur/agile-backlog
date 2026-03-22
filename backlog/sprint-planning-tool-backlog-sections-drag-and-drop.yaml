@@ -23,9 +23,10 @@ description: 'Dedicated sprint planning feature combining:
   5. Requires brainstorming session for UX design'
 acceptance_criteria: []
 test_plan: []
-notes: P4/icebox items should be hidden by default in the planning view. Add a toggle
-  or filter to show them when needed. This keeps the planning view focused on actionable
-  items.
+notes: "Spec: docs/superpowers/specs/2026-03-22-backlog-view-redesign.md \u2014 covers\
+  \ Phase 1 (card list, sections, side panel, chat comments, data model changes) and\
+  \ Phase 2 (drag-and-drop, inline editing). Next step: write Phase 1 implementation\
+  \ plan."
 phase: plan
 design_reviewed: false
 code_reviewed: false
