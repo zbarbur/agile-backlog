@@ -169,7 +169,7 @@ git commit -m "refactor: split app.py into pure.py, styles.py, components.py"
 
 **Files:**
 - Modify: `src/agile_backlog/tokens.py`
-- Test: `tests/test_app.py`
+- Test: `tests/test_pure.py`
 
 - [ ] **Step 1: Update CATEGORY_STYLES alphas**
 
@@ -200,7 +200,7 @@ PRIORITY_COLORS: dict[str, tuple[str, str]] = {
 
 - [ ] **Step 3: Update test assertions that check exact bg colors**
 
-In `tests/test_app.py`, update `test_badge_uses_design_system_colors` — it asserts `rgba(59,130,246,0.15)` for feature. Change to `rgba(59,130,246,0.08)`.
+In `tests/test_pure.py`, update `test_badge_uses_design_system_colors` — it asserts `rgba(59,130,246,0.15)` for feature. Change to `rgba(59,130,246,0.08)`.
 
 - [ ] **Step 4: Run tests**
 
@@ -209,7 +209,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/agile_backlog/tokens.py tests/test_app.py
+git add src/agile_backlog/tokens.py tests/test_pure.py
 git commit -m "style: lower category/priority background alphas for subtlety"
 ```
 
@@ -263,7 +263,7 @@ class TestRelativeTime:
 
 - [ ] **Step 2: Run tests — expect FAIL**
 
-Run: `.venv/bin/pytest tests/test_app.py::TestRelativeTime -v`
+Run: `.venv/bin/pytest tests/test_pure.py::TestRelativeTime -v`
 
 - [ ] **Step 3: Implement relative_time**
 
@@ -289,7 +289,7 @@ Update the import line in `tests/test_pure.py` to include `relative_time`.
 
 - [ ] **Step 5: Run tests — expect PASS**
 
-Run: `.venv/bin/pytest tests/test_app.py::TestRelativeTime -v`
+Run: `.venv/bin/pytest tests/test_pure.py::TestRelativeTime -v`
 
 - [ ] **Step 6: Run full suite**
 
@@ -298,7 +298,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/agile_backlog/app.py tests/test_app.py
+git add src/agile_backlog/pure.py tests/test_pure.py
 git commit -m "feat: add relative_time pure function for card timestamps"
 ```
 
@@ -331,7 +331,7 @@ def test_config_none_falls_back_to_inference(self):
 
 - [ ] **Step 2: Run tests — expect FAIL**
 
-Run: `.venv/bin/pytest tests/test_app.py::TestDetectCurrentSprint::test_config_takes_priority -v`
+Run: `.venv/bin/pytest tests/test_pure.py::TestDetectCurrentSprint::test_config_takes_priority -v`
 
 - [ ] **Step 3: Update detect_current_sprint**
 
@@ -352,9 +352,9 @@ def detect_current_sprint(items: list[BacklogItem]) -> int | None:
 
 - [ ] **Step 4: Remove redundant config checks at call sites**
 
-Search `app.py` for patterns like `get_current_sprint() or detect_current_sprint(...)` and replace with just `detect_current_sprint(items)`. Key locations:
-- `_render_backlog_list` (around line ~1434)
-- Any other call site
+Search `components.py` for patterns like `get_current_sprint() or detect_current_sprint(...)` and replace with just `detect_current_sprint(items)`. Key locations:
+- `_render_backlog_list` (moved to components.py in Task 0)
+- Any other call site in `components.py` or `app.py`
 
 - [ ] **Step 5: Run tests — expect PASS**
 
@@ -363,7 +363,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/agile_backlog/app.py tests/test_app.py
+git add src/agile_backlog/pure.py src/agile_backlog/components.py tests/test_pure.py
 git commit -m "fix: detect_current_sprint checks config first, fixes sprint 13 display"
 ```
 
@@ -437,7 +437,7 @@ class TestRenderCardHtml:
 
 - [ ] **Step 2: Run tests — expect FAIL**
 
-Run: `.venv/bin/pytest tests/test_app.py::TestRenderCardHtml -v`
+Run: `.venv/bin/pytest tests/test_pure.py::TestRenderCardHtml -v`
 
 - [ ] **Step 3: Replace both card functions with unified render_card_html**
 
@@ -503,7 +503,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/agile_backlog/app.py tests/test_app.py
+git add src/agile_backlog/pure.py src/agile_backlog/components.py tests/test_pure.py
 git commit -m "feat: unified two-line card design for board and backlog views"
 ```
 
@@ -576,7 +576,7 @@ class TestCommentThreadHtml:
 
 - [ ] **Step 2: Run tests — expect FAIL**
 
-Run: `.venv/bin/pytest tests/test_app.py::TestRenderCommentHtml -v`
+Run: `.venv/bin/pytest tests/test_pure.py::TestRenderCommentHtml -v`
 
 - [ ] **Step 3: Replace render_comment_html with chat-style version**
 
@@ -616,7 +616,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/agile_backlog/app.py tests/test_app.py
+git add src/agile_backlog/pure.py tests/test_pure.py
 git commit -m "feat: iMessage-style chat comments — user right, agent left"
 ```
 
@@ -674,7 +674,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/agile_backlog/app.py
+git add src/agile_backlog/styles.py
 git commit -m "style: update CSS for unified cards, side panel, click-to-edit, resize handles"
 ```
 
@@ -718,7 +718,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/agile_backlog/app.py
+git add src/agile_backlog/app.py src/agile_backlog/components.py
 git commit -m "feat: sticky header with inline filter chips and sort button"
 ```
 
@@ -782,7 +782,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/agile_backlog/app.py
+git add src/agile_backlog/components.py
 git commit -m "feat: resizable three-section backlog layout with independent scroll"
 ```
 
@@ -883,7 +883,7 @@ Run: `.venv/bin/pytest tests/ -v`
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/agile_backlog/app.py
+git add src/agile_backlog/components.py
 git commit -m "feat: click-to-edit side panel with chat comments, shared by board and backlog"
 ```
 
@@ -921,7 +921,7 @@ Run: `.venv/bin/ruff check . && .venv/bin/ruff format --check .`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/agile_backlog/app.py tests/test_app.py
+git add src/agile_backlog/components.py tests/test_pure.py
 git commit -m "refactor: clean up obsolete tests, update board card to unified design"
 ```
 
