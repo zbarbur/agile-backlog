@@ -791,7 +791,7 @@ def _render_backlog_list(
     tags: list[str] | None = None,
     search: str = "",
 ) -> None:
-    """Render the backlog planning view with three collapsible sections and a side panel."""
+    """Render the backlog planning view with three resizable sections and a side panel."""
     # Group all items into sections
     sections = group_items_by_section(all_items, current_sprint)
     backlog_items = sections["backlog"]
@@ -810,16 +810,13 @@ def _render_backlog_list(
     if search:
         filtered_backlog = filter_items(filtered_backlog, search=search)
 
-    # Side panel state: mutable dict to track selected item
+    # Side panel state
     panel_state = {"selected_id": None}
-
-    # References to the layout containers
-    list_container_ref = {"el": None}
-    panel_container_ref = {"el": None}
+    list_container_ref: dict[str, object] = {"el": None}
+    panel_container_ref: dict[str, object] = {"el": None}
 
     def _open_side_panel(item: BacklogItem):
         panel_state["selected_id"] = item.id
-        # Adjust layout: shrink list, show panel
         if list_container_ref["el"]:
             list_container_ref["el"].style("flex:6;min-width:0;")
         if panel_container_ref["el"]:
@@ -836,7 +833,6 @@ def _render_backlog_list(
             panel_container_ref["el"].style("display:none;")
             panel_container_ref["el"].clear()
 
-    # Escape key handler
     ui.keyboard(on_key=lambda e: _close_side_panel() if e.key == "Escape" and not e.action.repeat else None)
 
     def _move_to_section(item: BacklogItem, target_sprint: int | None):
@@ -845,9 +841,47 @@ def _render_backlog_list(
         refresh_fn()
 
     move_btn_style = (
-        "font-size:10px;padding:2px 8px;min-height:0;border-radius:4px;"
+        "font-size:9px;padding:1px 6px;min-height:0;border-radius:3px;"
         "font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em;"
     )
+
+    # Zoom state: which section is zoomed (None = normal proportions)
+    zoom_state: dict[str, str | None] = {"zoomed": None}
+    # References to section containers for zoom toggling
+    section_refs: dict[str, dict[str, object]] = {
+        "backlog": {"outer": None, "content": None},
+        "vnext": {"outer": None, "content": None},
+        "vfuture": {"outer": None, "content": None},
+    }
+
+    def _toggle_zoom(section_key: str):
+        """Toggle zoom for a section: expand it, collapse others to header-only."""
+        if zoom_state["zoomed"] == section_key:
+            # Un-zoom: restore all sections
+            zoom_state["zoomed"] = None
+            for key in section_refs:
+                outer = section_refs[key]["outer"]
+                content = section_refs[key]["content"]
+                if outer:
+                    outer.style("flex:1;min-height:44px;overflow:hidden;")
+                if content:
+                    content.style("flex:1;overflow-y:auto;display:block;")
+        else:
+            # Zoom this section, collapse others
+            zoom_state["zoomed"] = section_key
+            for key in section_refs:
+                outer = section_refs[key]["outer"]
+                content = section_refs[key]["content"]
+                if key == section_key:
+                    if outer:
+                        outer.style("flex:1;min-height:44px;overflow:hidden;")
+                    if content:
+                        content.style("flex:1;overflow-y:auto;display:block;")
+                else:
+                    if outer:
+                        outer.style("flex:0 0 44px;min-height:44px;overflow:hidden;")
+                    if content:
+                        content.style("display:none;")
 
     def _render_section_items(items: list[BacklogItem], section: str):
         if not items:
@@ -857,111 +891,144 @@ def _render_backlog_list(
             )
             return
 
+        next_sprint = (current_sprint or 0) + 1
+        future_sprint = (current_sprint or 0) + 2
+
         for card_item in items:
-            with ui.element("div").style("display:flex;align-items:center;gap:8px;margin:2px 0;"):
+            # Card row with hover-revealed move buttons
+            with ui.element("div").classes("mc-card-row").style("position:relative;margin:2px 0;padding:0 4px;"):
                 # Card (clickable)
-                card_container = ui.element("div").style("flex:1;min-width:0;")
+                card_container = ui.element("div").style("cursor:pointer;")
                 card_container.on("click", lambda _e, i=card_item: _open_side_panel(i))
                 with card_container:
                     ui.html(render_card_html(card_item))
 
-                # Move-to buttons
-                with ui.element("div").style("display:flex;gap:4px;flex-shrink:0;"):
-                    next_sprint = (current_sprint or 0) + 1
-                    future_sprint = (current_sprint or 0) + 2
-
+                # Hover-revealed move buttons
+                with ui.element("div").classes("mc-move-buttons"):
                     if section == "backlog":
                         ui.button(
                             "\u2192 vNext",
                             on_click=lambda _e, i=card_item, s=next_sprint: _move_to_section(i, s),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#3b82f6;background:rgba(59,130,246,0.08);"
+                            f"{move_btn_style}color:#ca8a04;background:rgba(202,138,4,0.1);"
                         )
                         ui.button(
                             "\u2192 vFuture",
                             on_click=lambda _e, i=card_item, s=future_sprint: _move_to_section(i, s),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#8b5cf6;background:rgba(139,92,246,0.08);"
+                            f"{move_btn_style}color:#22c55e;background:rgba(34,197,94,0.1);"
                         )
                     elif section == "vnext":
                         ui.button(
                             "\u2190 Backlog",
                             on_click=lambda _e, i=card_item: _move_to_section(i, None),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.08);"
+                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.1);"
                         )
                         ui.button(
                             "\u2192 vFuture",
                             on_click=lambda _e, i=card_item, s=future_sprint: _move_to_section(i, s),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#8b5cf6;background:rgba(139,92,246,0.08);"
+                            f"{move_btn_style}color:#22c55e;background:rgba(34,197,94,0.1);"
                         )
                     elif section == "vfuture":
                         ui.button(
                             "\u2190 Backlog",
                             on_click=lambda _e, i=card_item: _move_to_section(i, None),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.08);"
+                            f"{move_btn_style}color:#71717a;background:rgba(113,113,122,0.1);"
                         )
                         ui.button(
                             "\u2190 vNext",
                             on_click=lambda _e, i=card_item, s=next_sprint: _move_to_section(i, s),
                         ).props("flat dense no-caps unelevated").style(
-                            f"{move_btn_style}color:#3b82f6;background:rgba(59,130,246,0.08);"
+                            f"{move_btn_style}color:#ca8a04;background:rgba(202,138,4,0.1);"
                         )
 
-    # Section header style helper
-    def _section_header(label: str, count: int, color: str) -> str:
-        return (
-            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
-            f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
-            f'color:{color};">{label}</span>'
-            f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
-            f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
-            f'border-radius:4px;margin-left:8px;">{count}</span>'
-        )
+    def _section_header_el(label: str, count: int, color: str, section_key: str):
+        """Render a section header with collapse arrow, label, count badge, and zoom button."""
+        with ui.element("div").style(
+            "display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0;user-select:none;"
+        ):
+            # Colored label
+            ui.html(
+                f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+                f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
+                f'color:{color};">{label}</span>'
+            )
+            # Count badge
+            ui.html(
+                f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
+                f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
+                f'border-radius:4px;">{count}</span>'
+            )
+            # Spacer
+            ui.element("div").style("flex:1;")
+            # Zoom button
+            ui.button(
+                "\u2922",
+                on_click=lambda _e, sk=section_key: _toggle_zoom(sk),
+            ).props("flat dense no-caps unelevated").style(
+                "font-size:14px;min-width:28px;min-height:24px;padding:0 4px;color:#52525b;border-radius:4px;"
+            ).tooltip("Zoom section")
 
     # Filter info for backlog section
     has_filters = bool(priorities or categories or tags or search)
-    backlog_label = "BACKLOG (unplanned)"
+    backlog_label = "BACKLOG"
     if has_filters:
         backlog_label += f" \u2014 filtered {len(filtered_backlog)}/{len(backlog_items)}"
 
+    vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
+    vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
+
     # Two-column layout: list (left) + side panel (right)
-    with ui.element("div").style("display:flex;gap:12px;align-items:flex-start;"):
-        # Left column: three collapsible sections
-        list_container = ui.element("div").style("flex:1;min-width:0;")
+    with ui.element("div").style("display:flex;gap:0;height:100%;"):
+        # Left column: three vertically stacked sections
+        list_container = ui.element("div").style(
+            "flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;height:100%;"
+        )
         list_container_ref["el"] = list_container
 
         with list_container:
-            with (
-                ui.expansion(value=True)
-                .style("width:100%;background:#111116;border-radius:8px;margin-bottom:8px;")
-                .classes("mc-planning-section")
-            ):
-                with ui.element("template").props("v-slot:header"):
-                    ui.html(_section_header(backlog_label, len(filtered_backlog), "#71717a"))
-                _render_section_items(filtered_backlog, "backlog")
+            # --- BACKLOG section ---
+            backlog_outer = ui.element("div").style(
+                "flex:1;min-height:44px;overflow:hidden;"
+                "display:flex;flex-direction:column;background:#111116;border-radius:8px;margin-bottom:4px;"
+            )
+            section_refs["backlog"]["outer"] = backlog_outer
+            with backlog_outer:
+                _section_header_el(backlog_label, len(filtered_backlog), "#71717a", "backlog")
+                backlog_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                section_refs["backlog"]["content"] = backlog_content
+                with backlog_content:
+                    _render_section_items(filtered_backlog, "backlog")
 
-            vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
-            with (
-                ui.expansion(value=True)
-                .style("width:100%;background:#14130e;border:1px solid #2a2618;border-radius:8px;margin-bottom:8px;")
-                .classes("mc-planning-section")
-            ):
-                with ui.element("template").props("v-slot:header"):
-                    ui.html(_section_header(vnext_label, len(vnext_items), "#ca8a04"))
-                _render_section_items(vnext_items, "vnext")
+            # --- vNEXT section ---
+            vnext_outer = ui.element("div").style(
+                "flex:1;min-height:44px;overflow:hidden;"
+                "display:flex;flex-direction:column;background:#14130e;border:1px solid #2a2618;"
+                "border-radius:8px;margin-bottom:4px;"
+            )
+            section_refs["vnext"]["outer"] = vnext_outer
+            with vnext_outer:
+                _section_header_el(vnext_label, len(vnext_items), "#ca8a04", "vnext")
+                vnext_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                section_refs["vnext"]["content"] = vnext_content
+                with vnext_content:
+                    _render_section_items(vnext_items, "vnext")
 
-            vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
-            with (
-                ui.expansion(value=True)
-                .style("width:100%;background:#0f1210;border-radius:8px;margin-bottom:8px;")
-                .classes("mc-planning-section")
-            ):
-                with ui.element("template").props("v-slot:header"):
-                    ui.html(_section_header(vfuture_label, len(vfuture_items), "#22c55e"))
-                _render_section_items(vfuture_items, "vfuture")
+            # --- vFUTURE section ---
+            vfuture_outer = ui.element("div").style(
+                "flex:1;min-height:44px;overflow:hidden;"
+                "display:flex;flex-direction:column;background:#0f1210;border-radius:8px;"
+            )
+            section_refs["vfuture"]["outer"] = vfuture_outer
+            with vfuture_outer:
+                _section_header_el(vfuture_label, len(vfuture_items), "#22c55e", "vfuture")
+                vfuture_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                section_refs["vfuture"]["content"] = vfuture_content
+                with vfuture_content:
+                    _render_section_items(vfuture_items, "vfuture")
 
         # Right column: side panel (hidden by default)
         panel_container = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")
