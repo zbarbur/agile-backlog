@@ -249,10 +249,11 @@ body {
     border-left: 3px solid #f59e0b !important;
 }
 .mc-card.mc-done {
-    opacity: 0.4;
+    opacity: 0.65;
+    color: #71717a;
 }
 .mc-card.mc-done:hover {
-    opacity: 0.8;
+    opacity: 1.0;
 }
 .mc-move-btn {
     font-family: 'IBM Plex Mono', monospace !important;
@@ -311,6 +312,15 @@ body {
 .q-field__label {
     color: #71717a !important;
 }
+/* Dark backlog table */
+.q-table { background: #18181b !important; color: #e4e4e7 !important; }
+.q-table th {
+    color: #a1a1aa !important; background: #111116 !important;
+    font-size: 11px !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;
+}
+.q-table td { border-color: #27272a !important; color: #d4d4d8 !important; font-size: 12px !important; }
+.q-table tbody tr:hover td { background: #1e1e23 !important; }
+.q-table .q-table__bottom { background: #111116 !important; color: #71717a !important; }
 </style>
 """
 )
@@ -410,6 +420,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         ui.card().style(
             "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
             "padding:20px;max-width:720px;width:720px;border-radius:8px;"
+            "max-height:80vh;overflow-y:auto;"
         ),
     ):
         _render_detail_modal_content(item, is_done)
@@ -571,7 +582,7 @@ def _render_detail_modal_content(item: BacklogItem, is_done: bool = False) -> No
 
     if item.description:
         ui.html(f'<div style="{label_style}">Description</div>')
-        ui.html(f'<div style="{value_style}">{item.description}</div>')
+        ui.markdown(item.description).style(value_style)
 
     if item.acceptance_criteria:
         ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
