@@ -419,17 +419,15 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
 
             # Comment button (top-right corner)
             if not is_done and save_fn and refresh_fn:
-
-                def _open_comment(_e, i=item):
-                    _e.args = None
-                    _show_comment_dialog(i, save_fn, refresh_fn)
-
-                comment_btn = (
-                    ui.button("\U0001f4ac", on_click=_open_comment)
-                    .props("flat dense unelevated no-caps round size=xs")
-                    .style("color:#52525b;min-width:0;padding:2px;flex-shrink:0;")
-                )
-                comment_btn.on("click.stop", lambda _e: None)
+                comment_btn = ui.element("div").style("flex-shrink:0;")
+                comment_btn.on("click.stop", lambda _e, i=item: _show_comment_dialog(i, save_fn, refresh_fn))
+                with comment_btn:
+                    ui.html(
+                        '<span style="cursor:pointer;color:#52525b;font-size:14px;'
+                        'padding:2px 4px;border-radius:4px;" '
+                        "onmouseover=\"this.style.color='#a1a1aa'\" "
+                        "onmouseout=\"this.style.color='#52525b'\">\U0001f4ac</span>"
+                    )
 
         # Row 2: move buttons (left) + badges (right)
         opacity = "opacity:0.5;" if is_done else ""
