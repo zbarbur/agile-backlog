@@ -22,7 +22,7 @@ class BacklogItem(BaseModel):
     id: str
     title: str
     status: Literal["backlog", "doing", "done"] = "backlog"
-    priority: Literal["P1", "P2", "P3"]
+    priority: Literal["P0", "P1", "P2", "P3", "P4"]
     category: str
     sprint_target: int | None = None
     created: date = Field(default_factory=date.today)

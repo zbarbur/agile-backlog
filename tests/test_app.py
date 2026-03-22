@@ -110,6 +110,11 @@ class TestFilterItems:
         items = [_item(id="a", priority="P3")]
         assert filter_items(items, priority="P1") == []
 
+    def test_filter_p0_items(self):
+        items = [_item(priority="P0"), _item(priority="P2")]
+        result = filter_items(items, priority="P0")
+        assert len(result) == 1
+
     def test_filter_priority_range_p2_plus(self):
         items = [_item(id="a", priority="P1"), _item(id="b", priority="P2"), _item(id="c", priority="P3")]
         result = filter_items(items, priority="P2+")

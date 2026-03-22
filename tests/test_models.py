@@ -61,7 +61,15 @@ class TestBacklogItem:
 
     def test_invalid_priority_rejected(self):
         with pytest.raises(ValueError):
-            BacklogItem(id="bad", title="Bad", priority="P0", category="x")
+            BacklogItem(id="bad", title="Bad", priority="P5", category="x")
+
+    def test_p0_priority_valid(self):
+        item = BacklogItem(id="x", title="x", priority="P0", category="bug")
+        assert item.priority == "P0"
+
+    def test_p4_priority_valid(self):
+        item = BacklogItem(id="x", title="x", priority="P4", category="bug")
+        assert item.priority == "P4"
 
 
 class TestPhaseField:
