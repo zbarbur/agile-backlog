@@ -1,6 +1,6 @@
 [project]
 name = "agile-backlog"
-version = "0.2.0"
+dynamic = ["version"]
 description = "Lightweight Kanban board tool for agentic development"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -32,10 +32,20 @@ dev = [
 ]
 
 [project.scripts]
-agile-backlog = "src.cli:main"
+agile-backlog = "agile_backlog.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["src*"]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agile_backlog = ["schema.yaml", "py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "agile_backlog.__version__"}
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 target-version = "py311"
