@@ -1,20 +1,27 @@
 title: The done item look deleted and faded
-status: backlog
+status: doing
 priority: P1
 category: bug
-sprint_target: null
+sprint_target: 13
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Done items should look completed not deleted \u2014 reduce opacity fade, keep\
+  \ readable"
+complexity: S
+technical_specs:
+- "Adjust .mc-done CSS \u2014 change opacity from 0.4 to 0.6 or 0.7"
+- Consider muted text color instead of heavy opacity
 description: this is not good UX, we know they're done, I still want to view them
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Done items clearly readable (not nearly invisible)
+- Visual distinction from active items (not identical either)
+- Tests pass
+test_plan:
+- 'Manual: verify done items are readable but visually distinct'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

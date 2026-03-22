@@ -1,24 +1,34 @@
 title: Add tags to tasks
-status: backlog
+status: doing
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 13
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Enable tags on items with UI support for adding, displaying, and filtering by
+  tags
+complexity: M
+technical_specs:
+- "BacklogItem already has tags: list[str] field \u2014 just need UI"
+- Add tag pills to _render_card() badge row
+- Add tag input to edit dialog
+- Add tag filter to filter bar (multi-select with chips)
 description: 'Have the ability to add tags for tasks , so we can manage different
   topics (like "infrastructure" , "UX" "Deployment" etc , have the ability for the
   AI to automatically decide and assign the right tag
 
   This would be very helpful in the backlog management '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Tags shown on cards as small pills
+- Tags editable in edit dialog
+- Filter by tag in filter bar
+- Tests pass
+test_plan:
+- 'Manual: add tags, verify display and filtering'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

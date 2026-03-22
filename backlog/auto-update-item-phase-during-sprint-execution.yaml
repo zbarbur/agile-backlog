@@ -1,19 +1,18 @@
 title: Auto-update item phase during sprint execution
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: 8
+sprint_target: 13
 created: 2026-03-21
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: "Automatically progress item phase as work happens \u2014 plan\u2192build\u2192\
-  review\u2192done"
-complexity: S
+goal: Sprint execution automatically progresses item phases as work happens
+complexity: M
 technical_specs:
-- Update sprint-start skill to set phase=build after spec
-- Update subagent-driven-development to set phase=review after code
-- Document phase transitions in process
+- Update sprint-start skill to set phase=build after speccing
+- Update subagent-driven-development workflow to set phase=review
+- Document phase transitions in sprint process
 description: "Items stay in 'plan' phase even after work is done. The process should\
   \ auto-update phases:\n1. When spec is written \u2192 move to 'build' phase\n2.\
   \ When code is committed \u2192 move to 'review' phase  \n3. When moved to done\
@@ -21,14 +20,14 @@ description: "Items stay in 'plan' phase even after work is done. The process sh
   \ agile-backlog edit --phase as work progresses\n5. Consider hooks or skill updates\
   \ to automate this"
 acceptance_criteria:
-- "Spec written \u2192 item moves to build phase"
-- "Code committed \u2192 item moves to review phase"
-- Item moved to done keeps last phase
+- "After spec written \u2192 item moves to build phase"
+- "After code committed \u2192 item moves to review phase"
 - Sprint skills call agile-backlog edit --phase during execution
+- Tests pass
 test_plan:
-- 'Manual: run sprint workflow and verify phases update'
+- 'Manual: run sprint workflow, verify phases update'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []

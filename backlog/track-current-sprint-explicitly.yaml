@@ -1,15 +1,19 @@
 title: Track current sprint explicitly
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 13
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Store current sprint in config file so it persists regardless of item states
+complexity: M
+technical_specs:
+- Create .agile-backlog.yaml with current_sprint field
+- Add get_current_sprint() function to yaml_store or new config module
+- Update detect_current_sprint() to read from config first
+- Update sprint-start/sprint-end skills to write config
 description: 'Current sprint detection should not rely on inferring from items. Instead:
 
   1. Store current sprint number in a config file (.agile-backlog.yaml or similar)
@@ -21,10 +25,16 @@ description: 'Current sprint detection should not rely on inferring from items. 
   4. UI reads from config, not from item inference
 
   5. This ensures sprint badge and Add Item dialog always know the current sprint'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Current sprint stored in .agile-backlog.yaml config
+- sprint-start sets current sprint number
+- sprint-end clears it
+- UI and CLI read from config
+- Tests pass
+test_plan:
+- 'tests/test_yaml_store.py: test config read/write'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 agent_notes: []
