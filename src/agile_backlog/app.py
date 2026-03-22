@@ -113,6 +113,22 @@ def _complexity_badge(complexity: str) -> str:
     )
 
 
+def comment_badge_html(agent_notes: list[dict]) -> str:
+    """Return HTML for the comment badge on a card."""
+    if not agent_notes:
+        return ""
+    flagged_count = sum(1 for n in agent_notes if n.get("flagged") and not n.get("resolved"))
+    total_count = len(agent_notes)
+    _badge = "border-radius:9999px;padding:1px 7px;font-size:11px;margin-left:6px;color:#fff;"
+    if flagged_count > 0:
+        # Red badge for unresolved flagged
+        return f'<span style="background:#f87171;{_badge}">{flagged_count}</span>'
+    elif total_count > 0:
+        # Blue badge for total comments (no unresolved flagged)
+        return f'<span style="background:#3b82f6;{_badge}">{total_count}</span>'
+    return ""
+
+
 # ---------------------------------------------------------------------------
 # NiceGUI UI — Mission Control dark theme
 # ---------------------------------------------------------------------------
@@ -477,15 +493,8 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                 icon_color = "#f87171" if has_flagged else "#52525b" if comment_count == 0 else "#60a5fa"
                 badge_html = (
                     f'<span style="position:relative;cursor:pointer;color:{icon_color};'
-                    f'font-size:14px;padding:2px 4px;">\U0001f4ac'
+                    f'font-size:14px;padding:2px 4px;">\U0001f4ac' + comment_badge_html(item.agent_notes) + "</span>"
                 )
-                if comment_count > 0:
-                    badge_html += (
-                        f'<span style="position:absolute;top:-4px;right:-4px;font-size:8px;'
-                        f"background:#3b82f6;color:white;border-radius:50%;width:14px;height:14px;"
-                        f'display:flex;align-items:center;justify-content:center;">{comment_count}</span>'
-                    )
-                badge_html += "</span>"
                 comment_btn = ui.element("div").style("flex-shrink:0;")
                 comment_btn.on("click.stop", lambda _e, i=item: _show_comment_dialog(i, save_fn, refresh_fn))
                 with comment_btn:

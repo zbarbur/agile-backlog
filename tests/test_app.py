@@ -1,5 +1,5 @@
 # tests/test_app.py
-from agile_backlog.app import category_style, detect_current_sprint, filter_items, render_card_html
+from agile_backlog.app import category_style, comment_badge_html, detect_current_sprint, filter_items, render_card_html
 from agile_backlog.models import BacklogItem
 
 
@@ -209,6 +209,37 @@ class TestRenderCardHtml:
     def test_review_badges_not_shown_by_default(self):
         html = render_card_html(_item())
         assert "rgba(74,222,128,0.1)" not in html
+
+
+class TestCommentBadgeHtml:
+    def test_red_badge_for_unresolved_flagged(self):
+        notes = [
+            {"text": "fix this", "flagged": True, "resolved": False},
+            {"text": "looks good", "flagged": False, "resolved": False},
+        ]
+        html = comment_badge_html(notes)
+        assert "#f87171" in html  # red
+        assert ">1<" in html  # count of unresolved flagged
+
+    def test_blue_badge_when_no_unresolved_flagged(self):
+        notes = [
+            {"text": "fix this", "flagged": True, "resolved": True},
+            {"text": "looks good", "flagged": False, "resolved": False},
+        ]
+        html = comment_badge_html(notes)
+        assert "#3b82f6" in html  # blue
+        assert ">2<" in html  # total count
+
+    def test_no_badge_when_no_comments(self):
+        assert comment_badge_html([]) == ""
+
+    def test_resolved_flagged_not_counted(self):
+        notes = [
+            {"text": "old issue", "flagged": True, "resolved": True},
+        ]
+        html = comment_badge_html(notes)
+        assert "#3b82f6" in html  # blue, not red
+        assert ">1<" in html
 
 
 class TestDetectCurrentSprint:
