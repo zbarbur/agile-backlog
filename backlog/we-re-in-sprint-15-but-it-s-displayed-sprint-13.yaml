@@ -1,7 +1,7 @@
-title: need to be able to reopen an item
+title: we're in sprint 15, but it's displayed sprint 13
 status: backlog
-priority: P2
-category: feature
+priority: P1
+category: bug
 sprint_target: null
 created: 2026-03-22
 updated: 2026-03-22
@@ -10,7 +10,7 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'when something wasn''t done. need to the able to reopen it with a reason '
+description: the UI is not really updated with current sprint
 acceptance_criteria: []
 test_plan: []
 notes: ''

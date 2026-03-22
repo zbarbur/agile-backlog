@@ -1,12 +1,13 @@
 title: "YAML schema \u2014 convert to JSON Schema standard"
 status: backlog
 priority: P3
-category: tech-debt
+category: chore
 sprint_target: null
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
-tags: []
+tags:
+- tech-debt
 goal: ''
 complexity: null
 technical_specs: []
@@ -19,4 +20,4 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+comments: []

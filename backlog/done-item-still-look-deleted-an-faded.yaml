@@ -1,7 +1,7 @@
-title: need to be able to reopen an item
+title: done item still look deleted an faded
 status: backlog
-priority: P2
-category: feature
+priority: P1
+category: bug
 sprint_target: null
 created: 2026-03-22
 updated: 2026-03-22
@@ -10,7 +10,8 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'when something wasn''t done. need to the able to reopen it with a reason '
+description: although there was a bug about it , but it was closed without a fix,
+  how did that happen ?
 acceptance_criteria: []
 test_plan: []
 notes: ''

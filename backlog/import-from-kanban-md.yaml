@@ -4,9 +4,24 @@ priority: P3
 category: feature
 sprint_target: null
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
 tags: []
+goal: ''
+complexity: null
+technical_specs: []
 description: Parse existing KANBAN.md into YAML items as a migration tool.
 acceptance_criteria: []
+test_plan: []
 notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments:
+- text: maybe this should be more of a prompt for an AI agent to see the current kanban
+    and then decide on the migration strategy, it just need to aware of yaml structure
+    and conventions , best practices and take it from there
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
+  author: user

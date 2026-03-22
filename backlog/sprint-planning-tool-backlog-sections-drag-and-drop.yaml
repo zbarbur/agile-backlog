@@ -62,7 +62,7 @@ notes: "Spec: docs/superpowers/specs/2026-03-22-backlog-view-redesign.md \u2014 
 phase: spec
 design_reviewed: false
 code_reviewed: false
-agent_notes:
+comments:
 - text: Perform a research on on backlog grooming and sprint planning best practices
     and what are the best ways to visualize, consider also the automatic AI tagging
     capabilities and AI effort scoping capabilities to make this a strong feature

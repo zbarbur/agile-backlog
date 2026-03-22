@@ -1,12 +1,13 @@
 title: Claude Code plugin install
 status: done
 priority: P3
-category: infra
+category: chore
 sprint_target: 5
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-22
 depends_on: []
-tags: []
+tags:
+- infra
 goal: Enable easy plugin installation for Claude Code users
 complexity: S
 technical_specs:
@@ -17,5 +18,9 @@ description: Enable claude plugin add zbarbur/agile-backlog for installing the /
 acceptance_criteria:
 - Plugin can be installed via claude plugin add
 - Plugin files are complete and valid
+test_plan: []
 notes: ''
 phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -1,12 +1,13 @@
 title: "GitHub Actions publish workflow \u2014 auto-publish to PyPI on release"
 status: backlog
 priority: P3
-category: infra
+category: chore
 sprint_target: null
 created: 2026-03-22
 updated: 2026-03-22
 depends_on: []
-tags: []
+tags:
+- infra
 goal: ''
 complexity: null
 technical_specs: []
@@ -19,4 +20,4 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+comments: []

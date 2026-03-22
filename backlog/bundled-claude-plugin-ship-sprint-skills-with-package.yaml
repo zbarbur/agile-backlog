@@ -23,4 +23,4 @@ notes: "Must include: SessionStart hook or skill that runs 'agile-backlog flagge
 phase: null
 design_reviewed: false
 code_reviewed: false
-agent_notes: []
+comments: []
