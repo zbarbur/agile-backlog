@@ -1,0 +1,24 @@
+title: "Backlog section header missing \u2014 no label saying which section is visible"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "All three sections (Backlog, vNext, vFuture) lack visible header labels.\
+  \ The ui.expansion widget shows only a tiny collapse arrow \u2014 no text like 'BACKLOG\
+  \ (14)' or 'vNEXT \u2014 Sprint 16 (0)'. Empty sections just show 'No items.' with\
+  \ no indication of which section it is. Headers should be prominent with section\
+  \ name + item count, matching the spec layout."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

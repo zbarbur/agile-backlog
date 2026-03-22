@@ -1,10 +1,10 @@
 title: "Sprint planning tool \u2014 backlog sections + drag-and-drop"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 15
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: 'Replace backlog table with card-list planning view: 3 sections, side panel,

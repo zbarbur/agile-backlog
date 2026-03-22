@@ -1,0 +1,23 @@
+title: Move-to buttons should be at bottom of card, not inline
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "The vNext/vFuture move-to buttons are currently displayed inline next\
+  \ to the card title. They should be positioned at the bottom of the card row, as\
+  \ a subtle action bar \u2014 similar to card actions in Trello/Jira. This keeps\
+  \ the card content clean and the actions secondary."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

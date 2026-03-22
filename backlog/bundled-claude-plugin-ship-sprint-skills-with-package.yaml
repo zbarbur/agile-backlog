@@ -23,4 +23,10 @@ notes: "Must include: SessionStart hook or skill that runs 'agile-backlog flagge
 phase: null
 design_reviewed: false
 code_reviewed: false
-comments: []
+comments:
+- text: "need to consider more skills and the integration with the agentic agile template\
+    \ we originated from \nsomething to discuss more"
+  flagged: true
+  resolved: false
+  created: '2026-03-22'
+  author: user

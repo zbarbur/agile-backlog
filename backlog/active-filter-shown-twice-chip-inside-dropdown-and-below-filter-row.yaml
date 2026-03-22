@@ -1,0 +1,23 @@
+title: "Active filter shown twice \u2014 chip inside dropdown AND below filter row"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "When selecting a filter (e.g. Category: feature), the value appears\
+  \ both as a chip inside the dropdown widget AND as a separate removable chip below\
+  \ the filter row. Redundant \u2014 either show the chip row below OR the selection\
+  \ inside the dropdown, not both."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

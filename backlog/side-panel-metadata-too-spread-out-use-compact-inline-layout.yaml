@@ -1,0 +1,23 @@
+title: "Side panel metadata too spread out \u2014 use compact inline layout"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The side panel header wastes vertical space with one metadata field per
+  row (Status, Phase, Priority, Complexity, Category, Sprint). These should be arranged
+  as compact inline pills or a 2-3 column grid so the metadata block takes 2-3 rows
+  instead of 7, leaving more space for description, acceptance criteria, and comments.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

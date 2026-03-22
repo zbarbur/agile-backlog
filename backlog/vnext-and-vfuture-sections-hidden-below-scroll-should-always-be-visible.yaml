@@ -1,0 +1,23 @@
+title: "vNext and vFuture sections hidden below scroll \u2014 should always be visible"
+status: done
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: All three sections (Backlog/vNext/vFuture) use page-level scroll, so
+  vNext and vFuture are pushed below the fold. Sections should use a fixed layout
+  where all three are always visible, with inner scroll per section. Each section
+  gets its own scrollable area so the user can always see and interact with all three.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

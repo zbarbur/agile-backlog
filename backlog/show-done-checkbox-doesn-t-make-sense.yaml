@@ -1,10 +1,10 @@
 title: show done checkbox doesn't make sense
-status: doing
+status: done
 priority: P2
 category: bug
 sprint_target: 15
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: Replace show-done checkbox with archive-done feature that moves completed items

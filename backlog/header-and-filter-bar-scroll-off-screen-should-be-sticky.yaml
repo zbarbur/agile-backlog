@@ -1,0 +1,22 @@
+title: "Header and filter bar scroll off-screen \u2014 should be sticky"
+status: done
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-22
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The top header (agile-backlog title, Board/Backlog tabs, Add Item button)
+  and the filter row scroll away with the page. Both should be sticky/fixed at the
+  top so navigation and filters are always accessible.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
