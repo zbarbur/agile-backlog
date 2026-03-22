@@ -20,6 +20,35 @@ from agile_backlog.styles import (
     STATUSES,
 )
 
+# Sort option definitions: key -> (label, sort_key_fn, reverse)
+SORT_OPTIONS = {
+    "priority_desc": "Priority \u2193",
+    "priority_asc": "Priority \u2191",
+    "updated_desc": "Updated \u2193",
+    "updated_asc": "Updated \u2191",
+    "created_desc": "Created \u2193",
+    "title_asc": "Title A-Z",
+}
+
+_PRIORITY_RANK = {"P0": 0, "P1": 1, "P2": 2, "P3": 3, "P4": 4}
+
+
+def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
+    """Sort items according to the chosen sort option."""
+    if sort_key == "priority_desc":
+        return sorted(items, key=lambda i: _PRIORITY_RANK.get(i.priority, 99))
+    if sort_key == "priority_asc":
+        return sorted(items, key=lambda i: _PRIORITY_RANK.get(i.priority, 99), reverse=True)
+    if sort_key == "updated_desc":
+        return sorted(items, key=lambda i: i.updated, reverse=True)
+    if sort_key == "updated_asc":
+        return sorted(items, key=lambda i: i.updated)
+    if sort_key == "created_desc":
+        return sorted(items, key=lambda i: i.created, reverse=True)
+    if sort_key == "title_asc":
+        return sorted(items, key=lambda i: i.title.lower())
+    return items
+
 
 @ui.page("/")
 def kanban_page():
@@ -33,21 +62,28 @@ def kanban_page():
     all_items = load_all()
     current_sprint = detect_current_sprint(all_items)
 
-    with ui.element("div").style("width:100%;padding:16px 24px;"):
-        # === Header Row 1 ===
-        with ui.element("div").style("display:flex;align-items:center;gap:12px;margin-bottom:12px;"):
+    # Outer column: header (flex-shrink:0), filter bar (flex-shrink:0), content (flex:1)
+    with ui.element("div").style("width:100%;height:100vh;display:flex;flex-direction:column;padding:0;"):
+        # === Header Row ===
+        with ui.element("div").style(
+            "flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #1e1e23;"
+        ):
             ui.html(
                 '<span style="font-size:16px;font-weight:700;color:#fafafa;'
                 "letter-spacing:-0.02em;font-family:'DM Sans',sans-serif;"
                 '">agile-backlog</span>'
             )
+
+            # Sprint badge container — visibility toggled by view mode
+            sprint_badge_el = ui.element("div")
             if current_sprint is not None:
-                ui.html(
-                    f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;"
-                    f"color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);"
-                    f'padding:2px 10px;border-radius:4px;letter-spacing:0.05em;">'
-                    f"SPRINT {current_sprint}</span>"
-                )
+                with sprint_badge_el:
+                    ui.html(
+                        f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;"
+                        f"color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);"
+                        f'padding:2px 10px;border-radius:4px;letter-spacing:0.05em;">'
+                        f"SPRINT {current_sprint}</span>"
+                    )
 
             ui.element("div").style("flex:1;")
 
@@ -64,9 +100,13 @@ def kanban_page():
                 if mode == "board":
                     board_btn_el.style("background:#fafafa;color:#09090b;")
                     backlog_btn_el.style("background:transparent;color:#71717a;")
+                    sprint_badge_el.style("display:block;")
+                    archive_toggle.style("display:block;font-size:11px;color:#71717a;")
                 else:
                     board_btn_el.style("background:transparent;color:#71717a;")
                     backlog_btn_el.style("background:#fafafa;color:#09090b;")
+                    sprint_badge_el.style("display:none;")
+                    archive_toggle.style("display:none;")
                 render_board.refresh()
 
             with toggle_container:
@@ -173,14 +213,14 @@ def kanban_page():
                 "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
             )
 
-            # Archive toggle
+            # Archive toggle — only visible in Board view
             archive_toggle = (
                 ui.checkbox("Show archived", value=False)
                 .classes("mc-done-check")
                 .style("font-size:11px;color:#71717a;")
             )
 
-        # === Filter Row 2 ===
+        # === Filter Bar ===
         priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
         categories = sorted({i.category for i in all_items})
         category_options = {c: c for c in categories}
@@ -196,52 +236,62 @@ def kanban_page():
         all_tags_filter = sorted({t for i in all_items for t in i.tags})
 
         with ui.element("div").style(
-            "display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid #1e1e23;"
-            "margin-bottom:4px;align-items:end;"
+            "flex-shrink:0;display:flex;flex-wrap:wrap;gap:8px;padding:8px 24px 10px;"
+            "border-bottom:1px solid #1e1e23;align-items:center;"
         ):
             priority_select = (
                 ui.select(label="Priority", options=priority_options, multiple=True, value=[])
                 .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("min-width:130px;")
+                .style("min-width:110px;max-width:160px;")
             )
             category_select = (
                 ui.select(label="Category", options=category_options, multiple=True, value=[])
                 .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("min-width:130px;")
+                .style("min-width:110px;max-width:160px;")
             )
             sprint_select = (
                 ui.select(label="Sprint", options=sprint_options, multiple=True, value=[])
                 .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("min-width:130px;")
+                .style("min-width:110px;max-width:160px;")
             )
             phase_select = (
                 ui.select(label="Phase", options=phase_options, value=None)
                 .props("dense outlined")
                 .classes("mc-select")
-                .style("width:130px;")
+                .style("min-width:100px;max-width:140px;")
             )
             tag_select = (
                 ui.select(label="Tags", options=all_tags_filter, multiple=True, value=[])
                 .props("dense outlined use-chips")
                 .classes("mc-select")
-                .style("min-width:130px;")
+                .style("min-width:110px;max-width:160px;")
             )
+
+            # Sort control
+            sort_select = (
+                ui.select(label="Sort", options=SORT_OPTIONS, value="priority_desc")
+                .props("dense outlined")
+                .classes("mc-select")
+                .style("min-width:110px;max-width:150px;")
+            )
+
             search_input = (
-                ui.input(placeholder="Search by title, description, tags...")
+                ui.input(placeholder="Search...")
                 .props("dense outlined")
                 .classes("mc-search")
-                .style("flex:1;min-height:32px;")
+                .style("flex:1;min-width:120px;min-height:32px;")
             )
 
-        # === Active Filter Chips ===
-        filter_chips_row = ui.row().classes("gap-1 flex-wrap").style("margin-bottom:10px;")
+            # Inline filter chips — rendered inside the filter bar
+            filter_chips_container = ui.element("div").style("display:flex;flex-wrap:wrap;gap:4px;align-items:center;")
 
-        def _refresh_chips():
-            filter_chips_row.clear()
-            with filter_chips_row:
+        def _render_inline_chips():
+            """Render removable filter chips inline in the filter bar."""
+            filter_chips_container.clear()
+            with filter_chips_container:
                 pvals = priority_select.value or []
                 for pv in pvals:
                     chip = ui.chip(f"Priority: {pv}", removable=True, color="blue-grey-9").classes("mc-filter-chip")
@@ -299,6 +349,9 @@ def kanban_page():
                         lambda _e: (search_input.set_value(""), render_board.refresh()),
                     )
 
+        # === Main Content Area ===
+        main_content = ui.element("div").style("flex:1;overflow:hidden;padding:8px 24px 16px;")
+
         # === Board ===
         def move_item(item: BacklogItem, target: str):
             item.status = target
@@ -311,7 +364,7 @@ def kanban_page():
 
         @ui.refreshable
         def render_board():
-            _refresh_chips()
+            _render_inline_chips()
             items = load_all()
 
             pf_list = priority_select.value or []
@@ -321,6 +374,7 @@ def kanban_page():
             tf_list = tag_select.value or []
             sq = search_input.value or ""
             show_archived = archive_toggle.value
+            active_sort = sort_select.value or "priority_desc"
 
             # Resolve "current" sprint value to actual sprint number
             resolved_sprints: list[int | str] = []
@@ -391,6 +445,11 @@ def kanban_page():
                     if q in i.title.lower() or q in i.description.lower() or any(q in t.lower() for t in i.tags)
                 ]
 
+            # Apply sorting
+            filtered_backlog = _sort_items(filtered_backlog, active_sort)
+            filtered_doing = _sort_items(filtered_doing, active_sort)
+            filtered_done = _sort_items(filtered_done, active_sort)
+
             columns_map = {
                 "backlog": filtered_backlog,
                 "doing": filtered_doing,
@@ -412,7 +471,7 @@ def kanban_page():
                 )
             else:
                 # --- Kanban board view ---
-                with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;"):
+                with ui.element("div").style("display:flex;gap:10px;align-items:flex-start;height:100%;"):
                     for col_status in STATUSES:
                         items_in_col = columns_map[col_status]
                         col_style, label_color = COLUMN_STYLES[col_status]
@@ -452,15 +511,17 @@ def kanban_page():
                             for card_item in items_in_col:
                                 _render_card(card_item, col_status, move_item, save_item, render_board.refresh)
 
-        priority_select.on_value_change(lambda _: render_board.refresh())
-        category_select.on_value_change(lambda _: render_board.refresh())
-        sprint_select.on_value_change(lambda _: render_board.refresh())
-        phase_select.on_value_change(lambda _: render_board.refresh())
-        tag_select.on_value_change(lambda _: render_board.refresh())
-        search_input.on_value_change(lambda _: render_board.refresh())
-        archive_toggle.on_value_change(lambda _: render_board.refresh())
+        with main_content:
+            priority_select.on_value_change(lambda _: render_board.refresh())
+            category_select.on_value_change(lambda _: render_board.refresh())
+            sprint_select.on_value_change(lambda _: render_board.refresh())
+            phase_select.on_value_change(lambda _: render_board.refresh())
+            tag_select.on_value_change(lambda _: render_board.refresh())
+            sort_select.on_value_change(lambda _: render_board.refresh())
+            search_input.on_value_change(lambda _: render_board.refresh())
+            archive_toggle.on_value_change(lambda _: render_board.refresh())
 
-        render_board()
+            render_board()
 
 
 def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = True):
