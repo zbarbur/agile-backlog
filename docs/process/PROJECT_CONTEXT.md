@@ -2,20 +2,20 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 15 Planning |
-| **Last Sync** | 2026-03-22 |
+| **Status** | Sprint 16 Planning |
+| **Last Sync** | 2026-03-23 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
 
 Single Python package with three interfaces:
 - **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, show, serve, note, flagged, set-sprint, resolve-note
-- **Web UI** (`src/agile_backlog/app.py`) — NiceGUI dark theme Kanban board with comments, tags, filters
+- **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view with click-to-edit, chat comments
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
 Data: YAML files in `backlog/`, config in `.agile-backlog.yaml`. Single source of truth.
 
-Key modules: `src/agile_backlog/models.py` (Pydantic), `src/agile_backlog/yaml_store.py` (persistence), `src/agile_backlog/tokens.py` (design), `src/agile_backlog/config.py` (sprint config).
+Key modules: `models.py` (Pydantic), `yaml_store.py` (persistence), `tokens.py` (design tokens), `config.py` (sprint config), `pure.py` (pure functions), `styles.py` (CSS), `components.py` (UI components).
 
 Package installable from git: `pip install git+https://github.com/zbarbur/agile-backlog.git`
 
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 117 |
+| **Tests** | 156 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -45,3 +45,4 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 12 | Comment UX + edit dialog + sprint target | 110 | #12 |
 | 13 | Comments resolve + tags + sprint config | 110 | #13 |
 | 14 | Package portability + backlog planning design | 117 | — |
+| 15 | Backlog view redesign Phase 1 + polish | 156 | #14 |

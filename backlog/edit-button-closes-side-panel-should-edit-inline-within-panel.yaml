@@ -2,7 +2,7 @@ title: "Edit button closes side panel \u2014 should edit inline within panel"
 status: done
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 15
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []

@@ -2,9 +2,9 @@ title: "Expand priority levels \u2014 add P0 (critical) and P4 (icebox)"
 status: done
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 15
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''

@@ -1,5 +1,5 @@
 title: "Sprint planning tool \u2014 backlog sections + drag-and-drop"
-status: done
+status: doing
 priority: P1
 category: feature
 sprint_target: 15
@@ -59,7 +59,7 @@ notes: "Spec: docs/superpowers/specs/2026-03-22-backlog-view-redesign.md \u2014 
   \ Phase 1 (card list, sections, side panel, chat comments, data model changes) and\
   \ Phase 2 (drag-and-drop, inline editing). Next step: write Phase 1 implementation\
   \ plan."
-phase: spec
+phase: build
 design_reviewed: false
 code_reviewed: false
 comments:

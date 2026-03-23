@@ -2,7 +2,7 @@ title: "Active filter shown twice \u2014 chip inside dropdown AND below filter r
 status: done
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 15
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
