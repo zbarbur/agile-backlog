@@ -1,12 +1,13 @@
 title: "Sprint-execute skill \u2014 automated task execution with specialist agents"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 17
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
 goal: Create /sprint-execute skill that dispatches subagents to implement sprint items
 complexity: L
 technical_specs:

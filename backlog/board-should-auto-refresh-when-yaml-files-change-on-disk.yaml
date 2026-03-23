@@ -1,19 +1,17 @@
-title: Sprint subcommands
+title: Board should auto-refresh when YAML files change on disk
 status: backlog
 priority: P3
 category: feature
-sprint_target: 3
-created: 2026-03-21
+sprint_target: null
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags:
-- cli
-- planning
+- ui
 goal: ''
 complexity: null
 technical_specs: []
-description: 'CLI subcommands: sprint show (current sprint items), sprint candidates
-  (items tagged for next sprint).'
+description: ''
 acceptance_criteria: []
 test_plan: []
 notes: ''

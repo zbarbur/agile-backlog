@@ -1,12 +1,14 @@
 title: "Slash command /check-comments \u2014 surface new flagged comments mid-session"
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 17
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
+- comments
 goal: Create /check-comments slash command to surface flagged comments mid-session
 complexity: S
 technical_specs:

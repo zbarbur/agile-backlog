@@ -1,12 +1,14 @@
 title: Add flagged comments check to sprint-start process
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 17
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
+- comments
 goal: Add flagged comments check as Step 0 in the sprint-start skill
 complexity: S
 technical_specs:

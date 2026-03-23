@@ -6,7 +6,9 @@ sprint_target: null
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- cli
+- data
 goal: ''
 complexity: null
 technical_specs: []

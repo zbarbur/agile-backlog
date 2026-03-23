@@ -1,12 +1,13 @@
 title: when adding a new backlog item , no option to target v.future
-status: doing
+status: done
 priority: P1
 category: bug
 sprint_target: 17
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- ui
 goal: Add v.future sprint target option to the add-item dialog in the web UI
 complexity: S
 technical_specs:

@@ -2,11 +2,12 @@ title: Descriptions look kind of messy, add markdown support
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 19
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- ui
 goal: ''
 complexity: null
 technical_specs: []

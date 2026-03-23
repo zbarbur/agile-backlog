@@ -1,9 +1,9 @@
-title: Sprint subcommands
+title: "CLI sprint status command \u2014 summary of current sprint items by phase"
 status: backlog
-priority: P3
+priority: P2
 category: feature
-sprint_target: 3
-created: 2026-03-21
+sprint_target: null
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags:
@@ -12,8 +12,7 @@ tags:
 goal: ''
 complexity: null
 technical_specs: []
-description: 'CLI subcommands: sprint show (current sprint items), sprint candidates
-  (items tagged for next sprint).'
+description: ''
 acceptance_criteria: []
 test_plan: []
 notes: ''

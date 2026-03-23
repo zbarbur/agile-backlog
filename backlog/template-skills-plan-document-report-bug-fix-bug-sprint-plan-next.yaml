@@ -1,12 +1,13 @@
 title: "Template skills \u2014 /plan, /document, /report-bug, /fix-bug, /sprint-plan-next"
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 17
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
 goal: 'Port process skills from agentic-agile-template: /plan, /document, /report-bug,
   /fix-bug, /sprint-plan-next'
 complexity: L

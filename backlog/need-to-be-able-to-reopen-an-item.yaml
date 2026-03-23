@@ -1,12 +1,14 @@
 title: need to be able to reopen an item
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 17
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- ui
+- planning
 goal: Allow reopening done items back to doing/backlog with a reason note
 complexity: S
 technical_specs:

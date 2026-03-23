@@ -1,12 +1,14 @@
 title: "Complete framework integration \u2014 verify full spec adoption"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 17
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
+- planning
 goal: "Audit and complete framework integration \u2014 verify all Phase 1 spec items\
   \ are adopted"
 complexity: M
