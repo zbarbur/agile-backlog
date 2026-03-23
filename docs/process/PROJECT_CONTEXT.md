@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 16 Planning |
+| **Status** | Sprint 17 Planning |
 | **Last Sync** | 2026-03-23 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
@@ -13,7 +13,7 @@ Single Python package with three interfaces:
 - **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view with click-to-edit, chat comments
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
-Data: YAML files in `backlog/`, config in `.agile-backlog.yaml`. Single source of truth.
+Data: YAML files in `backlog/`, config in `.claude/sprint-config.yaml`. Single source of truth.
 
 Key modules: `models.py` (Pydantic), `yaml_store.py` (persistence), `tokens.py` (design tokens), `config.py` (sprint config), `pure.py` (pure functions), `styles.py` (CSS), `components.py` (UI components).
 
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 156 |
+| **Tests** | 162 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -46,3 +46,4 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 13 | Comments resolve + tags + sprint config | 110 | #13 |
 | 14 | Package portability + backlog planning design | 117 | — |
 | 15 | Backlog view redesign Phase 1 + polish | 156 | #14 |
+| 16 | Sprint Planning Phase 2 + Framework Integration | 162 | — |

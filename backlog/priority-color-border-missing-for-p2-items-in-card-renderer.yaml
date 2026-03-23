@@ -1,0 +1,29 @@
+title: Priority color border missing for P2+ items in card renderer
+status: done
+priority: P2
+category: bug
+sprint_target: 16
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: Show priority-colored left border on all cards, not just P0/P1
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/pure.py line 56 \u2014 remove P0/P1 gate, always use pri_color[0]"
+description: render_card_html only shows left border color for P0/P1, sets transparent
+  for P2+. Should use priority color for all levels. One-line fix in pure.py line
+  56. Affects both board and backlog views.
+acceptance_criteria:
+- All priority levels (P0-P4) show their color on the left border
+- Board and backlog views both display the border correctly
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'tests/test_pure.py: test render_card_html includes border color for P2, P3, P4
+  items'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -529,8 +529,17 @@ def _render_backlog_list(
     list_container_ref: dict[str, object] = {"el": None}
     panel_container_ref: dict[str, object] = {"el": None}
 
+    # Keyboard navigation state
+    nav_state: dict[str, int | None] = {"index": None}
+    all_section_items = filtered_backlog + vnext_items + vfuture_items
+
     def _open_side_panel(item: BacklogItem):
         panel_state["selected_id"] = item.id
+        # Sync keyboard nav index
+        try:
+            nav_state["index"] = all_section_items.index(item)
+        except ValueError:
+            nav_state["index"] = None
         if list_container_ref["el"]:
             list_container_ref["el"].style("flex:6;min-width:0;")
         if panel_container_ref["el"]:
@@ -547,7 +556,34 @@ def _render_backlog_list(
             panel_container_ref["el"].style("display:none;")
             panel_container_ref["el"].clear()
 
-    ui.keyboard(on_key=lambda e: _close_side_panel() if e.key == "Escape" and not e.action.repeat else None)
+    def _handle_key(e):
+        if e.action.repeat:
+            return
+        if e.key == "Escape":
+            _close_side_panel()
+            nav_state["index"] = None
+            return
+        if e.key in ("ArrowDown", "ArrowUp") and all_section_items:
+            current = nav_state["index"]
+            if e.key == "ArrowDown":
+                if current is None:
+                    nav_state["index"] = 0
+                else:
+                    nav_state["index"] = min(current + 1, len(all_section_items) - 1)
+            elif e.key == "ArrowUp":
+                if current is None:
+                    nav_state["index"] = len(all_section_items) - 1
+                else:
+                    nav_state["index"] = max(current - 1, 0)
+            focused_item = all_section_items[nav_state["index"]]
+            _open_side_panel(focused_item)
+            # Scroll the focused item into view
+            ui.run_javascript(
+                "const s = document.querySelector('.mc-card-row.mc-selected');"
+                "if (s) s.scrollIntoView({block: 'nearest', behavior: 'smooth'});"
+            )
+
+    ui.keyboard(on_key=_handle_key)
 
     def _move_to_section(item: BacklogItem, target_sprint: int | None):
         item.sprint_target = target_sprint
@@ -615,6 +651,7 @@ def _render_backlog_list(
                 ui.element("div")
                 .classes(f"mc-card-row{selected_class}")
                 .style("position:relative;margin:2px 0;padding:0 4px;")
+                .props(f'draggable="true" data-item-id="{card_item.id}" data-section="{section}"')
             ):
                 # Card (clickable)
                 card_container = ui.element("div").style("cursor:pointer;")
@@ -700,6 +737,24 @@ def _render_backlog_list(
     vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
     vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
 
+    # Hidden drop handler — JS stores drop data in window._lastDrop, then clicks this element
+    next_sprint = (current_sprint or 0) + 1
+    future_sprint = (current_sprint or 0) + 2
+    drop_trigger = ui.element("div").props('id="mc-drop-trigger"').style("display:none;")
+
+    async def _handle_drop(_e):
+        detail = await ui.run_javascript("window._lastDrop || null")
+        if not detail:
+            return
+        item_id = detail.get("item_id")
+        sprint_target_str = detail.get("sprint_target")
+        sprint_target = None if sprint_target_str == "null" else int(sprint_target_str)
+        item = next((i for i in all_items if i.id == item_id), None)
+        if item:
+            _move_to_section(item, sprint_target)
+
+    drop_trigger.on("click", _handle_drop)
+
     # Two-column layout: list (left) + side panel (right)
     with ui.element("div").style("display:flex;gap:0;height:100%;"):
         # Left column: three vertically stacked sections
@@ -717,10 +772,17 @@ def _render_backlog_list(
             section_refs["backlog"]["outer"] = backlog_outer
             with backlog_outer:
                 _section_header_el(backlog_label, len(filtered_backlog), "#71717a", "backlog")
-                backlog_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                backlog_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props('data-section="backlog" data-sprint-target="null"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["backlog"]["content"] = backlog_content
                 with backlog_content:
                     _render_section_items(filtered_backlog, "backlog")
+
+            ui.html('<div class="mc-resize-handle"></div>')
 
             # --- vNEXT section ---
             vnext_outer = ui.element("div").style(
@@ -731,10 +793,17 @@ def _render_backlog_list(
             section_refs["vnext"]["outer"] = vnext_outer
             with vnext_outer:
                 _section_header_el(vnext_label, len(vnext_items), "#ca8a04", "vnext")
-                vnext_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                vnext_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props(f'data-section="vnext" data-sprint-target="{next_sprint}"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["vnext"]["content"] = vnext_content
                 with vnext_content:
                     _render_section_items(vnext_items, "vnext")
+
+            ui.html('<div class="mc-resize-handle"></div>')
 
             # --- vFUTURE section ---
             vfuture_outer = ui.element("div").style(
@@ -744,10 +813,82 @@ def _render_backlog_list(
             section_refs["vfuture"]["outer"] = vfuture_outer
             with vfuture_outer:
                 _section_header_el(vfuture_label, len(vfuture_items), "#22c55e", "vfuture")
-                vfuture_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                vfuture_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props(f'data-section="vfuture" data-sprint-target="{future_sprint}"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["vfuture"]["content"] = vfuture_content
                 with vfuture_content:
                     _render_section_items(vfuture_items, "vfuture")
+
+        # Inject drag-to-resize JS for section handles
+        _resize_js = """
+document.querySelectorAll('.mc-resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        // NiceGUI wraps each element in a container div, so we navigate via the wrapper
+        const wrapper = handle.parentElement;
+        const above = wrapper.previousElementSibling;
+        const below = wrapper.nextElementSibling;
+        if (!above || !below) return;
+        const startY = e.clientY;
+        const startAboveH = above.getBoundingClientRect().height;
+        const startBelowH = below.getBoundingClientRect().height;
+
+        function onMove(ev) {
+            const dy = ev.clientY - startY;
+            const newAbove = Math.max(44, startAboveH + dy);
+            const newBelow = Math.max(44, startBelowH - dy);
+            above.style.flex = '0 0 ' + newAbove + 'px';
+            below.style.flex = '0 0 ' + newBelow + 'px';
+        }
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+});
+"""
+        _drag_drop_js = """
+document.querySelectorAll('.mc-card-row[draggable]').forEach(row => {
+    row.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', row.getAttribute('data-item-id'));
+        e.dataTransfer.effectAllowed = 'move';
+        row.classList.add('mc-dragging');
+    });
+    row.addEventListener('dragend', function() {
+        row.classList.remove('mc-dragging');
+        document.querySelectorAll('.mc-drag-over').forEach(el => el.classList.remove('mc-drag-over'));
+    });
+});
+
+document.querySelectorAll('.mc-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        zone.classList.add('mc-drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('mc-drag-over');
+        }
+    });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('mc-drag-over');
+        const itemId = e.dataTransfer.getData('text/plain');
+        const sprintTarget = zone.getAttribute('data-sprint-target');
+        window._lastDrop = {item_id: itemId, sprint_target: sprintTarget};
+        document.getElementById('mc-drop-trigger').click();
+    });
+});
+"""
+        _all_js = _resize_js + "\n" + _drag_drop_js
+        ui.timer(0.1, lambda: ui.run_javascript(_all_js), once=True)
 
         # Right column: side panel (hidden by default)
         panel_container = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")

@@ -158,9 +158,17 @@ class TestRenderCardHtml:
         html = render_card_html(_item(priority="P1"))
         assert "border-left:2px solid #f87171" in html
 
-    def test_p2_no_left_border(self):
+    def test_p2_shows_yellow_border(self):
         html = render_card_html(_item(priority="P2"))
-        assert "border-left:2px solid transparent" in html
+        assert "border-left:2px solid #fbbf24" in html
+
+    def test_p3_shows_gray_border(self):
+        html = render_card_html(_item(priority="P3"))
+        assert "border-left:2px solid #6b7280" in html
+
+    def test_p4_shows_dark_gray_border(self):
+        html = render_card_html(_item(priority="P4"))
+        assert "border-left:2px solid #4b5563" in html
 
     def test_shows_tags(self):
         html = render_card_html(_item(tags=["ui", "planning"]))

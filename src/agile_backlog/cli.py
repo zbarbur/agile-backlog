@@ -355,7 +355,7 @@ def _pid_file() -> Path:
 
 
 def _kill_server() -> bool:
-    """Kill a running server if PID file exists. Returns True if a process was killed."""
+    """Kill a running server and its child processes. Returns True if a process was killed."""
     import signal
 
     pf = _pid_file()
@@ -364,10 +364,16 @@ def _kill_server() -> bool:
     pid = int(pf.read_text().strip())
     pf.unlink()
     try:
-        os.kill(pid, signal.SIGTERM)
+        # Kill the entire process group (parent + uvicorn workers)
+        os.killpg(os.getpgid(pid), signal.SIGTERM)
         return True
-    except ProcessLookupError:
-        return False
+    except (ProcessLookupError, PermissionError):
+        # Fallback: kill just the parent
+        try:
+            os.kill(pid, signal.SIGTERM)
+            return True
+        except ProcessLookupError:
+            return False
 
 
 @main.command()

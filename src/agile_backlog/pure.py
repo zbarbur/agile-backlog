@@ -53,7 +53,7 @@ def filter_items(
 def render_card_html(item: BacklogItem) -> str:
     """Render a unified two-line card row as HTML. Used by both board and backlog views."""
     pri_color = PRIORITY_COLORS.get(item.priority, ("#6b7280", "rgba(107,114,128,0.08)"))
-    bar_color = pri_color[0] if item.priority in ("P0", "P1") else "transparent"
+    bar_color = pri_color[0]
     cat_style = category_style(item.category)
     title_color = "#71717a" if item.priority in ("P3", "P4") else "#e4e4e7"
 

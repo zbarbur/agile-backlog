@@ -1,16 +1,17 @@
-title: Export to KANBAN.md
+title: "CLI bulk operations \u2014 accept multiple IDs and merge move+edit flags"
 status: backlog
 priority: P3
 category: feature
 sprint_target: null
-created: 2026-03-21
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: Generate KANBAN.md from YAML items for repos that still want markdown.
+description: 'Reduce CLI calls by: (1) accepting multiple item IDs in move/edit commands,
+  (2) adding --sprint to move command so move+edit can be one call'
 acceptance_criteria: []
 test_plan: []
 notes: ''

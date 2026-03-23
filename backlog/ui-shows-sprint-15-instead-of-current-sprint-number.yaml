@@ -1,0 +1,29 @@
+title: UI shows Sprint 15 instead of current sprint number
+status: done
+priority: P1
+category: bug
+sprint_target: 16
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: "Fix sprint number display \u2014 update config and ensure sprint skills manage\
+  \ it"
+complexity: S
+technical_specs:
+- "File: .agile-backlog.yaml \u2014 update current_sprint to 16"
+- "File: .claude/skills/sprint-start \u2014 add step to update current_sprint via\
+  \ CLI or config"
+description: ''
+acceptance_criteria:
+- UI shows Sprint 16 in vNext/vFuture headers
+- sprint-start skill updates .agile-backlog.yaml current_sprint
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'tests/test_pure.py: test detect_current_sprint reads config correctly'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []

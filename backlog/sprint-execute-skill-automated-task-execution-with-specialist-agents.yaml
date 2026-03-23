@@ -1,0 +1,22 @@
+title: "Sprint-execute skill \u2014 automated task execution with specialist agents"
+status: backlog
+priority: P1
+category: feature
+sprint_target: 17
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Phase 2: Create /sprint-execute skill that reads sprint items, dispatches
+  subagents with specialist prompts, runs CI after each task, marks items as review.
+  The big missing automation piece.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

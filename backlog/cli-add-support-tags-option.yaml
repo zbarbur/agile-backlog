@@ -1,16 +1,16 @@
-title: need to be able to reopen an item
+title: "CLI add \u2014 support --tags option"
 status: backlog
-priority: P2
+priority: P3
 category: feature
-sprint_target: 17
-created: 2026-03-22
+sprint_target: null
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'when something wasn''t done. need to the able to reopen it with a reason '
+description: ''
 acceptance_criteria: []
 test_plan: []
 notes: ''

@@ -1,0 +1,23 @@
+title: Add an option to import a kanban board from an existing project
+status: backlog
+priority: P2
+category: feature
+sprint_target: 18
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'When integrating with a project that used the previous kanban.md as
+  the source , I want to be able to  import the tasks to the new system , this is
+  something which better handled as a prompt, so the idea is to provide the right
+  prompt for it '
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

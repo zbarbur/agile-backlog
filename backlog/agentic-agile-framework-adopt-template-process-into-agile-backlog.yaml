@@ -1,21 +1,36 @@
 title: "Agentic Agile Framework \u2014 adopt template process into agile-backlog"
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 16
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: 'Phase 1: Create sprint-config.yaml foundation and refactor sprint-start/sprint-end
+  skills to be generic and config-driven'
+complexity: L
+technical_specs:
+- "File: .claude/sprint-config.yaml \u2014 project config with commands, docs paths,\
+  \ branch conventions"
+- "File: .claude/skills/sprint-start \u2014 refactor to read from sprint-config.yaml"
+- "File: .claude/skills/sprint-end \u2014 refactor to read from sprint-config.yaml"
+- "File: docs/process/DEFINITION_OF_DONE.md \u2014 adopt from template, genericize"
+- "File: docs/process/AGENTIC_AGILE_MANIFEST.md \u2014 adopt from template"
 description: 'Adopt process docs, generic sprint skills, and specialist agents from
   agentic-agile-template. Spec: docs/superpowers/specs/2026-03-23-agentic-agile-framework-integration.md'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- sprint-config.yaml schema defined and validated
+- sprint-start skill reads commands from sprint-config.yaml instead of hardcoded paths
+- sprint-end skill reads commands from sprint-config.yaml instead of hardcoded paths
+- sprint-config.yaml includes current_sprint field, replacing .agile-backlog.yaml
+- 'Process docs adopted: DEFINITION_OF_DONE.md, AGENTIC_AGILE_MANIFEST.md'
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'Manual: sprint-start reads config correctly, sprint-end reads config correctly'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
