@@ -36,7 +36,7 @@ notes: 'Research complete: Use file-based storage (backlog/images/{item-id}/), p
   via JavaScript Clipboard API + ui.run_javascript(), fallback ui.upload(). Add images:
   list[dict] field to model. ~7-9 hours to implement. See flagged comment for user
   context.'
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:
@@ -58,3 +58,4 @@ comments:
   resolved: true
   created: '2026-03-22'
   author: user
+images: []

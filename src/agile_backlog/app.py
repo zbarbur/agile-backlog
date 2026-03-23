@@ -1,7 +1,7 @@
 # src/app.py
 """NiceGUI Kanban board for agile-backlog — Mission Control dark theme."""
 
-from nicegui import ui
+from nicegui import app, ui
 
 from agile_backlog.components import (
     _render_backlog_list,
@@ -21,6 +21,7 @@ from agile_backlog.styles import (
     STATUSES,
 )
 from agile_backlog.tokens import PRIORITY_ORDER
+from agile_backlog.yaml_store import get_backlog_dir
 
 # Sort option definitions: key -> (label, sort_key_fn, reverse)
 SORT_OPTIONS = {
@@ -579,6 +580,16 @@ def kanban_page():
             archive_toggle.on_value_change(lambda _: render_board.refresh())
 
             render_board()
+
+
+def _setup_image_serving():
+    """Serve backlog/images/ as static files at /backlog-images/."""
+    images_dir = get_backlog_dir() / "images"
+    images_dir.mkdir(exist_ok=True)
+    app.add_static_files("/backlog-images", str(images_dir))
+
+
+_setup_image_serving()
 
 
 def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = True):
