@@ -1,0 +1,1 @@
+Run planning processes. Use the plan skill to analyze project scope, review roadmaps, balance sprint allocation, or create project charters. Modes: project, roadmap, sprint, scope [feature]. Arguments: $ARGUMENTS

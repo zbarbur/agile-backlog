@@ -29,7 +29,7 @@ test_plan:
 - 'Manual: verify CI runs after task completion and item phase updates'
 - 'Manual: verify failed CI blocks item from moving to review'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

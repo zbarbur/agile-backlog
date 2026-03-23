@@ -30,7 +30,7 @@ test_plan:
 - 'Manual: invoke each slash command and verify it produces expected output'
 - 'Manual: verify skills read from sprint-config.yaml correctly'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

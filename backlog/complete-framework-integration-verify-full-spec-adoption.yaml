@@ -30,7 +30,7 @@ test_plan:
 - 'Audit: compare spec Phase 1 items against current implementation'
 - 'Verify: all sprint-config.yaml command references resolve to working CLI commands'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

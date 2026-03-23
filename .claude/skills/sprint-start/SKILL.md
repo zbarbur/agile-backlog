@@ -13,7 +13,36 @@ You are initializing a new sprint. The user invoked `/sprint-start $ARGUMENTS`.
 
 If an argument is provided, use it as the sprint number. Otherwise, determine the next sprint number from the latest handover in `{docs.handover_dir}` or from MEMORY.md.
 
-## Step 1: Verify Clean Slate
+## Step 1: Check Flagged Comments
+
+Run the flagged comments check before any planning work:
+
+```bash
+{backlog_commands.flagged}
+```
+
+- [ ] Reviewed all flagged comments
+
+If flagged comments exist, present them to the user for review. The user must acknowledge each flagged comment (resolve, defer, or convert to backlog item) before proceeding to sprint planning.
+
+If no flagged comments, note "No flagged comments — proceeding to sprint planning."
+
+## Step 2: Review Previous Sprint Handover
+
+Check for the latest handover doc in `{docs.handover_dir}`:
+
+```bash
+ls -1t {docs.handover_dir}SPRINT*_HANDOVER.md | head -1
+```
+
+If a handover exists, read it and summarize:
+- Key decisions and lessons learned from the previous sprint
+- Recommendations for this sprint
+- Any known issues carried forward
+
+This context helps inform sprint scoping decisions.
+
+## Step 3: Verify Clean Slate
 
 ```bash
 git branch --show-current    # should be: main
@@ -33,7 +62,7 @@ gh run list --limit 1
 
 If CI is failing, diagnose and fix before proceeding.
 
-## Step 2: Bug Triage
+## Step 4: Bug Triage
 
 Check for open bugs:
 
@@ -43,7 +72,7 @@ Check for open bugs:
 
 If bugs exist, ask which to include in sprint scope.
 
-## Step 3: Select Sprint Scope
+## Step 5: Select Sprint Scope
 
 Show the backlog:
 
@@ -59,7 +88,7 @@ Ask the user:
 
 The user may also move items to "doing" via the board UI directly.
 
-## Step 4: Write Task Specs to YAML
+## Step 6: Write Task Specs to YAML
 
 For each selected item, use `{backlog_commands.edit}` to populate the task definition:
 
@@ -91,7 +120,7 @@ After speccing all items, update their phase to `spec`:
 {backlog_commands.move} <item-id> --status doing --phase plan
 ```
 
-## Step 5: Validate Completeness
+## Step 7: Validate Completeness
 
 For each sprint item, verify via `{backlog_commands.show} <item-id>`:
 - Has goal
@@ -104,7 +133,7 @@ For each sprint item, verify via `{backlog_commands.show} <item-id>`:
 
 Report any gaps and suggest fixes.
 
-## Step 6: Create Sprint Branch
+## Step 8: Create Sprint Branch
 
 ```bash
 git add backlog/
@@ -122,7 +151,7 @@ Move items to `build` phase as implementation begins:
 {backlog_commands.edit} <item-id> --phase build
 ```
 
-## Step 7: Confirm Ready
+## Step 9: Confirm Ready
 
 Present a summary:
 - Sprint number and theme

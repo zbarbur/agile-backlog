@@ -25,7 +25,7 @@ test_plan:
 - 'tests/test_components.py: test reopen button appears on done items only'
 - "tests/test_cli.py: verify move done\u2192doing preserves notes"
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

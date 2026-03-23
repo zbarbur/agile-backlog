@@ -24,7 +24,7 @@ test_plan:
 - 'Manual: run /sprint-start with flagged comments present, verify they surface'
 - 'Manual: run /sprint-start with no flagged comments, verify it proceeds'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

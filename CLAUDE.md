@@ -17,11 +17,13 @@ See `docs/superpowers/specs/2026-03-21-agile-backlog-tool-brief.md` for the full
 - Docstrings: module-level for purpose, not per-function boilerplate
 
 ### Commands
-- **Run tests:** `pytest tests/ -v`
-- **Lint:** `ruff check .`
-- **Format check:** `ruff format --check .`
-- **Full CI:** `ruff check . && ruff format --check . && pytest tests/ -v`
-- **Run Web UI:** `agile-backlog serve`
+
+Commands are defined in `.claude/sprint-config.yaml` — all skills read from there.
+
+- **Run tests:** `.venv/bin/pytest tests/ -v`
+- **Lint:** `.venv/bin/ruff check . && .venv/bin/ruff format --check .`
+- **Full CI:** `.venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest tests/ -v`
+- **Run Web UI:** `.venv/bin/agile-backlog serve`
 - **Run CLI:** `.venv/bin/agile-backlog` (venv not auto-activated in Claude Code sessions)
 
 ### Dependencies
@@ -44,7 +46,8 @@ See `docs/superpowers/specs/2026-03-21-agile-backlog-tool-brief.md` for the full
 | File | Purpose |
 |---|---|
 | `CLAUDE.md` | Project rules (this file) |
+| `.claude/sprint-config.yaml` | Sprint configuration — commands, paths, settings |
 | `.claude/MEMORY.md` | Agent memory across sessions |
+| `backlog/*.yaml` | Backlog items (single source of truth) |
 | `docs/process/PROJECT_CONTEXT.md` | Project snapshot |
-| `TODO.md` | Active sprint tasks |
-| `docs/process/KANBAN.md` | Backlog |
+| `docs/process/DEFINITION_OF_DONE.md` | Quality gates |

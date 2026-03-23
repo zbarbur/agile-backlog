@@ -100,12 +100,27 @@ Update `{docs.project_context}`:
 - Test count -> from pytest output
 - Sprint History table -> add current sprint
 
-### MEMORY.md
+### MEMORY.md — Audit & Update
 
-Update `.claude/MEMORY.md`:
-- Update sprint status
-- Add lessons learned
-- Add new patterns or conventions
+Run a structured memory audit, then update:
+
+**1. Staleness check** — read every memory file listed in MEMORY.md:
+- [ ] Project memories: does the sprint number match `current_sprint` in sprint-config.yaml?
+- [ ] Feedback memories: do they still apply? (check if referenced patterns/conventions still exist)
+- [ ] Reference memories: do linked resources still exist?
+- [ ] File references in memories: do the files/paths mentioned still exist?
+
+**2. Clean up:**
+- Remove or update any stale memories
+- Fix mismatched filenames (name should reflect content)
+- Delete duplicates
+
+**3. Add new content:**
+- Update sprint status memory with completed sprint summary
+- Ask user: "Any lessons learned, feedback, or patterns worth remembering?"
+- Save new feedback/project memories if the user provides any
+
+**4. Verify MEMORY.md index** matches actual files in the memory directory.
 
 ## Phase 4: Clean Slate
 

@@ -2,9 +2,9 @@ title: "CLI list \u2014 add Phase and Sprint columns to default table"
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 19
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''

@@ -159,6 +159,14 @@ def group_items_by_section(items: list[BacklogItem], current_sprint: int | None)
     return {"backlog": backlog, "vnext": vnext, "vfuture": vfuture}
 
 
+def apply_reopen(item: BacklogItem, reason: str) -> None:
+    """Apply reopen logic to a done item: add reason note, set status=doing, phase=build."""
+    item.notes = f"{item.notes}\n\n[Reopened {date.today().isoformat()}] {reason}".strip()
+    item.status = "doing"
+    item.phase = "build"
+    item.updated = date.today()
+
+
 def render_comment_html(comment: dict) -> str:
     """Render a single comment as an iMessage-style chat bubble."""
     author = comment.get("author", "agent")

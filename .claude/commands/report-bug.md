@@ -1,0 +1,1 @@
+Report a bug. Use the report-bug skill to gather details, create a structured backlog item, auto-tag with current sprint, and explore related code. Arguments: $ARGUMENTS

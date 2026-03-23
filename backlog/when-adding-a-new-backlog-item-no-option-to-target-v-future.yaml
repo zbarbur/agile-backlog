@@ -23,7 +23,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_app.py: test add dialog includes v.future option and sets correct sprint_target'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

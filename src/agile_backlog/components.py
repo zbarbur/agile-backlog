@@ -6,6 +6,7 @@ from nicegui import ui
 
 from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
+    apply_reopen,
     category_style,
     comment_thread_html,
     filter_items,
@@ -32,6 +33,43 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
     else:
         style += "text-transform:uppercase;"
     ui.html(f'<span style="{style}">{text}</span>')
+
+
+def _render_reopen_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
+    """Show a dialog prompting for a reason, then reopen the done item back to doing."""
+    reopen_dialog = ui.dialog().classes("mc-detail-dialog")
+    with (
+        reopen_dialog,
+        ui.card().style(
+            "background:#18181b;border:1px solid #27272a;color:#e4e4e7;"
+            "padding:20px;max-width:480px;width:480px;border-radius:8px;"
+        ),
+    ):
+        ui.html(
+            f'<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Reopen: {item.title}</div>'
+        )
+        reason_input = (
+            ui.textarea(placeholder="Why is this being reopened?")
+            .props("outlined autogrow rows=3")
+            .style("width:100%;font-size:12px;")
+        )
+        reopen_error = ui.label("").style("color:#f87171;font-size:11px;display:none;")
+
+        def _do_reopen():
+            reason = (reason_input.value or "").strip()
+            if not reason:
+                reopen_error.style("display:block;")
+                reopen_error.set_text("A reason is required to reopen an item.")
+                return
+            apply_reopen(item, reason)
+            save_fn(item)
+            reopen_dialog.close()
+            refresh_fn()
+
+        with ui.row().classes("gap-2 mt-3"):
+            ui.button("Reopen", on_click=_do_reopen).props("flat dense no-caps").style("color:#f59e0b;font-weight:600;")
+            ui.button("Cancel", on_click=reopen_dialog.close).props("flat dense no-caps").style("color:#a1a1aa;")
+    reopen_dialog.open()
 
 
 def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_fn=None, on_card_click=None) -> None:
@@ -67,6 +105,17 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
                     ).props("flat dense unelevated no-caps").style(
                         f"{move_btn_style}color:#52525b;background:transparent;"
                     )
+        else:
+            # Reopen button for done items
+            with ui.element("div").style("display:flex;gap:4px;padding:2px 10px 4px;"):
+
+                def _show_reopen_dialog(_e, i=item):
+                    _render_reopen_dialog(i, save_fn, refresh_fn)
+
+                ui.button(
+                    "\u21a9 Reopen",
+                    on_click=_show_reopen_dialog,
+                ).props("flat dense unelevated no-caps").style(f"{move_btn_style}color:#f59e0b;background:transparent;")
 
 
 def _render_side_panel_content(

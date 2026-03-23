@@ -26,7 +26,7 @@ test_plan:
 - 'Manual: add flagged comment via UI, run /check-comments, verify it appears'
 - 'Manual: resolve all flagged comments, run /check-comments, verify empty message'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
