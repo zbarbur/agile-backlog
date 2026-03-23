@@ -292,28 +292,43 @@ Use `bin/agents.sh import {name}` from the template to install agents into `.cla
 
 ### How Specialists Integrate with Sprint-Execute
 
+**Key principle:** Specialists enhance implementation only. Reviews use superpowers' own agents (independent reviewer is better than same-domain reviewer).
+
+**No conflict with superpowers:** Superpowers dispatches agents by type (`general-purpose`, `superpowers:code-reviewer`, etc.). Our specialists are prompt content, not agent types. They compose cleanly:
+
+| Stage | Agent type (superpowers) | Specialist prompt (ours) | Result |
+|-------|-------------------------|-------------------------|--------|
+| Implementation | `general-purpose` | Prepended (e.g., python-pro) | Subagent has domain expertise + task context |
+| Spec review | `general-purpose` | None | Clean spec compliance check |
+| Code review | `superpowers:code-reviewer` | None — but task context mentions specialist | Reviewer knows what domain patterns to verify |
+
 ```
 sprint-execute receives task:
-  1. Determine task domain from:
+  1. Determine specialist from:
      - Explicit "specialist" field in task spec (if set)
-     - File types being modified (.py → python-pro, .css → frontend-developer)
-     - Task category (bug → debugger, security → security-auditor)
-     - Fallback to specialist_defaults in sprint-config.md
+     - Category mapping from specialist_defaults in sprint-config.md
+     - Auto-detect from task description keywords
+     - Default to project's primary language specialist
 
   2. Load specialist prompt:
      - Read .claude/agents/{specialist}.md
 
-  3. Construct implementer prompt:
-     - Specialist system prompt (expertise, principles)
-     - Task description (from plan)
-     - Project context (from CLAUDE.md, sprint-config.md)
+  3. IMPLEMENTATION stage — specialist IS used:
+     - Construct prompt = specialist prompt + implementer prompt
+     - Dispatch via superpowers as `general-purpose` agent
+     - Subagent has: domain expertise + task spec + project context
 
-  4. Dispatch subagent with combined prompt
+  4. SPEC REVIEW stage — specialist NOT used:
+     - Superpowers dispatches its own spec reviewer
+     - Task context includes: "Implemented by {specialist} — verify domain patterns"
 
-  5. For code review stage:
-     - Use code-reviewer specialist
-     - For security-sensitive tasks, also use security-auditor
+  5. CODE REVIEW stage — specialist NOT used:
+     - Superpowers dispatches `superpowers:code-reviewer`
+     - Task context includes: "Implemented by {specialist} — check {domain-specific concerns}"
+     - For security-sensitive tasks, add to review context: "Pay extra attention to XSS, input validation, auth patterns"
 ```
+
+**Why reviews don't use specialists:** An independent reviewer catches assumptions that a same-domain specialist would share. The `python-pro` might implement something that looks correct to another Python expert but has an architectural flaw that a general reviewer catches. Separation of concerns between builder and reviewer.
 
 ### Specialist Selection Logic
 
