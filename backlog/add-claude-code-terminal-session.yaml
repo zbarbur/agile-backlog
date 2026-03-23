@@ -50,3 +50,9 @@ comments:
   resolved: false
   created: '2026-03-23'
   author: agent
+- text: would the terminal option can support getting the user attention when action
+    needed from clauede
+  flagged: true
+  resolved: false
+  created: '2026-03-23'
+  author: user

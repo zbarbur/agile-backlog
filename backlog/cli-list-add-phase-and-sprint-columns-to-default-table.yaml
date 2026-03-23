@@ -28,7 +28,7 @@ test_plan:
 - test_list_shows_phase_and_sprint_columns
 - test_list_empty_phase_shows_dash
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

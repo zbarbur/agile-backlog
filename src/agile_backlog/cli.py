@@ -84,10 +84,13 @@ def list_items(
         click.echo("No items found.")
         return
 
-    click.echo(f"{'ID':<30} {'Title':<30} {'Status':<10} {'Pri':<5} {'Category':<15}")
-    click.echo("-" * 90)
+    click.echo(f"{'ID':<30} {'Title':<30} {'Status':<10} {'Pri':<5} {'Category':<15} {'Phase':<10} {'Sprint':<7}")
+    click.echo("-" * 107)
     for item in items:
-        click.echo(f"{item.id:<30} {item.title:<30} {item.status:<10} {item.priority:<5} {item.category:<15}")
+        phase = item.phase or "-"
+        sprint = str(item.sprint_target) if item.sprint_target is not None else "-"
+        row = f"{item.id:<30} {item.title:<30} {item.status:<10} {item.priority:<5} {item.category:<15}"
+        click.echo(f"{row} {phase:<10} {sprint:<7}")
 
 
 @main.command()

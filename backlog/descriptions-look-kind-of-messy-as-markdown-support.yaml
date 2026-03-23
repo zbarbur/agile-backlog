@@ -26,7 +26,7 @@ test_plan:
 - test_edit_mode_shows_raw_text
 - test_no_xss_in_markdown_description
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:

@@ -233,7 +233,20 @@ def _render_side_panel_content(
             # 5. Divider
             ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
 
-            # 6. Description — click to edit
+            # 6. Goal — click to edit (markdown)
+            ui.html(f'<div style="{label_style}">Goal</div>')
+            goal_container = ui.element("div")
+            with goal_container:
+                _render_editable_textarea(
+                    item,
+                    "goal",
+                    item.goal,
+                    goal_container,
+                    _save_and_refresh,
+                    use_markdown=True,
+                )
+
+            # 7. Description — click to edit (markdown)
             ui.html(f'<div style="{label_style}">Description</div>')
             desc_container = ui.element("div")
             with desc_container:
@@ -246,7 +259,7 @@ def _render_side_panel_content(
                     use_markdown=True,
                 )
 
-            # 7. Acceptance Criteria — click to edit
+            # 8. Acceptance Criteria — click to edit
             ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
             ac_container = ui.element("div")
             with ac_container:
@@ -258,7 +271,7 @@ def _render_side_panel_content(
                     _save_and_refresh,
                 )
 
-            # 8. Technical Specs — click to edit
+            # 9. Technical Specs — click to edit
             ui.html(f'<div style="{label_style}">Technical Specs</div>')
             ts_container = ui.element("div")
             with ts_container:
@@ -270,10 +283,23 @@ def _render_side_panel_content(
                     _save_and_refresh,
                 )
 
-            # 9. Divider
+            # 10. Notes — click to edit (markdown)
+            ui.html(f'<div style="{label_style}">Notes</div>')
+            notes_container = ui.element("div")
+            with notes_container:
+                _render_editable_textarea(
+                    item,
+                    "notes",
+                    item.notes,
+                    notes_container,
+                    _save_and_refresh,
+                    use_markdown=True,
+                )
+
+            # 11. Divider
             ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
 
-            # 10. Comments thread
+            # 12. Comments thread
             ui.html(f'<div style="{label_style}">Comments</div>')
             if item.comments:
                 ui.html(comment_thread_html(item.comments))
