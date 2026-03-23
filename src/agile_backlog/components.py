@@ -652,16 +652,16 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                 label="Upload image",
             ).props("accept=image/* flat dense").style("max-width:200px;font-size:11px;")
 
-            # JavaScript paste handler
-            async def _handle_paste(e):
-                data_url = e.args
+            # Hidden trigger for paste — JS stores data URL in window._pastedImage, then clicks trigger
+            paste_trigger = ui.element("div").props('id="mc-paste-trigger"').style("display:none;")
+
+            async def _handle_paste(_e):
+                data_url = await ui.run_javascript("window._pastedImage || null")
                 if not data_url or not isinstance(data_url, str):
                     return
-                # Parse data URL: data:image/png;base64,...
                 if not data_url.startswith("data:image/"):
                     return
                 header, b64data = data_url.split(",", 1)
-                # Extract extension from mime type
                 mime = header.split(":")[1].split(";")[0]
                 ext_map = {"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp"}
                 ext = ext_map.get(mime, ".png")
@@ -678,12 +678,10 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                 item.images.append({"filename": fname, "created": str(date.today())})
                 save_and_refresh()
 
-            ui.on(
-                "paste_image",
-                _handle_paste,
-            )
-            ui.add_head_html("""
-<script>
+            paste_trigger.on("click", _handle_paste)
+
+            # JS paste listener — same pattern as drag-and-drop hidden trigger
+            _paste_js = """
 document.addEventListener('paste', function(e) {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -692,7 +690,9 @@ document.addEventListener('paste', function(e) {
             const blob = item.getAsFile();
             const reader = new FileReader();
             reader.onload = function() {
-                emitEvent('paste_image', reader.result);
+                window._pastedImage = reader.result;
+                const trigger = document.getElementById('mc-paste-trigger');
+                if (trigger) trigger.click();
             };
             reader.readAsDataURL(blob);
             e.preventDefault();
@@ -700,8 +700,8 @@ document.addEventListener('paste', function(e) {
         }
     }
 });
-</script>
-""")
+"""
+            ui.timer(0.1, lambda: ui.run_javascript(_paste_js), once=True)
 
     _refresh_images()
 
