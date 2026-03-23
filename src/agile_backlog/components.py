@@ -306,7 +306,7 @@ def _render_side_panel_content(
 
             # 11. Images section
             ui.html(f'<div style="{label_style}">Images</div>')
-            _render_images_section(item, _save_and_refresh)
+            _render_images_section(item, save_fn)
 
             # 12. Divider
             ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
@@ -590,8 +590,12 @@ def _get_images_dir(item_id: str) -> Path:
     return images_dir
 
 
-def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
+def _render_images_section(item: BacklogItem, save_fn) -> None:
     images_container = ui.element("div")
+
+    def _save_and_refresh_images():
+        save_fn(item)
+        _refresh_images()
 
     def _refresh_images():
         images_container.clear()
@@ -605,24 +609,39 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                             continue
                         with (
                             ui.element("div")
-                            .style("position:relative;width:80px;height:80px;")
+                            .style(
+                                "position:relative;width:120px;height:90px;overflow:hidden;"
+                                "border-radius:6px;border:1px solid #27272a;cursor:pointer;"
+                            )
                             .classes("mc-thumb-wrapper")
                         ):
-                            ui.image(str(img_path)).style(
-                                "width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #27272a;"
-                            )
+                            img_el = ui.image(str(img_path)).style("width:100%;height:100%;object-fit:cover;")
+
+                            # Click to view full-size in a dialog
+                            def _view_image(_e, p=str(img_path)):
+                                with (
+                                    ui.dialog() as dlg,
+                                    ui.card().style("background:#18181b;padding:8px;max-width:90vw;max-height:90vh;"),
+                                ):
+                                    ui.image(p).style("max-width:85vw;max-height:80vh;object-fit:contain;")
+                                    ui.button("Close", on_click=dlg.close).props("flat dense no-caps").style(
+                                        "color:#a1a1aa;margin-top:4px;"
+                                    )
+                                dlg.open()
+
+                            img_el.on("click", _view_image)
 
                             def _delete_image(_e, i=idx):
                                 item.images.pop(i)
-                                save_and_refresh()
+                                _save_and_refresh_images()
 
                             ui.button(
                                 "\u00d7",
                                 on_click=_delete_image,
                             ).props("flat dense no-caps").style(
-                                "position:absolute;top:0;right:0;min-width:18px;min-height:18px;"
-                                "padding:0;font-size:12px;color:#f87171;background:rgba(0,0,0,0.6);"
-                                "border-radius:0 4px 0 4px;line-height:1;"
+                                "position:absolute;top:2px;right:2px;min-width:20px;min-height:20px;"
+                                "padding:0;font-size:13px;color:#f87171;background:rgba(0,0,0,0.7);"
+                                "border-radius:4px;line-height:1;"
                             ).classes("mc-thumb-delete")
             else:
                 ui.html(
@@ -644,13 +663,15 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                     counter += 1
                 dest.write_bytes(content)
                 item.images.append({"filename": dest.name, "created": str(date.today())})
-                save_and_refresh()
+                _save_and_refresh_images()
 
             ui.upload(
                 on_upload=_handle_upload,
                 auto_upload=True,
-                label="Upload image",
-            ).props("accept=image/* flat dense").style("max-width:200px;font-size:11px;")
+                label="",
+            ).props('accept="image/*" flat dense color="grey-9"').style("max-width:140px;font-size:10px;").classes(
+                "mc-upload"
+            )
 
             # Hidden trigger for paste — JS stores data URL in window._pastedImage, then clicks trigger
             paste_trigger = ui.element("div").props('id="mc-paste-trigger"').style("display:none;")
@@ -676,7 +697,7 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                     dest = images_dir / fname
                 dest.write_bytes(img_bytes)
                 item.images.append({"filename": fname, "created": str(date.today())})
-                save_and_refresh()
+                _save_and_refresh_images()
 
             paste_trigger.on("click", _handle_paste)
 

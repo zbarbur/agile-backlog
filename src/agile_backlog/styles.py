@@ -240,6 +240,15 @@ body {
 }
 .mc-side-panel::-webkit-scrollbar { width: 4px; }
 .mc-side-panel::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
+/* Image upload widget */
+.mc-upload .q-uploader__header { display: none !important; }
+.mc-upload .q-uploader__list { display: none !important; }
+.mc-upload { background: #18181b !important; border: 1px dashed #27272a !important;
+    border-radius: 6px !important; min-height: 0 !important; }
+.mc-upload .q-btn { color: #71717a !important; font-size: 10px !important; }
+/* Thumbnail hover */
+.mc-thumb-wrapper .mc-thumb-delete { opacity: 0; transition: opacity 0.15s; }
+.mc-thumb-wrapper:hover .mc-thumb-delete { opacity: 1; }
 /* Markdown rendering in dark theme */
 .nicegui-markdown h1,
 .nicegui-markdown h2,
