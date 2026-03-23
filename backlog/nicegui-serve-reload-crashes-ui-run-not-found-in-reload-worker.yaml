@@ -1,0 +1,25 @@
+title: "NiceGUI serve --reload crashes \u2014 ui.run not found in reload worker"
+status: doing
+priority: P2
+category: bug
+sprint_target: 18
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- ui
+goal: ''
+complexity: null
+technical_specs: []
+description: When running agile-backlog serve (reload=True default), NiceGUI reload
+  worker re-imports app.py but cannot find ui.run() because it is called through Click
+  CLI, not the __mp_main__ guard. Works fine with --no-reload. Pre-existing bug, not
+  introduced in Sprint 18.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

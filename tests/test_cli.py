@@ -259,7 +259,7 @@ class TestServe:
         assert len(calls) == 1
         assert calls[0]["host"] == "127.0.0.1"
         assert calls[0]["port"] == 8501
-        assert calls[0]["reload"] is True
+        assert calls[0]["reload"] is False
 
 
 class TestJsonOutput:

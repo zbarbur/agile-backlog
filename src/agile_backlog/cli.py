@@ -382,8 +382,8 @@ def _kill_server() -> bool:
 @main.command()
 @click.option("--port", default=8501, type=int, help="Port number.")
 @click.option("--host", default="127.0.0.1", help="Host address.")
-@click.option("--no-reload", is_flag=True, help="Disable hot reload.")
-def serve(port: int, host: str, no_reload: bool):
+@click.option("--reload", is_flag=True, help="Enable hot reload (dev mode).")
+def serve(port: int, host: str, reload: bool):
     """Open the Kanban board in the browser."""
     import atexit
 
@@ -392,7 +392,7 @@ def serve(port: int, host: str, no_reload: bool):
     pf = _pid_file()
     pf.write_text(str(os.getpid()))
     atexit.register(lambda: pf.unlink(missing_ok=True))
-    run_app(host=host, port=port, reload=not no_reload)
+    run_app(host=host, port=port, reload=reload)
 
 
 @main.command()
@@ -407,10 +407,10 @@ def stop():
 @main.command()
 @click.option("--port", default=8501, type=int, help="Port number.")
 @click.option("--host", default="127.0.0.1", help="Host address.")
-@click.option("--no-reload", is_flag=True, help="Disable hot reload.")
+@click.option("--reload", is_flag=True, help="Enable hot reload (dev mode).")
 @click.pass_context
-def restart(ctx: click.Context, port: int, host: str, no_reload: bool):
+def restart(ctx: click.Context, port: int, host: str, reload: bool):
     """Restart the agile-backlog server."""
     _kill_server()
     click.echo("Restarting server...")
-    ctx.invoke(serve, port=port, host=host, no_reload=no_reload)
+    ctx.invoke(serve, port=port, host=host, reload=reload)
