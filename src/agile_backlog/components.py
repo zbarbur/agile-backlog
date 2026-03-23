@@ -600,14 +600,15 @@ def _render_images_section(item: BacklogItem, save_and_refresh) -> None:
                 with ui.element("div").style("display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;"):
                     for idx, img_entry in enumerate(item.images):
                         fname = img_entry.get("filename", "")
-                        escaped_fname = _html.escape(fname)
-                        img_url = f"/backlog-images/{_html.escape(item.id)}/{escaped_fname}"
+                        img_path = _get_images_dir(item.id) / fname
+                        if not img_path.exists():
+                            continue
                         with (
                             ui.element("div")
                             .style("position:relative;width:80px;height:80px;")
                             .classes("mc-thumb-wrapper")
                         ):
-                            ui.image(img_url).style(
+                            ui.image(str(img_path)).style(
                                 "width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #27272a;"
                             )
 
