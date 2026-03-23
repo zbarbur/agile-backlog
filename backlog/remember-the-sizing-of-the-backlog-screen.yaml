@@ -1,0 +1,21 @@
+title: remember the sizing of the backlog screen
+status: backlog
+priority: P2
+category: bug
+sprint_target: 18
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: the sizes of backlog/v.next/v.future are not retained when revisiting
+  the page
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

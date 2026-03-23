@@ -1,0 +1,22 @@
+title: "Systematic XSS prevention \u2014 html.escape helper or lint rule for ui.html\
+  \ calls"
+status: backlog
+priority: P2
+category: chore
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- ui
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

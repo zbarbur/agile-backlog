@@ -1,24 +1,31 @@
 title: "CLI documentation \u2014 command reference + quickstart guide"
-status: backlog
+status: doing
 priority: P2
 category: docs
-sprint_target: 19
+sprint_target: 18
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
 tags:
 - cli
-goal: ''
-complexity: null
-technical_specs: []
+goal: Create user-facing docs so new users can self-serve setup and usage
+complexity: M
+technical_specs:
+- "File: docs/CLI.md \u2014 new file with install, quickstart, command reference"
+- Extract help text from Click commands for accuracy
 description: 'Create user-facing documentation for the agile-backlog CLI. Include:
   install instructions (git + future PyPI), quickstart guide (init project, create
   first item, basic workflow), full command reference with examples. Can auto-generate
   from Click decorators.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- docs/CLI.md with install, quickstart, and full command reference
+- Examples for each command
+- All current CLI commands documented
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual review \u2014 verify all commands covered and examples work"
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

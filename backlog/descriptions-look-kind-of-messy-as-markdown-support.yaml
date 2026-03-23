@@ -1,27 +1,37 @@
 title: Descriptions look kind of messy, add markdown support
-status: backlog
+status: doing
 priority: P2
 category: feature
-sprint_target: 19
+sprint_target: 18
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: Render description fields as markdown in web UI for readable formatting
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 wire description fields to use_markdown=True"
+- "File: tests/ \u2014 test markdown rendering and XSS safety"
 description: I look at descriptions generated and the next look messy, it'll be better
   maybe to have build in markdown support, is this possible
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Descriptions render as markdown (headers, lists, code blocks)
+- Edit mode still shows raw text
+- "No XSS \u2014 markdown rendered safely via ui.markdown()"
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- test_description_renders_as_markdown
+- test_edit_mode_shows_raw_text
+- test_no_xss_in_markdown_description
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments:
 - text: Please research this
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-23'
   author: user
