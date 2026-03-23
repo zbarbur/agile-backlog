@@ -607,6 +607,12 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
                         img_path = _get_images_dir(item.id) / fname
                         if not img_path.exists():
                             continue
+                        # Read file as base64 data URL for reliable display
+                        import mimetypes
+
+                        mime_type = mimetypes.guess_type(str(img_path))[0] or "image/png"
+                        img_b64 = base64.b64encode(img_path.read_bytes()).decode()
+                        data_url = f"data:{mime_type};base64,{img_b64}"
                         with (
                             ui.element("div")
                             .style(
@@ -615,18 +621,20 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
                             )
                             .classes("mc-thumb-wrapper")
                         ):
-                            img_el = ui.image(str(img_path)).style("width:100%;height:100%;object-fit:cover;")
+                            img_el = ui.image(data_url).style("width:100%;height:100%;object-fit:cover;")
 
-                            # Click to view full-size in a dialog
-                            def _view_image(_e, p=str(img_path)):
-                                with (
-                                    ui.dialog() as dlg,
-                                    ui.card().style("background:#18181b;padding:8px;max-width:90vw;max-height:90vh;"),
-                                ):
-                                    ui.image(p).style("max-width:85vw;max-height:80vh;object-fit:contain;")
-                                    ui.button("Close", on_click=dlg.close).props("flat dense no-caps").style(
-                                        "color:#a1a1aa;margin-top:4px;"
-                                    )
+                            def _view_image(_e, src=data_url):
+                                with ui.dialog().props("maximized") as dlg:
+                                    with (
+                                        ui.card()
+                                        .style(
+                                            "background:rgba(0,0,0,0.95);width:100%;height:100%;"
+                                            "display:flex;align-items:center;justify-content:center;"
+                                            "cursor:pointer;"
+                                        )
+                                        .on("click", lambda: dlg.close())
+                                    ):
+                                        ui.image(src).style("max-width:90vw;max-height:90vh;object-fit:contain;")
                                 dlg.open()
 
                             img_el.on("click", _view_image)
@@ -646,85 +654,88 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
             else:
                 ui.html(
                     '<div style="font-size:11px;color:#52525b;font-style:italic;">No images yet. '
-                    "Paste (Ctrl+V) or upload.</div>"
+                    "Paste (Cmd+V) or upload.</div>"
                 )
 
-            def _handle_upload(e):
-                content = e.content.read()
-                fname = e.name
-                images_dir = _get_images_dir(item.id)
-                dest = images_dir / fname
-                # Avoid overwriting — add suffix if exists
-                counter = 1
-                while dest.exists():
-                    stem = Path(fname).stem
-                    suffix = Path(fname).suffix
-                    dest = images_dir / f"{stem}-{counter}{suffix}"
-                    counter += 1
-                dest.write_bytes(content)
-                item.images.append({"filename": dest.name, "created": str(date.today())})
-                _save_and_refresh_images()
-
-            ui.upload(
-                on_upload=_handle_upload,
-                auto_upload=True,
-                label="",
-            ).props('accept="image/*" flat dense color="grey-9"').style("max-width:140px;font-size:10px;").classes(
-                "mc-upload"
-            )
-
-            # Hidden trigger for paste — JS stores data URL in window._pastedImage, then clicks trigger
-            paste_trigger = ui.element("div").props('id="mc-paste-trigger"').style("display:none;")
-
-            async def _handle_paste(_e):
-                data_url = await ui.run_javascript("window._pastedImage || null")
-                if not data_url or not isinstance(data_url, str):
-                    return
-                if not data_url.startswith("data:image/"):
-                    return
-                header, b64data = data_url.split(",", 1)
-                mime = header.split(":")[1].split(";")[0]
-                ext_map = {"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp"}
-                ext = ext_map.get(mime, ".png")
-                img_bytes = base64.b64decode(b64data)
-                images_dir = _get_images_dir(item.id)
-                counter = len(item.images) + 1
-                fname = f"pasted-{counter}{ext}"
-                dest = images_dir / fname
-                while dest.exists():
-                    counter += 1
-                    fname = f"pasted-{counter}{ext}"
-                    dest = images_dir / fname
-                dest.write_bytes(img_bytes)
-                item.images.append({"filename": fname, "created": str(date.today())})
-                _save_and_refresh_images()
-
-            paste_trigger.on("click", _handle_paste)
-
-            # JS paste listener — same pattern as drag-and-drop hidden trigger
-            _paste_js = """
-document.addEventListener('paste', function(e) {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const item of items) {
-        if (item.type.startsWith('image/')) {
-            const blob = item.getAsFile();
-            const reader = new FileReader();
-            reader.onload = function() {
-                window._pastedImage = reader.result;
-                const trigger = document.getElementById('mc-paste-trigger');
-                if (trigger) trigger.click();
-            };
-            reader.readAsDataURL(blob);
-            e.preventDefault();
-            break;
-        }
-    }
-});
-"""
-            ui.timer(0.1, lambda: ui.run_javascript(_paste_js), once=True)
-
     _refresh_images()
+
+    # Upload widget — outside _refresh_images so it's only created once
+    def _handle_upload(e):
+        content = e.content.read()
+        fname = e.name
+        images_dir = _get_images_dir(item.id)
+        dest = images_dir / fname
+        counter = 1
+        while dest.exists():
+            stem = Path(fname).stem
+            suffix = Path(fname).suffix
+            dest = images_dir / f"{stem}-{counter}{suffix}"
+            counter += 1
+        dest.write_bytes(content)
+        item.images.append({"filename": dest.name, "created": str(date.today())})
+        _save_and_refresh_images()
+
+    ui.upload(
+        on_upload=_handle_upload,
+        auto_upload=True,
+        label="",
+    ).props('accept="image/*" flat dense color="grey-9"').style("max-width:140px;font-size:10px;").classes("mc-upload")
+
+    # Paste handler — registered once, not inside _refresh_images
+    paste_trigger = ui.element("div").props('id="mc-paste-trigger"').style("display:none;")
+
+    async def _handle_paste(_e):
+        data_url = await ui.run_javascript("window._pastedImage || null")
+        if not data_url or not isinstance(data_url, str):
+            return
+        # Clear immediately to prevent re-fires
+        await ui.run_javascript("window._pastedImage = null")
+        if not data_url.startswith("data:image/"):
+            return
+        header, b64data = data_url.split(",", 1)
+        mime = header.split(":")[1].split(";")[0]
+        ext_map = {"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp"}
+        ext = ext_map.get(mime, ".png")
+        img_bytes = base64.b64decode(b64data)
+        images_dir = _get_images_dir(item.id)
+        counter = len(item.images) + 1
+        fname = f"pasted-{counter}{ext}"
+        dest = images_dir / fname
+        while dest.exists():
+            counter += 1
+            fname = f"pasted-{counter}{ext}"
+            dest = images_dir / fname
+        dest.write_bytes(img_bytes)
+        item.images.append({"filename": fname, "created": str(date.today())})
+        _save_and_refresh_images()
+
+    paste_trigger.on("click", _handle_paste)
+
+    # JS paste listener — registered once via add_head_html (deduplicated by browser)
+    _paste_js = """
+if (!window._mcPasteListenerAdded) {
+    window._mcPasteListenerAdded = true;
+    document.addEventListener('paste', function(e) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function() {
+                    window._pastedImage = reader.result;
+                    const trigger = document.getElementById('mc-paste-trigger');
+                    if (trigger) trigger.click();
+                };
+                reader.readAsDataURL(blob);
+                e.preventDefault();
+                break;
+            }
+        }
+    });
+}
+"""
+    ui.timer(0.1, lambda: ui.run_javascript(_paste_js), once=True)
 
 
 def _render_backlog_list(
