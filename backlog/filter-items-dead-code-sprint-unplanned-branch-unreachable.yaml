@@ -1,0 +1,21 @@
+title: "filter_items dead code \u2014 sprint unplanned branch unreachable"
+status: backlog
+priority: P3
+category: bug
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: In pure.py filter_items, sprint parameter is typed int | None but compared
+  to string 'unplanned'. The branch is dead code. Either remove it or fix the type.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

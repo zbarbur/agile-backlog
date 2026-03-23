@@ -1,5 +1,5 @@
 title: need to be able to reopen an item
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 17
@@ -7,14 +7,25 @@ created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Allow reopening done items back to doing/backlog with a reason note
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 add Reopen button to done item cards"
+- "File: src/agile_backlog/app.py \u2014 add reopen handler with reason dialog"
+- "File: tests/test_components.py \u2014 test reopen button rendering and logic"
 description: 'when something wasn''t done. need to the able to reopen it with a reason '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Done items show a Reopen button in the web UI card
+- Reopening prompts for a reason and adds it as a note on the item
+- Reopened items move to doing status with phase set to build
+- CLI move from done to doing/backlog already works (verify)
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_components.py: test reopen button appears on done items only'
+- "tests/test_cli.py: verify move done\u2192doing preserves notes"
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

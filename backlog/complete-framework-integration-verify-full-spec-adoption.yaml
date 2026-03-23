@@ -1,5 +1,5 @@
 title: "Complete framework integration \u2014 verify full spec adoption"
-status: backlog
+status: doing
 priority: P1
 category: feature
 sprint_target: 17
@@ -7,17 +7,30 @@ created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Audit and complete framework integration \u2014 verify all Phase 1 spec items\
+  \ are adopted"
+complexity: M
+technical_specs:
+- "File: docs/superpowers/specs/2026-03-23-agentic-agile-framework-integration.md\
+  \ \u2014 read Phase 1 checklist"
+- "File: .claude/sprint-config.yaml \u2014 verify all referenced commands exist"
+- "File: docs/process/ \u2014 verify completeness of process docs"
 description: Phase 1 was done in Sprint 16 but adoption may be incomplete. Review
   docs/superpowers/specs/2026-03-23-agentic-agile-framework-integration.md and verify
   all Phase 1 items are fully adopted. Check for gaps in sprint-config.yaml usage,
   skill coverage, and process doc completeness.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- All Phase 1 items from framework integration spec are verified complete
+- sprint-config.yaml covers all command references used by skills
+- Process docs (DoD, Agentic Agile Manifest) are up to date
+- Gap report produced documenting any remaining Phase 1 items
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Audit: compare spec Phase 1 items against current implementation'
+- 'Verify: all sprint-config.yaml command references resolve to working CLI commands'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

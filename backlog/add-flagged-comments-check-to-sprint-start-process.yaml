@@ -1,5 +1,5 @@
 title: Add flagged comments check to sprint-start process
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 17
@@ -7,16 +7,24 @@ created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add flagged comments check as Step 0 in the sprint-start skill
+complexity: S
+technical_specs:
+- "File: .claude/skills/sprint-start/SKILL.md \u2014 add Step 0: Check Flagged Comments"
+- "File: .claude/sprint-config.yaml \u2014 verify flagged command is in backlog_commands"
 description: The sprint-start skill should check for flagged comments (agile-backlog
   flagged) as part of the sprint planning process. Agent should review and acknowledge
   flagged comments before scoping.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Sprint-start skill runs agile-backlog flagged before scoping
+- If flagged comments exist, they are presented to the user for review
+- User must acknowledge flagged comments before proceeding
+- Skill file follows existing sprint-config.yaml placeholder pattern
+test_plan:
+- 'Manual: run /sprint-start with flagged comments present, verify they surface'
+- 'Manual: run /sprint-start with no flagged comments, verify it proceeds'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -1,0 +1,23 @@
+title: set_current_sprint(None) writes literal None string when config file missing
+status: backlog
+priority: P3
+category: bug
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'config.py set_current_sprint(None) when sprint-config.yaml doesn''t
+  exist writes f''current_sprint: {sprint}'' which produces ''current_sprint: None''
+  (string). Next read returns string ''None'' not Python None. Path not currently
+  invoked but will break if used.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

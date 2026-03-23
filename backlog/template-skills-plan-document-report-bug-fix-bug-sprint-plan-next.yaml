@@ -1,5 +1,5 @@
 title: "Template skills \u2014 /plan, /document, /report-bug, /fix-bug, /sprint-plan-next"
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 17
@@ -7,16 +7,30 @@ created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: 'Port process skills from agentic-agile-template: /plan, /document, /report-bug,
+  /fix-bug, /sprint-plan-next'
+complexity: L
+technical_specs:
+- "File: .claude/skills/plan/SKILL.md \u2014 planning skill with multiple modes"
+- "File: .claude/skills/document/SKILL.md \u2014 documentation skill"
+- "File: .claude/skills/report-bug/SKILL.md \u2014 bug reporting skill"
+- "File: .claude/commands/ \u2014 5 new command files"
+- "File: .claude/sprint-config.yaml \u2014 add any new references"
 description: 'Phase 4: Adopt process skills from agentic-agile-template. /plan (4
   modes), /document (7 modes), /report-bug, /fix-bug, /sprint-plan-next. All read
   from sprint-config.yaml.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- All 5 template skills are created as skill files in .claude/skills/
+- Each skill reads commands from sprint-config.yaml
+- Corresponding slash commands created in .claude/commands/
+- /plan supports at least 2 modes (implementation plan, investigation plan)
+- /document supports at least 2 modes (code docs, process docs)
+- Skills follow existing sprint-start/sprint-end patterns
+test_plan:
+- 'Manual: invoke each slash command and verify it produces expected output'
+- 'Manual: verify skills read from sprint-config.yaml correctly'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []
