@@ -1,0 +1,47 @@
+# Project Sprint Configuration — read by all sprint skills
+# One file per project. Sprint skills read commands from here instead of hardcoding.
+
+project_name: agile-backlog
+language: python
+python_version: "3.11+"
+
+# Current sprint
+current_sprint: 16
+
+# Commands
+test_command: ".venv/bin/pytest tests/ -v"
+lint_command: ".venv/bin/ruff check . && .venv/bin/ruff format --check ."
+format_command: ".venv/bin/ruff format ."
+ci_command: ".venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest tests/ -v"
+
+# Backlog tool
+backlog_tool: agile-backlog
+backlog_commands:
+  list: ".venv/bin/agile-backlog list"
+  list_doing: ".venv/bin/agile-backlog list --status doing"
+  list_done: ".venv/bin/agile-backlog list --status done"
+  list_backlog: ".venv/bin/agile-backlog list --status backlog"
+  list_bugs: ".venv/bin/agile-backlog list --category bug --status backlog"
+  show: ".venv/bin/agile-backlog show {id}"
+  add: ".venv/bin/agile-backlog add \"{title}\" --category {category} --priority {priority}"
+  move: ".venv/bin/agile-backlog move {id} --status {status}"
+  edit: ".venv/bin/agile-backlog edit {id}"
+  flagged: ".venv/bin/agile-backlog flagged"
+
+# Documentation paths
+docs:
+  handover_dir: "docs/sprints/"
+  specs_dir: "docs/superpowers/specs/"
+  plans_dir: "docs/superpowers/plans/"
+  project_context: "docs/process/PROJECT_CONTEXT.md"
+  definition_of_done: "docs/process/DEFINITION_OF_DONE.md"
+
+# Branch conventions
+branch_pattern: "sprint{N}/main"
+commit_style: conventional
+
+# Sprint settings
+default_sprint_capacity:
+  small: 3-4
+  medium: 2-3
+  large: 1-2
