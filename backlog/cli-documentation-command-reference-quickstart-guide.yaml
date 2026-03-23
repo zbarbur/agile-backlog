@@ -25,7 +25,7 @@ acceptance_criteria:
 test_plan:
 - "Manual review \u2014 verify all commands covered and examples work"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
