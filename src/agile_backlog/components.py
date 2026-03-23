@@ -615,6 +615,7 @@ def _render_backlog_list(
                 ui.element("div")
                 .classes(f"mc-card-row{selected_class}")
                 .style("position:relative;margin:2px 0;padding:0 4px;")
+                .props(f'draggable="true" data-item-id="{card_item.id}" data-section="{section}"')
             ):
                 # Card (clickable)
                 card_container = ui.element("div").style("cursor:pointer;")
@@ -700,6 +701,24 @@ def _render_backlog_list(
     vnext_label = f"vNEXT \u2014 Sprint {(current_sprint or 0) + 1}"
     vfuture_label = f"vFUTURE \u2014 Sprint {(current_sprint or 0) + 2}+"
 
+    # Hidden drop handler — JS stores drop data in window._lastDrop, then clicks this element
+    next_sprint = (current_sprint or 0) + 1
+    future_sprint = (current_sprint or 0) + 2
+    drop_trigger = ui.element("div").props('id="mc-drop-trigger"').style("display:none;")
+
+    async def _handle_drop(_e):
+        detail = await ui.run_javascript("window._lastDrop || null")
+        if not detail:
+            return
+        item_id = detail.get("item_id")
+        sprint_target_str = detail.get("sprint_target")
+        sprint_target = None if sprint_target_str == "null" else int(sprint_target_str)
+        item = next((i for i in all_items if i.id == item_id), None)
+        if item:
+            _move_to_section(item, sprint_target)
+
+    drop_trigger.on("click", _handle_drop)
+
     # Two-column layout: list (left) + side panel (right)
     with ui.element("div").style("display:flex;gap:0;height:100%;"):
         # Left column: three vertically stacked sections
@@ -717,7 +736,12 @@ def _render_backlog_list(
             section_refs["backlog"]["outer"] = backlog_outer
             with backlog_outer:
                 _section_header_el(backlog_label, len(filtered_backlog), "#71717a", "backlog")
-                backlog_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                backlog_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props('data-section="backlog" data-sprint-target="null"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["backlog"]["content"] = backlog_content
                 with backlog_content:
                     _render_section_items(filtered_backlog, "backlog")
@@ -733,7 +757,12 @@ def _render_backlog_list(
             section_refs["vnext"]["outer"] = vnext_outer
             with vnext_outer:
                 _section_header_el(vnext_label, len(vnext_items), "#ca8a04", "vnext")
-                vnext_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                vnext_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props(f'data-section="vnext" data-sprint-target="{next_sprint}"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["vnext"]["content"] = vnext_content
                 with vnext_content:
                     _render_section_items(vnext_items, "vnext")
@@ -748,7 +777,12 @@ def _render_backlog_list(
             section_refs["vfuture"]["outer"] = vfuture_outer
             with vfuture_outer:
                 _section_header_el(vfuture_label, len(vfuture_items), "#22c55e", "vfuture")
-                vfuture_content = ui.element("div").style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                vfuture_content = (
+                    ui.element("div")
+                    .classes("mc-drop-zone")
+                    .props(f'data-section="vfuture" data-sprint-target="{future_sprint}"')
+                    .style("flex:1;overflow-y:auto;padding:0 4px 4px;")
+                )
                 section_refs["vfuture"]["content"] = vfuture_content
                 with vfuture_content:
                     _render_section_items(vfuture_items, "vfuture")
@@ -781,7 +815,42 @@ document.querySelectorAll('.mc-resize-handle').forEach(handle => {
     });
 });
 """
-        ui.timer(0.1, lambda: ui.run_javascript(_resize_js), once=True)
+        _drag_drop_js = """
+document.querySelectorAll('.mc-card-row[draggable]').forEach(row => {
+    row.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', row.getAttribute('data-item-id'));
+        e.dataTransfer.effectAllowed = 'move';
+        row.classList.add('mc-dragging');
+    });
+    row.addEventListener('dragend', function() {
+        row.classList.remove('mc-dragging');
+        document.querySelectorAll('.mc-drag-over').forEach(el => el.classList.remove('mc-drag-over'));
+    });
+});
+
+document.querySelectorAll('.mc-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        zone.classList.add('mc-drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('mc-drag-over');
+        }
+    });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('mc-drag-over');
+        const itemId = e.dataTransfer.getData('text/plain');
+        const sprintTarget = zone.getAttribute('data-sprint-target');
+        window._lastDrop = {item_id: itemId, sprint_target: sprintTarget};
+        document.getElementById('mc-drop-trigger').click();
+    });
+});
+"""
+        _all_js = _resize_js + "\n" + _drag_drop_js
+        ui.timer(0.1, lambda: ui.run_javascript(_all_js), once=True)
 
         # Right column: side panel (hidden by default)
         panel_container = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")
