@@ -1,7 +1,9 @@
 """NiceGUI UI components for agile-backlog."""
 
+import base64
 import html as _html
 from datetime import date
+from pathlib import Path
 
 from nicegui import ui
 
@@ -16,6 +18,7 @@ from agile_backlog.pure import (
     render_card_html,
 )
 from agile_backlog.tokens import PRIORITY_COLORS
+from agile_backlog.yaml_store import get_backlog_dir
 
 
 def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = False, outlined: bool = False) -> None:
@@ -86,7 +89,12 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         "border-radius:3px;min-height:0;height:20px;"
     )
 
-    with ui.element("div").style("margin:2px 0;"):
+    with (
+        ui.element("div")
+        .classes("mc-board-card")
+        .style("margin:2px 0;")
+        .props(f'draggable="true" data-item-id="{item.id}" data-status="{status}"')
+    ):
         # Card (clickable)
         card_container = ui.element("div").style("cursor:pointer;")
         if on_card_click:
@@ -233,7 +241,20 @@ def _render_side_panel_content(
             # 5. Divider
             ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
 
-            # 6. Description — click to edit
+            # 6. Goal — click to edit (markdown)
+            ui.html(f'<div style="{label_style}">Goal</div>')
+            goal_container = ui.element("div")
+            with goal_container:
+                _render_editable_textarea(
+                    item,
+                    "goal",
+                    item.goal,
+                    goal_container,
+                    _save_and_refresh,
+                    use_markdown=True,
+                )
+
+            # 7. Description — click to edit (markdown)
             ui.html(f'<div style="{label_style}">Description</div>')
             desc_container = ui.element("div")
             with desc_container:
@@ -246,7 +267,7 @@ def _render_side_panel_content(
                     use_markdown=True,
                 )
 
-            # 7. Acceptance Criteria — click to edit
+            # 8. Acceptance Criteria — click to edit
             ui.html(f'<div style="{label_style}">Acceptance Criteria</div>')
             ac_container = ui.element("div")
             with ac_container:
@@ -258,7 +279,7 @@ def _render_side_panel_content(
                     _save_and_refresh,
                 )
 
-            # 8. Technical Specs — click to edit
+            # 9. Technical Specs — click to edit
             ui.html(f'<div style="{label_style}">Technical Specs</div>')
             ts_container = ui.element("div")
             with ts_container:
@@ -270,10 +291,27 @@ def _render_side_panel_content(
                     _save_and_refresh,
                 )
 
-            # 9. Divider
+            # 10. Notes — click to edit (markdown)
+            ui.html(f'<div style="{label_style}">Notes</div>')
+            notes_container = ui.element("div")
+            with notes_container:
+                _render_editable_textarea(
+                    item,
+                    "notes",
+                    item.notes,
+                    notes_container,
+                    _save_and_refresh,
+                    use_markdown=True,
+                )
+
+            # 11. Images section
+            ui.html(f'<div style="{label_style}">Images</div>')
+            _render_images_section(item, save_fn)
+
+            # 12. Divider
             ui.html('<div style="border-top:1px solid #1e1e23;margin:10px 0;"></div>')
 
-            # 10. Comments thread
+            # 13. Comments thread
             ui.html(f'<div style="{label_style}">Comments</div>')
             if item.comments:
                 ui.html(comment_thread_html(item.comments))
@@ -544,6 +582,160 @@ def _render_editable_list_field(
                 )
 
     _show_display()
+
+
+def _get_images_dir(item_id: str) -> Path:
+    images_dir = get_backlog_dir() / "images" / item_id
+    images_dir.mkdir(parents=True, exist_ok=True)
+    return images_dir
+
+
+def _render_images_section(item: BacklogItem, save_fn) -> None:
+    images_container = ui.element("div")
+
+    def _save_and_refresh_images():
+        save_fn(item)
+        _refresh_images()
+
+    def _refresh_images():
+        images_container.clear()
+        with images_container:
+            if item.images:
+                with ui.element("div").style("display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;"):
+                    for idx, img_entry in enumerate(item.images):
+                        fname = img_entry.get("filename", "")
+                        img_path = _get_images_dir(item.id) / fname
+                        if not img_path.exists():
+                            continue
+                        # Read file as base64 data URL for reliable display
+                        import mimetypes
+
+                        mime_type = mimetypes.guess_type(str(img_path))[0] or "image/png"
+                        img_b64 = base64.b64encode(img_path.read_bytes()).decode()
+                        data_url = f"data:{mime_type};base64,{img_b64}"
+                        with (
+                            ui.element("div")
+                            .style(
+                                "position:relative;width:120px;height:90px;overflow:hidden;"
+                                "border-radius:6px;border:1px solid #27272a;cursor:pointer;"
+                            )
+                            .classes("mc-thumb-wrapper")
+                        ):
+                            img_el = ui.image(data_url).style("width:100%;height:100%;object-fit:cover;")
+
+                            def _view_image(_e, src=data_url):
+                                with ui.dialog().props("maximized") as dlg:
+                                    with (
+                                        ui.card()
+                                        .style(
+                                            "background:rgba(0,0,0,0.95);width:100%;height:100%;"
+                                            "display:flex;align-items:center;justify-content:center;"
+                                            "cursor:pointer;"
+                                        )
+                                        .on("click", lambda: dlg.close())
+                                    ):
+                                        ui.image(src).style("max-width:90vw;max-height:90vh;object-fit:contain;")
+                                dlg.open()
+
+                            img_el.on("click", _view_image)
+
+                            def _delete_image(_e, i=idx):
+                                item.images.pop(i)
+                                _save_and_refresh_images()
+
+                            ui.button(
+                                "\u00d7",
+                                on_click=_delete_image,
+                            ).props("flat dense no-caps").style(
+                                "position:absolute;top:2px;right:2px;min-width:20px;min-height:20px;"
+                                "padding:0;font-size:13px;color:#f87171;background:rgba(0,0,0,0.7);"
+                                "border-radius:4px;line-height:1;"
+                            ).classes("mc-thumb-delete")
+            else:
+                ui.html(
+                    '<div style="font-size:11px;color:#52525b;font-style:italic;">No images yet. '
+                    "Paste (Cmd+V) or upload.</div>"
+                )
+
+    _refresh_images()
+
+    # Upload widget — outside _refresh_images so it's only created once
+    def _handle_upload(e):
+        content = e.content.read()
+        fname = e.name
+        images_dir = _get_images_dir(item.id)
+        dest = images_dir / fname
+        counter = 1
+        while dest.exists():
+            stem = Path(fname).stem
+            suffix = Path(fname).suffix
+            dest = images_dir / f"{stem}-{counter}{suffix}"
+            counter += 1
+        dest.write_bytes(content)
+        item.images.append({"filename": dest.name, "created": str(date.today())})
+        _save_and_refresh_images()
+
+    ui.upload(
+        on_upload=_handle_upload,
+        auto_upload=True,
+        label="",
+    ).props('accept="image/*" flat dense color="grey-9"').style("max-width:140px;font-size:10px;").classes("mc-upload")
+
+    # Paste handler — registered once, not inside _refresh_images
+    paste_trigger = ui.element("div").props('id="mc-paste-trigger"').style("display:none;")
+
+    async def _handle_paste(_e):
+        data_url = await ui.run_javascript("window._pastedImage || null")
+        if not data_url or not isinstance(data_url, str):
+            return
+        # Clear immediately to prevent re-fires
+        await ui.run_javascript("window._pastedImage = null")
+        if not data_url.startswith("data:image/"):
+            return
+        header, b64data = data_url.split(",", 1)
+        mime = header.split(":")[1].split(";")[0]
+        ext_map = {"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp"}
+        ext = ext_map.get(mime, ".png")
+        img_bytes = base64.b64decode(b64data)
+        images_dir = _get_images_dir(item.id)
+        counter = len(item.images) + 1
+        fname = f"pasted-{counter}{ext}"
+        dest = images_dir / fname
+        while dest.exists():
+            counter += 1
+            fname = f"pasted-{counter}{ext}"
+            dest = images_dir / fname
+        dest.write_bytes(img_bytes)
+        item.images.append({"filename": fname, "created": str(date.today())})
+        _save_and_refresh_images()
+
+    paste_trigger.on("click", _handle_paste)
+
+    # JS paste listener — registered once via add_head_html (deduplicated by browser)
+    _paste_js = """
+if (!window._mcPasteListenerAdded) {
+    window._mcPasteListenerAdded = true;
+    document.addEventListener('paste', function(e) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function() {
+                    window._pastedImage = reader.result;
+                    const trigger = document.getElementById('mc-paste-trigger');
+                    if (trigger) trigger.click();
+                };
+                reader.readAsDataURL(blob);
+                e.preventDefault();
+                break;
+            }
+        }
+    });
+}
+"""
+    ui.timer(0.1, lambda: ui.run_javascript(_paste_js), once=True)
 
 
 def _render_backlog_list(

@@ -40,6 +40,7 @@ class BacklogItem(BaseModel):
     design_reviewed: bool = False
     code_reviewed: bool = False
     comments: list[dict] = Field(default_factory=list)
+    images: list[dict] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod

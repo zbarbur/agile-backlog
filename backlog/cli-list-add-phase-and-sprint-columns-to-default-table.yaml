@@ -1,23 +1,35 @@
 title: "CLI list \u2014 add Phase and Sprint columns to default table"
-status: backlog
+status: done
 priority: P2
 category: feature
-sprint_target: 19
+sprint_target: 18
 created: 2026-03-22
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - cli
-goal: ''
-complexity: null
-technical_specs: []
+goal: Show phase and sprint_target in default list output so sprint state is visible
+  at a glance
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py:87-90 \u2014 add Phase and Sprint columns to format\
+  \ string"
+- "File: tests/test_cli.py \u2014 add tests for new columns and dash fallback"
 description: The default list table only shows ID, Title, Status, Priority, Category.
   Add Phase and Sprint columns so sprint state is visible at a glance without running
   show on each item.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Phase and Sprint columns appear in table output
+- Empty values show dash (-)
+- JSON output unchanged
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- test_list_shows_phase_and_sprint_columns
+- test_list_empty_phase_shows_dash
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

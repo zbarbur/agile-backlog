@@ -1,22 +1,36 @@
 title: Drag-and-drop between columns
-status: backlog
+status: done
 priority: P2
 category: feature
-sprint_target: 19
+sprint_target: 18
 created: 2026-03-21
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: Move cards between Kanban columns via drag-and-drop, updating YAML status on
+  drop
+complexity: L
+technical_specs:
+- "File: src/agile_backlog/app.py or components.py \u2014 add SortableJS drag handlers\
+  \ via ui.run_javascript()"
+- "File: src/agile_backlog/pure.py \u2014 reuse existing move/status logic"
+- 'Dependency: SortableJS loaded via ui.add_head_html() or CDN'
 description: streamlit-sortables integration for moving cards between Kanban columns.
   Updates YAML status on drop.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Cards can be dragged between backlog/doing/done columns
+- Drop triggers YAML status update via existing move logic
+- Board reflects new state without full page reload
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- test_drag_triggers_status_change
+- test_yaml_persisted_after_drop
+- test_board_state_consistent_after_move
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

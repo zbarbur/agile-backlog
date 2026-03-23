@@ -1,17 +1,18 @@
-title: Export to KANBAN.md
+title: use markdown also for comments
 status: backlog
-priority: P1
+priority: P2
 category: feature
 sprint_target: null
-created: 2026-03-21
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags:
-- data
+tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: Generate KANBAN.md from YAML items for repos that still want markdown.
+description: 'the comment chat are also not that readable from what the agent responds
+
+  '
 acceptance_criteria: []
 test_plan: []
 notes: ''

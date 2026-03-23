@@ -4,7 +4,7 @@ priority: P2
 category: feature
 sprint_target: null
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''
@@ -21,6 +21,6 @@ code_reviewed: false
 comments:
 - text: this is is for us to talk about more
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-22'
   author: user

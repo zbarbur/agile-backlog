@@ -1,0 +1,25 @@
+title: Show sprint number on board cards
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-24
+updated: 2026-03-24
+depends_on: []
+tags:
+- ui
+goal: ''
+complexity: null
+technical_specs: []
+description: "Done cards (and all board cards) should display the sprint number. Currently\
+  \ the card shows title, priority, category, complexity, tags, and timestamp \u2014\
+  \ but not the sprint number. See screenshot: done column shows 6 Sprint 18 items\
+  \ but no sprint badge on any card."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

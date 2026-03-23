@@ -28,6 +28,6 @@ comments:
 - text: "need to consider more skills and the integration with the agentic agile template\
     \ we originated from \nsomething to discuss more"
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-22'
   author: user

@@ -1,0 +1,24 @@
+title: "Image paste in Add Item dialog \u2014 temp storage before save"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- ui
+goal: ''
+complexity: null
+technical_specs: []
+description: Allow pasting images when creating a new item. Use temp directory during
+  creation, move files to backlog/images/{item-id}/ on save. Currently images can
+  only be added after item exists.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

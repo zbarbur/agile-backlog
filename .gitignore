@@ -26,3 +26,6 @@ build/
 .env
 
 .agile-backlog.pid
+
+# Uploaded images
+backlog/images/

@@ -1,18 +1,17 @@
-title: "CLI sprint status command \u2014 summary of current sprint items by phase"
+title: remember the sizing of the backlog screen
 status: backlog
 priority: P2
-category: feature
+category: bug
 sprint_target: 19
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags:
-- cli
-- planning
+tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: ''
+description: the sizes of backlog/v.next/v.future are not retained when revisiting
+  the page
 acceptance_criteria: []
 test_plan: []
 notes: ''

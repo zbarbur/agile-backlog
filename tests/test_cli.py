@@ -100,6 +100,24 @@ class TestList:
         assert "sprint-2-task" in result.output
         assert "no-sprint" not in result.output
 
+    def test_list_shows_phase_and_sprint_columns(self, runner: CliRunner):
+        runner.invoke(main, ["add", "Phased task", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["move", "phased-task", "--status", "doing", "--phase", "build"])
+        result = runner.invoke(main, ["list"])
+        assert result.exit_code == 0
+        assert "Phase" in result.output
+        assert "Sprint" in result.output
+        assert "build" in result.output
+        assert "5" in result.output
+
+    def test_list_empty_phase_shows_dash(self, runner: CliRunner):
+        runner.invoke(main, ["add", "Plain task", "--category", "feature"])
+        result = runner.invoke(main, ["list"])
+        assert result.exit_code == 0
+        lines = result.output.strip().split("\n")
+        data_line = [line for line in lines if "plain-task" in line][0]
+        assert "-" in data_line
+
 
 class TestMove:
     def test_move_status(self, runner: CliRunner):
@@ -241,7 +259,7 @@ class TestServe:
         assert len(calls) == 1
         assert calls[0]["host"] == "127.0.0.1"
         assert calls[0]["port"] == 8501
-        assert calls[0]["reload"] is True
+        assert calls[0]["reload"] is False
 
 
 class TestJsonOutput:

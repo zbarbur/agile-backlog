@@ -4,7 +4,7 @@ priority: P2
 category: feature
 sprint_target: 13
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: "Dark theme styling for backlog table only \u2014 sections/planning deferred\
@@ -42,5 +42,5 @@ code_reviewed: false
 comments:
 - text: This may require a brainstorming session with the agent
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-22'

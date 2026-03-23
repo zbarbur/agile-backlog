@@ -1,35 +1,42 @@
 title: Paste image when creating/editing items
-status: backlog
+status: done
 priority: P3
 category: feature
-sprint_target: 19
+sprint_target: 18
 created: 2026-03-22
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - ui
-goal: "Research best approach for image pasting in backlog items \u2014 per flagged\
-  \ comment, focus on usability"
-complexity: S
+goal: Allow image paste/upload in backlog items for visual bug reports and design
+  feedback
+complexity: M
 technical_specs:
-- 'Research: NiceGUI file upload capabilities'
-- 'Research: browser clipboard paste API for images'
-- 'Design: storage in backlog/images/ referenced in YAML'
-- 'Output: recommendation in item notes or spec doc'
+- "File: src/agile_backlog/components.py \u2014 JS Clipboard API via ui.run_javascript()\
+  \ + ui.upload() fallback"
+- "File: src/agile_backlog/models.py \u2014 add images: list[dict] field to BacklogItem"
+- "File: src/agile_backlog/components.py \u2014 image display component in detail\
+  \ view"
+- "Directory: backlog/images/{item-id}/ \u2014 file storage location"
 description: Allow pasting or uploading screenshots/images when creating or editing
   backlog items. Useful for bug reports (paste screenshot of UI issue) and design
   feedback. Store images in backlog/images/ directory, reference in YAML.
 acceptance_criteria:
-- Research doc with approach recommendation
-- Covers clipboard paste API, file upload, storage strategy
-- Recommendation on NiceGUI ui.upload() vs clipboard API
+- Clipboard paste captures images in item editor
+- Fallback file upload via ui.upload() works
+- Images stored in backlog/images/{item-id}/
+- Images display in item detail view
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
 test_plan:
-- "No code \u2014 research output only for this sprint"
+- test_upload_stores_file_in_correct_directory
+- test_model_images_field
+- test_display_component_renders_images
 notes: 'Research complete: Use file-based storage (backlog/images/{item-id}/), paste
   via JavaScript Clipboard API + ui.run_javascript(), fallback ui.upload(). Add images:
   list[dict] field to model. ~7-9 hours to implement. See flagged comment for user
   context.'
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:
@@ -48,6 +55,7 @@ comments:
 - text: I want also to research after adding the images , what's the best way to display
     them, is there a way I can mark a specific place to focus on ?
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-22'
   author: user
+images: []

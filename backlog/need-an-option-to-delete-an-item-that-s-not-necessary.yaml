@@ -1,17 +1,16 @@
-title: Export to KANBAN.md
+title: need an option to delete an item that's not necessary
 status: backlog
-priority: P1
+priority: P2
 category: feature
 sprint_target: null
-created: 2026-03-21
+created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags:
-- data
+tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: Generate KANBAN.md from YAML items for repos that still want markdown.
+description: 'If I add just for testing '
 acceptance_criteria: []
 test_plan: []
 notes: ''
@@ -19,3 +18,4 @@ phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []
