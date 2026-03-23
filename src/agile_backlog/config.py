@@ -11,7 +11,20 @@ def _config_path() -> Path:
     return _git_root() / ".agile-backlog.yaml"
 
 
+def _sprint_config_path() -> Path:
+    from agile_backlog.yaml_store import _git_root
+
+    return _git_root() / ".claude" / "sprint-config.yaml"
+
+
 def get_current_sprint() -> int | None:
+    # Try sprint-config.yaml first (new canonical location)
+    sprint_config = _sprint_config_path()
+    if sprint_config.exists():
+        data = yaml.safe_load(sprint_config.read_text()) or {}
+        if "current_sprint" in data:
+            return data["current_sprint"]
+    # Fallback to .agile-backlog.yaml (legacy)
     path = _config_path()
     if not path.exists():
         return None
@@ -20,7 +33,7 @@ def get_current_sprint() -> int | None:
 
 
 def set_current_sprint(sprint: int | None) -> None:
-    path = _config_path()
+    path = _sprint_config_path()
     data = {}
     if path.exists():
         data = yaml.safe_load(path.read_text()) or {}
