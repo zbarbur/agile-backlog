@@ -1,0 +1,22 @@
+title: "Template skills \u2014 /plan, /document, /report-bug, /fix-bug, /sprint-plan-next"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 17
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Phase 4: Adopt process skills from agentic-agile-template. /plan (4
+  modes), /document (7 modes), /report-bug, /fix-bug, /sprint-plan-next. All read
+  from sprint-config.yaml.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

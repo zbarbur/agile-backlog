@@ -828,8 +828,10 @@ def _render_backlog_list(
 document.querySelectorAll('.mc-resize-handle').forEach(handle => {
     handle.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        const above = handle.previousElementSibling;
-        const below = handle.nextElementSibling;
+        // NiceGUI wraps each element in a container div, so we navigate via the wrapper
+        const wrapper = handle.parentElement;
+        const above = wrapper.previousElementSibling;
+        const below = wrapper.nextElementSibling;
         if (!above || !below) return;
         const startY = e.clientY;
         const startAboveH = above.getBoundingClientRect().height;

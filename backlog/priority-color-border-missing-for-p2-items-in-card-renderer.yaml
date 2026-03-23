@@ -23,7 +23,7 @@ test_plan:
 - 'tests/test_pure.py: test render_card_html includes border color for P2, P3, P4
   items'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
