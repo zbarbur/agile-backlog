@@ -6,7 +6,7 @@
 
 ## Goal
 
-Replace the template's markdown-based backlog system (KANBAN.md + TODO.md) with agile-backlog, while preserving the template's proven process docs, specialist agents, and session recovery protocol.
+Replace the template's markdown-based backlog system (KANBAN.md + TODO.md) with agile-backlog, add automated sprint execution (`/sprint-execute`), and preserve the template's proven process docs, specialist agents, and session recovery protocol.
 
 ---
 
@@ -23,19 +23,33 @@ Replace the template's markdown-based backlog system (KANBAN.md + TODO.md) with 
 | `SPRINT_START_CHECKLIST.md` | Markdown checklist | Planning protocol |
 | `SPRINT_END_CHECKLIST.md` | Markdown checklist | Closure protocol |
 
-### How Items Flow Today
+### How Items Flow Today (template)
 
 ```
 KANBAN.md Backlog
-  ↓ (sprint-start: select scope)
+  ↓ (/sprint-start: select scope)
 KANBAN.md Doing + TODO.md task specs
-  ↓ (sprint execution: check off DoD)
+  ↓ (MANUAL execution: implement, check off DoD by hand)
 KANBAN.md Done + TODO.md marked complete
-  ↓ (sprint-end: archive)
+  ↓ (/sprint-end: archive)
 SPRINT{N}_HANDOVER.md
 ```
 
-**Pain points:**
+### How Items Will Flow (with agile-backlog + sprint-execute)
+
+```
+agile-backlog items (status: backlog)
+  ↓ (/sprint-start: select scope, write specs, tag sprint)
+agile-backlog items (status: doing, phase: plan → spec)
+  ↓ (/sprint-execute: brainstorm → plan → dispatch subagents → build → test → review)
+agile-backlog items (status: doing, phase: review)
+  ↓ (/sprint-end: verify DoD against code → move to done)
+agile-backlog items (status: done) + SPRINT{N}_HANDOVER.md
+```
+
+The key difference: **the template has no /sprint-execute**. Execution is entirely manual — the developer reads TODO.md, implements, and checks off boxes. We add automated execution with specialist agents, two-stage review, and TDD.
+
+**Pain points (current template):**
 - Manual markdown editing for every state change
 - No filtering, sorting, or querying
 - No web UI for visual planning
@@ -249,6 +263,42 @@ docs:
 4. SPRINT{N}_HANDOVER.md generated from `agile-backlog list --status done --sprint N` + git log
 5. PROJECT_CONTEXT.md updated automatically
 6. PR + merge
+
+### Sprint Execution (before vs after) — THE BIG ADDITION
+
+**Before (template):**
+No automation. The developer manually:
+1. Reads TODO.md task spec
+2. Implements code
+3. Writes tests
+4. Checks off DoD checkboxes by hand in TODO.md
+5. Commits with task reference
+
+There is no brainstorming, no spec review, no automated plan writing, no subagent dispatch, no two-stage review. The entire sprint is manual.
+
+**After (with /sprint-execute):**
+1. `/sprint-execute` reads all doing items from agile-backlog
+2. For each item:
+   a. Check if design spec exists — if not, invoke `superpowers:brainstorming` to create one
+   b. Review spec for completeness
+   c. Write implementation plan via `superpowers:writing-plans`
+   d. User approves plan (checkpoint)
+   e. Dispatch subagents via `superpowers:subagent-driven-development`:
+      - Select specialist from `.claude/agents/` based on task domain
+      - Prepend specialist prompt to implementer prompt
+      - Subagent implements with TDD (`superpowers:test-driven-development`)
+      - Spec compliance review (superpowers reviewer — independent of specialist)
+      - Code quality review (superpowers reviewer — independent of specialist)
+   f. Run CI after each task
+   g. Mark item `phase: review` when all AC implemented
+3. Report status: "N/M tasks complete, tests passing, ready for /sprint-end"
+
+**What this means for template users:**
+- They can say `/sprint-execute` and the entire sprint is built autonomously
+- Specialist agents provide domain expertise (python-pro, frontend-developer, security-auditor)
+- Two-stage review catches bugs before they accumulate
+- TDD ensures every feature has tests
+- The user reviews at the plan checkpoint and again at sprint-end (DoD verification)
 
 ### Bug Reporting (before vs after)
 
