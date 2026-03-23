@@ -158,6 +158,7 @@ def kanban_page():
                         if current_sprint is not None:
                             add_sprint_options[current_sprint] = f"Sprint {current_sprint} (current)"
                             add_sprint_options[current_sprint + 1] = f"Sprint {current_sprint + 1} (next)"
+                            add_sprint_options[current_sprint + 2] = f"Sprint {current_sprint + 2}+ (future)"
                         add_sprint = (
                             ui.select(
                                 label="Target",

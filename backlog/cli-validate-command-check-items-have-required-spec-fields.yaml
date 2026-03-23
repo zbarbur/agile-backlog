@@ -1,0 +1,22 @@
+title: "CLI validate command \u2014 check items have required spec fields"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- cli
+- planning
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

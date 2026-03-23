@@ -1,0 +1,27 @@
+title: Descriptions look kind of messy, add markdown support
+status: backlog
+priority: P2
+category: feature
+sprint_target: 19
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- ui
+goal: ''
+complexity: null
+technical_specs: []
+description: I look at descriptions generated and the next look messy, it'll be better
+  maybe to have build in markdown support, is this possible
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments:
+- text: Please research this
+  flagged: true
+  resolved: false
+  created: '2026-03-23'
+  author: user

@@ -1,0 +1,39 @@
+title: Add claude code terminal session
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- plugin
+goal: ''
+complexity: null
+technical_specs: []
+description: "research and recommend an approach to run the claude code terminal session\
+  \ with the browser in our apps, some directions are:\n\nTop GitHub Projects for\
+  \ Web-Based Claude Code\nThe following projects use xterm.js and WebSockets to provide\
+  \ a terminal experience in your browser: \nvultuk/claude-code-web: This is one of\
+  \ the most comprehensive interfaces. It spawns Claude Code processes using node-pty\
+  \ and offers real-time streaming, multi-session support, and a responsive design\
+  \ that works on mobile.\nQuick Start: You can run it instantly with npx claude-code-web.\n\
+  siteboon/claudecodeui: Also known as CloudCLI, this project provides a web UI/GUI\
+  \ specifically for managing Claude Code sessions and projects remotely.\nkamranahmedse/claude-run:\
+  \ This tool focuses on viewing and resuming existing Claude Code sessions in a clean,\
+  \ searchable web interface.\nQuick Start: Install via npm install -g claude-run\
+  \ and launch with the claude-run command.\nyxwucq/CCUI: A local web server interface\
+  \ built around git worktree, allowing you to run multiple Claude Code sessions in\
+  \ parallel from your browser. \nGitHub\nGitHub\n +4\n"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments:
+- text: let me know what you think about it
+  flagged: true
+  resolved: false
+  created: '2026-03-23'
+  author: user

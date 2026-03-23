@@ -1,24 +1,34 @@
 title: "Slash command /check-comments \u2014 surface new flagged comments mid-session"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 17
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
-tags: []
-goal: ''
-complexity: null
-technical_specs: []
+tags:
+- skills
+- comments
+goal: Create /check-comments slash command to surface flagged comments mid-session
+complexity: S
+technical_specs:
+- "File: .claude/commands/check-comments.md \u2014 new slash command"
+- "File: .claude/sprint-config.yaml \u2014 reference flagged command path"
 description: 'Add a /check-comments slash command that runs agile-backlog flagged
   and surfaces new unresolved flagged comments to the agent mid-session. Allows user
   to write a comment in the board UI and immediately get the agent''s attention without
   starting a new session. Future enhancement: PreToolUse hook that auto-checks on
   every tool use for near-real-time notification.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- /check-comments command runs agile-backlog flagged and shows results
+- Command works as a Claude Code slash command invocable mid-session
+- Output clearly shows item ID, comment text, and creation date
+- If no flagged comments, shows a clear 'no flagged comments' message
+test_plan:
+- 'Manual: add flagged comment via UI, run /check-comments, verify it appears'
+- 'Manual: resolve all flagged comments, run /check-comments, verify empty message'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

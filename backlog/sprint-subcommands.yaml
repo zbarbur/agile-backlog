@@ -4,10 +4,20 @@ priority: P3
 category: feature
 sprint_target: 3
 created: 2026-03-21
-updated: 2026-03-21
+updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- cli
+- planning
+goal: ''
+complexity: null
+technical_specs: []
 description: 'CLI subcommands: sprint show (current sprint items), sprint candidates
   (items tagged for next sprint).'
 acceptance_criteria: []
+test_plan: []
 notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

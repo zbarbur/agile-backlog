@@ -1,22 +1,36 @@
 title: "Sprint-execute skill \u2014 automated task execution with specialist agents"
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 17
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
-goal: ''
-complexity: null
-technical_specs: []
+tags:
+- skills
+goal: Create /sprint-execute skill that dispatches subagents to implement sprint items
+complexity: L
+technical_specs:
+- "File: .claude/skills/sprint-execute/SKILL.md \u2014 new skill file"
+- "File: .claude/commands/sprint-execute.md \u2014 new slash command"
+- "File: .claude/sprint-config.yaml \u2014 add any new command references needed"
 description: 'Phase 2: Create /sprint-execute skill that reads sprint items, dispatches
   subagents with specialist prompts, runs CI after each task, marks items as review.
   The big missing automation piece.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- /sprint-execute reads doing items and dispatches work via subagents
+- Each task runs in isolation with CI validation after completion
+- "Items move through phases: build \u2192 review as work progresses"
+- Failed CI blocks item progression and surfaces errors
+- Skill reads all commands from sprint-config.yaml
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: run /sprint-execute with 1 small doing item, verify subagent dispatch'
+- 'Manual: verify CI runs after task completion and item phase updates'
+- 'Manual: verify failed CI blocks item from moving to review'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

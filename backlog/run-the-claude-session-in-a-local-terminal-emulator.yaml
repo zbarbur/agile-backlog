@@ -1,0 +1,25 @@
+title: Run the claude session in a local terminal emulator
+status: backlog
+priority: P2
+category: feature
+sprint_target: 18
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- plugin
+goal: ''
+complexity: null
+technical_specs: []
+description: "Research how we can run the session within the browser , there are alternatives\
+  \ like \nvultuk/claude-code-web: This is a web-based interface for the Claude Code\
+  \ CLI that provides a terminal-like environment with real-time streaming and full\
+  \ interactivity. It uses xterm.js for terminal emulation and can be run with npx.\n\
+  \nlet's discuss it"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

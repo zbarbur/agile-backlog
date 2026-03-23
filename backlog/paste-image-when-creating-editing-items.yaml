@@ -2,11 +2,12 @@ title: Paste image when creating/editing items
 status: backlog
 priority: P3
 category: feature
-sprint_target: null
+sprint_target: 19
 created: 2026-03-22
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- ui
 goal: "Research best approach for image pasting in backlog items \u2014 per flagged\
   \ comment, focus on usability"
 complexity: S

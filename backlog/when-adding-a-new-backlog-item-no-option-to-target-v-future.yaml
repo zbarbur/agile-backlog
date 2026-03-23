@@ -1,0 +1,30 @@
+title: when adding a new backlog item , no option to target v.future
+status: done
+priority: P1
+category: bug
+sprint_target: 17
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags:
+- ui
+goal: Add v.future sprint target option to the add-item dialog in the web UI
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py lines 157-169 \u2014 add v.future option to add_sprint_options\
+  \ dict"
+- "File: tests/test_app.py \u2014 add test for v.future option in add dialog"
+description: 'only backlong, current, next are possible '
+acceptance_criteria:
+- 'Add dialog shows 4 options: Backlog, Current Sprint, Next Sprint, v.Future'
+- Selecting v.future sets sprint_target to current_sprint + 2
+- New item appears in vFUTURE section after creation
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_app.py: test add dialog includes v.future option and sets correct sprint_target'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []

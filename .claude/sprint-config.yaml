@@ -6,7 +6,7 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 16
+current_sprint: 17
 
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
@@ -45,3 +45,16 @@ default_sprint_capacity:
   small: 3-4
   medium: 2-3
   large: 1-2
+
+# Specialist defaults (maps task categories/domains to specialist agent prompts)
+specialist_defaults:
+  ui: frontend-developer
+  backend: python-pro
+  security: security-auditor
+  refactor: refactoring-specialist
+  test: test-automator
+  docs: documentation-engineer
+  design: ui-designer
+  cli: cli-developer
+  review: code-reviewer
+  debug: debugger

@@ -6,7 +6,8 @@ sprint_target: 18
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- skills
 goal: ''
 complexity: null
 technical_specs: []

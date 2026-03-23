@@ -4,9 +4,10 @@ priority: P3
 category: feature
 sprint_target: null
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- plugin
 goal: ''
 complexity: null
 technical_specs: []
@@ -19,3 +20,4 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
+comments: []

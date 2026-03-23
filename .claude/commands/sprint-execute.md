@@ -1,0 +1,1 @@
+Execute current sprint items. Reads doing items, dispatches subagents to implement each task, runs CI after each, and marks items as review phase. Use the sprint-execute skill. Arguments: $ARGUMENTS

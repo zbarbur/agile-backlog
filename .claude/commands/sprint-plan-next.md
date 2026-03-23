@@ -1,0 +1,1 @@
+Pre-plan next sprint scope. Use the sprint-plan-next skill to review untagged backlog items, tag candidates for the next sprint, and balance capacity across features, bugs, and tech debt. Arguments: $ARGUMENTS

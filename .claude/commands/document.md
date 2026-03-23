@@ -1,0 +1,1 @@
+Create and manage documentation. Use the document skill to research topics, write design docs, generate architecture overviews, audit staleness, create runbooks, update or review docs. Modes: research [topic], design [feature], architecture, audit, runbook [op], update [file], review [file]. Arguments: $ARGUMENTS

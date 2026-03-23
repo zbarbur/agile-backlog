@@ -2,11 +2,12 @@ title: "CLI documentation \u2014 command reference + quickstart guide"
 status: backlog
 priority: P2
 category: docs
-sprint_target: null
+sprint_target: 19
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
-tags: []
+tags:
+- cli
 goal: ''
 complexity: null
 technical_specs: []
