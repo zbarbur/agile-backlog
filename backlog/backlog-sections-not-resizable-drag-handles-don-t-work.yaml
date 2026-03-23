@@ -1,22 +1,31 @@
 title: "Backlog sections not resizable \u2014 drag handles don't work"
-status: backlog
+status: doing
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 16
 created: 2026-03-23
 updated: 2026-03-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Make backlog sections resizable via drag handles between Backlog/vNext/vFuture
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 add JS mousedown/mousemove/mouseup\
+  \ handlers on section dividers"
+- "File: src/agile_backlog/styles.py \u2014 drag handle cursor and hover styles"
 description: The resize handles between Backlog/vNext/vFuture sections are visible
   but don't respond to drag. Only the zoom button works for resizing. Need to implement
   actual drag-to-resize via mousedown/mousemove/mouseup JS events or NiceGUI ui.splitter.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Drag handles between sections respond to mouse drag
+- Sections resize proportionally on drag
+- Zoom button still works as fallback
+- Tests pass (pytest tests/ -v)
+- Lint clean (ruff check .)
+test_plan:
+- 'Manual: drag handle between sections resizes them'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

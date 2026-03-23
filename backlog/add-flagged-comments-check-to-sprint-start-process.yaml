@@ -2,9 +2,9 @@ title: Add flagged comments check to sprint-start process
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 17
 created: 2026-03-22
-updated: 2026-03-22
+updated: 2026-03-23
 depends_on: []
 tags: []
 goal: ''
