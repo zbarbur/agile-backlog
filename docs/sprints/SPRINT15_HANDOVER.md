@@ -86,8 +86,27 @@
 - `cli.py` may have stale `agent_notes` references from another session modifying the file
 - Resizable sections use flex + zoom button (no drag handles) — `ui.splitter` was considered but flex was simpler
 
+## Post-Sprint: Framework Integration Specs
+
+After the sprint closed, two design specs were written for the Agentic Agile Framework integration:
+
+1. **Framework Integration** (`docs/superpowers/specs/2026-03-23-agentic-agile-framework-integration.md`)
+   - Generic sprint skills with `sprint-config.yaml` (portable across projects)
+   - `/sprint-execute` skill (automated execution with specialist agents)
+   - Process docs adoption from agentic-agile-template
+   - VoltAgent specialist agent integration (133 available, ~14 relevant)
+
+2. **Export to Template** (`docs/superpowers/specs/2026-03-23-export-to-agentic-agile-template.md`)
+   - Replace KANBAN.md/TODO.md with agile-backlog
+   - Migration tools (`import-kanban`, `import-todo`)
+   - `specialist` field on BacklogItem model
+   - Sprint-execute as the template's missing automation layer
+
+Both specs reviewed and tracked as P1 backlog items.
+
 ## Recommendations for Next Sprint
+- **Agentic Agile Framework integration** — the two P1 specs above are the major next initiative
 - Complete Phase 2: drag-and-drop between sections, keyboard navigation
+- Fix backlog section drag resize (bug logged)
 - Review `cli.py` for consistency with the `comments` field rename
-- Consider adding automated visual regression tests for the UI
 - The `components.py` file (~700 lines) may benefit from further splitting as more features are added
