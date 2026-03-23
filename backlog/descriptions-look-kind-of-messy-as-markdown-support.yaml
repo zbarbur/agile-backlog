@@ -1,10 +1,10 @@
 title: Descriptions look kind of messy, add markdown support
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 18
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - ui
@@ -35,3 +35,4 @@ comments:
   resolved: true
   created: '2026-03-23'
   author: user
+images: []

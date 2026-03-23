@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 18 Planning |
-| **Last Sync** | 2026-03-23 |
+| **Status** | Sprint 19 Planning |
+| **Last Sync** | 2026-03-24 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 173 |
+| **Tests** | 193 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -47,4 +47,5 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 14 | Package portability + backlog planning design | 117 | — |
 | 15 | Backlog view redesign Phase 1 + polish | 156 | #14 |
 | 16 | Sprint Planning Phase 2 + Framework Integration | 162 | #15 |
-| 17 | Sprint Execute + Framework Completion | 173 | — |
+| 17 | Sprint Execute + Framework Completion | 173 | #16 |
+| 18 | UI Polish + CLI Visibility | 193 | — |
