@@ -1,5 +1,6 @@
 """NiceGUI UI components for agile-backlog."""
 
+import html as _html
 from datetime import date
 
 from nicegui import ui
@@ -32,7 +33,7 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
         style += "font-style:italic;text-transform:none;"
     else:
         style += "text-transform:uppercase;"
-    ui.html(f'<span style="{style}">{text}</span>')
+    ui.html(f'<span style="{style}">{_html.escape(text)}</span>')
 
 
 def _render_reopen_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
@@ -46,7 +47,8 @@ def _render_reopen_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
         ),
     ):
         ui.html(
-            f'<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">Reopen: {item.title}</div>'
+            f'<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
+            f"Reopen: {_html.escape(item.title)}</div>"
         )
         reason_input = (
             ui.textarea(placeholder="Why is this being reopened?")
@@ -338,7 +340,7 @@ def _render_editable_title(item: BacklogItem, container, save_and_refresh) -> No
     def _show_label():
         container.clear()
         with container:
-            label_el = ui.html(f'<div style="{title_style}">{item.title}</div>').classes("mc-editable")
+            label_el = ui.html(f'<div style="{title_style}">{_html.escape(item.title)}</div>').classes("mc-editable")
             label_el.on("click", lambda _e: _show_input())
 
     def _show_input():
@@ -401,7 +403,7 @@ def _render_editable_tags(item: BacklogItem, all_items: list[BacklogItem], save_
             f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
             f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
             f'border-radius:3px;display:inline-flex;align-items:center;gap:3px;">'
-            f'{tag} <span style="cursor:pointer;color:#71717a;font-size:11px;">\u00d7</span></span>'
+            f'{_html.escape(tag)} <span style="cursor:pointer;color:#71717a;font-size:11px;">\u00d7</span></span>'
         )
         tag_el = ui.html(tag_html).style("cursor:pointer;")
 
@@ -473,7 +475,8 @@ def _render_editable_textarea(
                 if use_markdown:
                     el = ui.markdown(current_value).style(value_style).classes("mc-editable")
                 else:
-                    el = ui.html(f'<div style="{value_style}">{current_value}</div>').classes("mc-editable")
+                    escaped = _html.escape(current_value)
+                    el = ui.html(f'<div style="{value_style}">{escaped}</div>').classes("mc-editable")
             else:
                 el = ui.html(f'<div style="{empty_style}">Click to add...</div>').classes("mc-editable")
             el.on("click", lambda _e: _show_editor())
@@ -515,7 +518,8 @@ def _render_editable_list_field(
         with container:
             if current_values:
                 li_items = "".join(
-                    f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{v}</li>' for v in current_values
+                    f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{_html.escape(v)}</li>'
+                    for v in current_values
                 )
                 el = ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>').classes("mc-editable")
             else:
