@@ -1,5 +1,3 @@
-import yaml
-
 from agile_backlog.config import get_current_sprint, set_current_sprint
 
 
@@ -30,12 +28,13 @@ def test_get_current_sprint_none_when_no_config(tmp_path, monkeypatch):
 
 
 def test_set_current_sprint_writes_to_sprint_config(tmp_path, monkeypatch):
-    """set_current_sprint writes to sprint-config.yaml, preserving other fields."""
+    """set_current_sprint writes to sprint-config.yaml, preserving comments and other fields."""
     config = tmp_path / ".claude" / "sprint-config.yaml"
     config.parent.mkdir()
-    config.write_text("project_name: test\n")
+    config.write_text("# Project config\nproject_name: test\ncurrent_sprint: 16\n")
     monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
     set_current_sprint(17)
-    data = yaml.safe_load(config.read_text())
-    assert data["current_sprint"] == 17
-    assert data["project_name"] == "test"
+    text = config.read_text()
+    assert "current_sprint: 17" in text
+    assert "project_name: test" in text
+    assert "# Project config" in text  # comments preserved

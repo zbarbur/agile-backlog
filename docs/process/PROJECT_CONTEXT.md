@@ -13,7 +13,7 @@ Single Python package with three interfaces:
 - **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view with click-to-edit, chat comments
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
-Data: YAML files in `backlog/`, config in `.agile-backlog.yaml`. Single source of truth.
+Data: YAML files in `backlog/`, config in `.claude/sprint-config.yaml`. Single source of truth.
 
 Key modules: `models.py` (Pydantic), `yaml_store.py` (persistence), `tokens.py` (design tokens), `config.py` (sprint config), `pure.py` (pure functions), `styles.py` (CSS), `components.py` (UI components).
 

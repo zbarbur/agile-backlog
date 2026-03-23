@@ -1,5 +1,6 @@
 """Configuration management for agile-backlog."""
 
+import re
 from pathlib import Path
 
 import yaml
@@ -34,11 +35,15 @@ def get_current_sprint() -> int | None:
 
 def set_current_sprint(sprint: int | None) -> None:
     path = _sprint_config_path()
-    data = {}
-    if path.exists():
-        data = yaml.safe_load(path.read_text()) or {}
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"current_sprint: {sprint}\n")
+        return
+    text = path.read_text()
     if sprint is None:
-        data.pop("current_sprint", None)
+        text = re.sub(r"^current_sprint:.*\n?", "", text, flags=re.MULTILINE)
+    elif re.search(r"^current_sprint:", text, re.MULTILINE):
+        text = re.sub(r"^current_sprint:.*$", f"current_sprint: {sprint}", text, flags=re.MULTILINE)
     else:
-        data["current_sprint"] = sprint
-    path.write_text(yaml.dump(data, default_flow_style=False))
+        text = text.rstrip() + f"\ncurrent_sprint: {sprint}\n"
+    path.write_text(text)
