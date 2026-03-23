@@ -29,7 +29,8 @@ test_plan:
 - test_yaml_persisted_after_drop
 - test_board_state_consistent_after_move
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

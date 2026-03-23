@@ -516,12 +516,33 @@ def kanban_page():
                     )
                     board_list_ref["el"] = board_columns
 
+                    # Hidden drop trigger for board drag-and-drop
+                    board_drop_trigger = ui.element("div").props('id="mc-board-drop-trigger"').style("display:none;")
+
+                    async def _handle_board_drop(_e):
+                        detail = await ui.run_javascript("window._lastBoardDrop || null")
+                        if not detail:
+                            return
+                        item_id = detail.get("item_id")
+                        target_status = detail.get("target_status")
+                        if item_id and target_status:
+                            item = next((i for i in items if i.id == item_id), None)
+                            if item:
+                                move_item(item, target_status)
+
+                    board_drop_trigger.on("click", _handle_board_drop)
+
                     with board_columns:
                         for col_status in STATUSES:
                             items_in_col = columns_map[col_status]
                             col_style, label_color = COLUMN_STYLES[col_status]
 
-                            with ui.element("div").style(f"flex:1;min-width:0;{col_style}"):
+                            with (
+                                ui.element("div")
+                                .classes("mc-board-drop-zone")
+                                .style(f"flex:1;min-width:0;{col_style}")
+                                .props(f'data-target-status="{col_status}"')
+                            ):
                                 with ui.element("div").style(
                                     "display:flex;align-items:center;gap:6px;padding:4px 6px 8px;"
                                 ):
@@ -564,6 +585,42 @@ def kanban_page():
                                         render_board.refresh,
                                         on_card_click=_open_board_panel,
                                     )
+
+                    # Inject board drag-and-drop JS
+                    _board_dnd_js = """
+document.querySelectorAll('.mc-board-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', card.getAttribute('data-item-id'));
+        e.dataTransfer.effectAllowed = 'move';
+        card.classList.add('mc-dragging');
+    });
+    card.addEventListener('dragend', function() {
+        card.classList.remove('mc-dragging');
+        document.querySelectorAll('.mc-drag-over').forEach(el => el.classList.remove('mc-drag-over'));
+    });
+});
+document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        zone.classList.add('mc-drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('mc-drag-over');
+        }
+    });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('mc-drag-over');
+        const itemId = e.dataTransfer.getData('text/plain');
+        const targetStatus = zone.getAttribute('data-target-status');
+        window._lastBoardDrop = {item_id: itemId, target_status: targetStatus};
+        document.getElementById('mc-board-drop-trigger').click();
+    });
+});
+"""
+                    ui.timer(0.1, lambda: ui.run_javascript(_board_dnd_js), once=True)
 
                     # Right: side panel (hidden by default)
                     board_panel = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")

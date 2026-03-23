@@ -154,7 +154,14 @@ body {
 /* Drag-and-drop */
 .mc-card-row[draggable="true"] { cursor: grab; }
 .mc-card-row.mc-dragging { opacity: 0.4; }
+.mc-board-card[draggable="true"] { cursor: grab; }
+.mc-board-card.mc-dragging { opacity: 0.4; }
 .mc-drop-zone.mc-drag-over {
+    background: rgba(59,130,246,0.06) !important;
+    outline: 2px dashed rgba(59,130,246,0.3);
+    outline-offset: -2px; border-radius: 6px;
+}
+.mc-board-drop-zone.mc-drag-over {
     background: rgba(59,130,246,0.06) !important;
     outline: 2px dashed rgba(59,130,246,0.3);
     outline-offset: -2px; border-radius: 6px;

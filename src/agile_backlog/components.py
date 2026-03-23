@@ -89,7 +89,12 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         "border-radius:3px;min-height:0;height:20px;"
     )
 
-    with ui.element("div").style("margin:2px 0;"):
+    with (
+        ui.element("div")
+        .classes("mc-board-card")
+        .style("margin:2px 0;")
+        .props(f'draggable="true" data-item-id="{item.id}" data-status="{status}"')
+    ):
         # Card (clickable)
         card_container = ui.element("div").style("cursor:pointer;")
         if on_card_click:
