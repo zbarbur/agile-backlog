@@ -722,6 +722,8 @@ def _render_backlog_list(
                 with backlog_content:
                     _render_section_items(filtered_backlog, "backlog")
 
+            ui.html('<div class="mc-resize-handle"></div>')
+
             # --- vNEXT section ---
             vnext_outer = ui.element("div").style(
                 "flex:1;min-height:44px;overflow:hidden;"
@@ -736,6 +738,8 @@ def _render_backlog_list(
                 with vnext_content:
                     _render_section_items(vnext_items, "vnext")
 
+            ui.html('<div class="mc-resize-handle"></div>')
+
             # --- vFUTURE section ---
             vfuture_outer = ui.element("div").style(
                 "flex:1;min-height:44px;overflow:hidden;"
@@ -748,6 +752,36 @@ def _render_backlog_list(
                 section_refs["vfuture"]["content"] = vfuture_content
                 with vfuture_content:
                     _render_section_items(vfuture_items, "vfuture")
+
+        # Inject drag-to-resize JS for section handles
+        _resize_js = """
+document.querySelectorAll('.mc-resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        const above = handle.previousElementSibling;
+        const below = handle.nextElementSibling;
+        if (!above || !below) return;
+        const startY = e.clientY;
+        const startAboveH = above.getBoundingClientRect().height;
+        const startBelowH = below.getBoundingClientRect().height;
+
+        function onMove(ev) {
+            const dy = ev.clientY - startY;
+            const newAbove = Math.max(44, startAboveH + dy);
+            const newBelow = Math.max(44, startBelowH - dy);
+            above.style.flex = '0 0 ' + newAbove + 'px';
+            below.style.flex = '0 0 ' + newBelow + 'px';
+        }
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+});
+"""
+        ui.timer(0.1, lambda: ui.run_javascript(_resize_js), once=True)
 
         # Right column: side panel (hidden by default)
         panel_container = ui.element("div").classes("mc-side-panel").style("display:none;padding:16px;")
