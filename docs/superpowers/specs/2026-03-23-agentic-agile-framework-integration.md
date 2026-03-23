@@ -413,14 +413,26 @@ Superpowers is the **development methodology engine**. Agile skills are the **pr
 
 ---
 
+## Resolved Questions
+
+1. **sprint-config.md format → YAML.** The file is machine-read by skills, not human-browsed. Pure YAML avoids parsing complexity.
+
+2. **Specialist agents location → `.claude/agents/`** — follows Claude Code convention and template pattern.
+
 ## Open Questions
-
-1. **Should sprint-config.md be YAML or markdown?** YAML is more structured and parseable. Markdown is more readable and follows Claude Code conventions (CLAUDE.md is markdown). Could use YAML frontmatter in a markdown file.
-
-2. **Where do specialist agents live?** `.claude/agents/` (template pattern) or `.claude/specialists/`? The template uses `agents/` which is the Claude Code convention for custom subagents.
 
 3. **How to handle multi-project setups?** If agile-backlog manages backlog for project X, and project X has its own sprint-config.md, how do they reference each other?
 
-4. **Should /sprint-execute be fully autonomous or checkpoint with user?** Today we ran subagent-driven-development with review between tasks but no user interaction. Should sprint-execute pause for user approval at certain points (e.g., after spec, after plan, after each task)?
+4. **Should /sprint-execute be fully autonomous or checkpoint with user?** Today we ran subagent-driven-development with review between tasks but no user interaction. **Recommendation:** default to checkpoint-after-plan (user approves the plan before subagent dispatch begins). User can skip with a flag. This matches the "research first, design second, code third" principle.
 
 5. **VoltAgent agents — install all relevant ones or pick per sprint?** Installing 14 agents adds context. Could install on-demand via `bin/agents.sh import` when a task needs a specialist not yet installed.
+
+6. **"review" status in sprint-execute.** The spec introduces a "review" phase between "doing" and "done" that sprint-execute sets. The current agile-backlog model uses `phase: plan|spec|build|review` (not status). Sprint-execute should set `phase: review` (not a new status), which is already supported. No model change needed.
+
+7. **Error handling in sprint-execute.** When a subagent fails mid-task: (a) tests don't pass → retry once with error context, then mark as blocked; (b) subagent produces no output → escalate to more capable model; (c) task is too large → break into subtasks. After 2 failures on same task, pause and report to user.
+
+8. **`/document design` vs `superpowers:brainstorming`.** Brainstorming is for interactive design sessions (user-driven, exploratory). `/document design` is for writing the formal design doc after decisions are made. `/document design` is a standalone skill, NOT part of the sprint-execute pipeline. Sprint-execute uses brainstorming → writing-plans.
+
+9. **Specialist file-type mappings.** File-type → specialist mappings should come from `specialist_defaults` in sprint-config.md, not hardcoded. The pseudocode in Workstream 3 is illustrative, not prescriptive.
+
+10. **Template migration (Workstream 4).** Existing template users with data in KANBAN.md/TODO.md will need manual migration. The `agile-backlog migrate` CLI command pattern (with dry-run) could be extended to import from KANBAN.md format. Add as a Phase 6 subtask.
