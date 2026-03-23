@@ -5,9 +5,13 @@ description: Initialize a new sprint. Uses agile-backlog CLI to select scope, wr
 
 # Sprint Start Skill
 
-You are initializing a new sprint for agile-backlog. The user invoked `/sprint-start $ARGUMENTS`.
+You are initializing a new sprint. The user invoked `/sprint-start $ARGUMENTS`.
 
-If an argument is provided, use it as the sprint number. Otherwise, determine the next sprint number from the latest handover in `docs/sprints/` or from MEMORY.md.
+## Prerequisites
+
+**Read `.claude/sprint-config.yaml`** to get project-specific commands. All commands below use config references like `{ci_command}`, `{backlog_commands.list}`, etc. — substitute with actual values from the config.
+
+If an argument is provided, use it as the sprint number. Otherwise, determine the next sprint number from the latest handover in `{docs.handover_dir}` or from MEMORY.md.
 
 ## Step 1: Verify Clean Slate
 
@@ -18,10 +22,10 @@ git status                   # should be: clean working tree
 
 - [ ] On `main` branch
 - [ ] Working tree clean
-- [ ] Previous sprint items are done (`agile-backlog list --status doing` should be empty)
+- [ ] Previous sprint items are done (`{backlog_commands.list_doing}` should be empty)
 - [ ] CI passing on main (`gh run list --limit 1` should show success)
 
-Run `ruff check . && ruff format --check . && pytest tests/ -v` and report pass/fail. Also check GitHub CI:
+Run `{ci_command}` and report pass/fail. Also check GitHub CI:
 
 ```bash
 gh run list --limit 1
@@ -31,10 +35,10 @@ If CI is failing, diagnose and fix before proceeding.
 
 ## Step 2: Bug Triage
 
-Check for open bugs via GitHub issues or backlog items with category "bug":
+Check for open bugs:
 
 ```bash
-agile-backlog list --category bug --status backlog
+{backlog_commands.list_bugs}
 ```
 
 If bugs exist, ask which to include in sprint scope.
@@ -44,7 +48,7 @@ If bugs exist, ask which to include in sprint scope.
 Show the backlog:
 
 ```bash
-agile-backlog list --status backlog
+{backlog_commands.list_backlog}
 ```
 
 Also offer the board for visual selection: `agile-backlog serve`
@@ -57,17 +61,17 @@ The user may also move items to "doing" via the board UI directly.
 
 ## Step 4: Write Task Specs to YAML
 
-For each selected item, use `agile-backlog edit` to populate the task definition:
+For each selected item, use `{backlog_commands.edit}` to populate the task definition:
 
 ```bash
-agile-backlog edit <item-id> \
+{backlog_commands.edit} <item-id> \
   --sprint N \
   --goal "One sentence — what this delivers" \
   --complexity M \
   --acceptance-criteria "Verifiable criterion 1" \
   --acceptance-criteria "Verifiable criterion 2" \
-  --acceptance-criteria "Tests pass (pytest tests/ -v)" \
-  --acceptance-criteria "Lint clean (ruff check .)" \
+  --acceptance-criteria "Tests pass ({test_command})" \
+  --acceptance-criteria "Lint clean ({lint_command})" \
   --technical-specs "File: src/path.py — what to change" \
   --technical-specs "File: tests/test_path.py — what to test" \
   --test-plan "tests/test_x.py: test description" \
@@ -78,18 +82,18 @@ Present each task spec to the user for review. Adjust as needed.
 
 After speccing all items, update their phase to `spec`:
 ```bash
-agile-backlog edit <item-id> --phase spec
+{backlog_commands.edit} <item-id> --phase spec
 ```
 
 **Move items to doing with phase:**
 
 ```bash
-agile-backlog move <item-id> --status doing --phase plan
+{backlog_commands.move} <item-id> --status doing --phase plan
 ```
 
 ## Step 5: Validate Completeness
 
-For each sprint item, verify via `agile-backlog show <item-id>`:
+For each sprint item, verify via `{backlog_commands.show} <item-id>`:
 - Has goal
 - Has complexity (S/M/L)
 - Has at least 2 acceptance criteria
@@ -105,13 +109,17 @@ Report any gaps and suggest fixes.
 ```bash
 git add backlog/
 git commit -m "chore: start Sprint N — <theme>"
-git checkout -b sprintN/main
-git push -u origin sprintN/main
+git checkout -b {branch_pattern}  # replace {N} with sprint number
+git push -u origin {branch_pattern}
 ```
+
+**Update sprint config:**
+
+Update `current_sprint` in `.claude/sprint-config.yaml` to the new sprint number.
 
 Move items to `build` phase as implementation begins:
 ```bash
-agile-backlog edit <item-id> --phase build
+{backlog_commands.edit} <item-id> --phase build
 ```
 
 ## Step 7: Confirm Ready
@@ -125,7 +133,7 @@ Present a summary:
 ## Important Rules
 
 - YAML items are the single source of truth — do NOT write to TODO.md
-- Use `agile-backlog edit` to populate task specs, not manual file editing
+- Use `{backlog_commands.edit}` to populate task specs, not manual file editing
 - Always set sprint_target and phase when moving items to doing
 - Always tag items with the sprint number
 - DoD items must be independently verifiable
