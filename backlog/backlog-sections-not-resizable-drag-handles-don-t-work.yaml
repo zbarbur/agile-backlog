@@ -1,0 +1,22 @@
+title: "Backlog sections not resizable \u2014 drag handles don't work"
+status: backlog
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The resize handles between Backlog/vNext/vFuture sections are visible
+  but don't respond to drag. Only the zoom button works for resizing. Need to implement
+  actual drag-to-resize via mousedown/mousemove/mouseup JS events or NiceGUI ui.splitter.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -1,0 +1,22 @@
+title: Export agile-backlog to agentic-agile-template
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Replace KANBAN.md/TODO.md with agile-backlog in the template. Add sprint-execute
+  skill, migration tools (import-kanban, import-todo), specialist field, update template
+  process docs. Spec: docs/superpowers/specs/2026-03-23-export-to-agentic-agile-template.md'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []

@@ -1,0 +1,21 @@
+title: "Agentic Agile Framework \u2014 adopt template process into agile-backlog"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-23
+updated: 2026-03-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Adopt process docs, generic sprint skills, and specialist agents from
+  agentic-agile-template. Spec: docs/superpowers/specs/2026-03-23-agentic-agile-framework-integration.md'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
