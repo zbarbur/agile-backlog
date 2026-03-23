@@ -529,8 +529,17 @@ def _render_backlog_list(
     list_container_ref: dict[str, object] = {"el": None}
     panel_container_ref: dict[str, object] = {"el": None}
 
+    # Keyboard navigation state
+    nav_state: dict[str, int | None] = {"index": None}
+    all_section_items = filtered_backlog + vnext_items + vfuture_items
+
     def _open_side_panel(item: BacklogItem):
         panel_state["selected_id"] = item.id
+        # Sync keyboard nav index
+        try:
+            nav_state["index"] = all_section_items.index(item)
+        except ValueError:
+            nav_state["index"] = None
         if list_container_ref["el"]:
             list_container_ref["el"].style("flex:6;min-width:0;")
         if panel_container_ref["el"]:
@@ -547,7 +556,34 @@ def _render_backlog_list(
             panel_container_ref["el"].style("display:none;")
             panel_container_ref["el"].clear()
 
-    ui.keyboard(on_key=lambda e: _close_side_panel() if e.key == "Escape" and not e.action.repeat else None)
+    def _handle_key(e):
+        if e.action.repeat:
+            return
+        if e.key == "Escape":
+            _close_side_panel()
+            nav_state["index"] = None
+            return
+        if e.key in ("ArrowDown", "ArrowUp") and all_section_items:
+            current = nav_state["index"]
+            if e.key == "ArrowDown":
+                if current is None:
+                    nav_state["index"] = 0
+                else:
+                    nav_state["index"] = min(current + 1, len(all_section_items) - 1)
+            elif e.key == "ArrowUp":
+                if current is None:
+                    nav_state["index"] = len(all_section_items) - 1
+                else:
+                    nav_state["index"] = max(current - 1, 0)
+            focused_item = all_section_items[nav_state["index"]]
+            _open_side_panel(focused_item)
+            # Scroll the focused item into view
+            ui.run_javascript(
+                "const s = document.querySelector('.mc-card-row.mc-selected');"
+                "if (s) s.scrollIntoView({block: 'nearest', behavior: 'smooth'});"
+            )
+
+    ui.keyboard(on_key=_handle_key)
 
     def _move_to_section(item: BacklogItem, target_sprint: int | None):
         item.sprint_target = target_sprint
