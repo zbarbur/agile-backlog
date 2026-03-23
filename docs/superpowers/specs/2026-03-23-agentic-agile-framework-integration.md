@@ -65,7 +65,8 @@ format_command: ".venv/bin/ruff format ."
 ci_command: ".venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest tests/ -v"
 
 # Backlog tool
-backlog_tool: agile-backlog           # "agile-backlog" | "github" | "kanban-md"
+backlog_tool: agile-backlog           # "agile-backlog" | "kanban-md" (agile-backlog is recommended)
+github_sync: false                    # optional: sync bugs/items to GitHub Issues for visibility
 backlog_commands:
   list: ".venv/bin/agile-backlog list"
   list_doing: ".venv/bin/agile-backlog list --status doing"
@@ -217,12 +218,13 @@ specialist_defaults:
 
 **Process:** Gather details (title, severity, steps to reproduce, expected vs actual, environment) → create structured report.
 
-**Adaptation:** Read `sprint-config.md` for `backlog_tool`:
-- `agile-backlog` → `agile-backlog add "title" --category bug --priority {severity_to_priority} --description "..."`
-- `github` → `gh issue create --label bug ...`
-- `kanban-md` → append to KANBAN.md
+**Adaptation:** Bugs are always created in agile-backlog (single source of truth):
+- `agile-backlog add "title" --category bug --priority {severity_to_priority} --description "..." --sprint N`
+- Optional: sync to GitHub Issues for external visibility (`gh issue create` with link back to agile-backlog item ID)
 
-**Enhancement over template:** Auto-tag with current sprint number. Auto-explore codebase for related code.
+GitHub Issues is NOT a parallel tracking system — it's an optional notification/visibility layer. The agile-backlog item is the source of truth for status, AC, comments, and sprint assignment.
+
+**Enhancement over template:** Auto-tag with current sprint number. Auto-explore codebase for related code. Structured bug fields in YAML (steps to reproduce, expected/actual) instead of free-text markdown.
 
 #### /sprint-plan-next (from template)
 
@@ -359,7 +361,7 @@ def select_specialist(task, config):
 | Backlog storage | `KANBAN.md` (markdown) | `agile-backlog` YAML items + CLI + Web UI |
 | Task specs | `TODO.md` (markdown) | agile-backlog item fields (goal, AC, tech specs) |
 | Sprint filtering | Manual markdown sections | `agile-backlog list --sprint N` |
-| Bug tracking | GitHub Issues or KANBAN.md | `agile-backlog add --category bug` + GitHub Issues |
+| Bug tracking | GitHub Issues or KANBAN.md | `agile-backlog add --category bug` (source of truth, optional GitHub sync) |
 | Item status | Markdown sections (Backlog/Doing/Done) | `agile-backlog move --status doing/done` |
 | Sprint planning view | None | agile-backlog Web UI (three sections, side panel) |
 | DoD verification | Manual TODO.md checkboxes | `agile-backlog show {id}` → verify AC against code |
