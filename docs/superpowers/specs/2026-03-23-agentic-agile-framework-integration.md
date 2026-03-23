@@ -12,7 +12,7 @@ Create a portable agentic development framework that combines:
 - Specialist agent selection (from VoltAgent)
 - Development workflow automation (from superpowers plugin)
 
-Any project can adopt this by installing the skills + writing one `sprint-config.md`.
+Any project can adopt this by installing the skills + writing one `sprint-config.yaml`.
 
 ---
 
@@ -45,11 +45,11 @@ Any project can adopt this by installing the skills + writing one `sprint-config
 
 ---
 
-## Workstream 1: Generic Sprint Skills + sprint-config.md
+## Workstream 1: Generic Sprint Skills + sprint-config.yaml
 
 ### The Config File
 
-`.claude/sprint-config.md` — one file per project, read by all sprint skills:
+`.claude/sprint-config.yaml` — one file per project, read by all sprint skills:
 
 ```yaml
 # Project Sprint Configuration
@@ -125,7 +125,7 @@ specialist_defaults:
 7. Create sprint branch
 8. Confirm ready
 
-**Project-specific (from sprint-config.md):**
+**Project-specific (from sprint-config.yaml):**
 - CI command to verify clean slate
 - Backlog commands to list/edit/move items
 - Branch naming pattern
@@ -189,7 +189,7 @@ specialist_defaults:
 | `AGENTIC_AGILE_MANIFEST.md` | `docs/process/AGENTIC_AGILE_MANIFEST.md` | Update context table to reference agile-backlog instead of KANBAN.md/TODO.md. Update quality gates to be generic. Keep philosophy unchanged. |
 | `TASK_TEMPLATE.md` | `docs/process/TASK_TEMPLATE.md` | Update to reference agile-backlog fields (goal, AC, tech specs, test plan, complexity) instead of TODO.md format. Keep the good/bad examples. |
 
-### Adopt as skills (adapted to sprint-config.md)
+### Adopt as skills (adapted to sprint-config.yaml)
 
 #### /plan (from template — 4 modes)
 
@@ -306,7 +306,7 @@ Use `bin/agents.sh import {name}` from the template to install agents into `.cla
 sprint-execute receives task:
   1. Determine specialist from:
      - Explicit "specialist" field in task spec (if set)
-     - Category mapping from specialist_defaults in sprint-config.md
+     - Category mapping from specialist_defaults in sprint-config.yaml
      - Auto-detect from task description keywords
      - Default to project's primary language specialist
 
@@ -384,7 +384,7 @@ def select_specialist(task, config):
 ### Template Gets
 
 - `agile-backlog` as a dependency (pip install)
-- Sprint skills updated to use `agile-backlog` commands via sprint-config.md
+- Sprint skills updated to use `agile-backlog` commands via sprint-config.yaml
 - Web UI for visual sprint planning
 - Structured data (queryable, filterable, sortable)
 - Chat comments on items for async human-agent communication
@@ -421,7 +421,7 @@ Superpowers is the **development methodology engine**. Agile skills are the **pr
 
 | Phase | What | Why first |
 |-------|------|----------|
-| Phase 1 | `sprint-config.md` + refactor sprint-start/sprint-end | Foundation — everything else builds on this |
+| Phase 1 | `sprint-config.yaml` + refactor sprint-start/sprint-end | Foundation — everything else builds on this |
 | Phase 2 | `/sprint-execute` skill | The big missing piece — automated execution |
 | Phase 3 | Process docs (DoD, Manifest, Task Template) | Quality guides |
 | Phase 4 | Template skills (/plan, /document, /report-bug) | Extended capabilities |
@@ -432,13 +432,13 @@ Superpowers is the **development methodology engine**. Agile skills are the **pr
 
 ## Resolved Questions
 
-1. **sprint-config.md format → YAML.** The file is machine-read by skills, not human-browsed. Pure YAML avoids parsing complexity.
+1. **sprint-config.yaml format → YAML.** The file is machine-read by skills, not human-browsed. Pure YAML avoids parsing complexity.
 
 2. **Specialist agents location → `.claude/agents/`** — follows Claude Code convention and template pattern.
 
 ## Open Questions
 
-3. **How to handle multi-project setups?** If agile-backlog manages backlog for project X, and project X has its own sprint-config.md, how do they reference each other?
+3. **How to handle multi-project setups?** If agile-backlog manages backlog for project X, and project X has its own sprint-config.yaml, how do they reference each other?
 
 4. **Should /sprint-execute be fully autonomous or checkpoint with user?** Today we ran subagent-driven-development with review between tasks but no user interaction. **Recommendation:** default to checkpoint-after-plan (user approves the plan before subagent dispatch begins). User can skip with a flag. This matches the "research first, design second, code third" principle.
 
@@ -450,6 +450,6 @@ Superpowers is the **development methodology engine**. Agile skills are the **pr
 
 8. **`/document design` vs `superpowers:brainstorming`.** Brainstorming is for interactive design sessions (user-driven, exploratory). `/document design` is for writing the formal design doc after decisions are made. `/document design` is a standalone skill, NOT part of the sprint-execute pipeline. Sprint-execute uses brainstorming → writing-plans.
 
-9. **Specialist file-type mappings.** File-type → specialist mappings should come from `specialist_defaults` in sprint-config.md, not hardcoded. The pseudocode in Workstream 3 is illustrative, not prescriptive.
+9. **Specialist file-type mappings.** File-type → specialist mappings should come from `specialist_defaults` in sprint-config.yaml, not hardcoded. The pseudocode in Workstream 3 is illustrative, not prescriptive.
 
 10. **Template migration (Workstream 4).** Existing template users with data in KANBAN.md/TODO.md will need manual migration. The `agile-backlog migrate` CLI command pattern (with dry-run) could be extended to import from KANBAN.md format. Add as a Phase 6 subtask.

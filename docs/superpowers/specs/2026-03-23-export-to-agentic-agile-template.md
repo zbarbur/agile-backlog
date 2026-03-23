@@ -116,9 +116,10 @@ project-root/
 
 | KANBAN.md format | agile-backlog YAML field |
 |-----------------|------------------------|
-| `- [area] description (complexity: M)` | `title`, `tags: [area]`, `complexity: M` |
+| `- [area] description (M)` | `title`, `tags: [area]`, `complexity: M` |
 | Section: Backlog / Doing / Done | `status: backlog / doing / done` |
-| `(complexity: S/M/L)` | `complexity: S / M / L` |
+| `(S)` / `(M)` / `(L)` in parentheses | `complexity: S / M / L` |
+| `## Sprint N — Candidate` section | `sprint_target: N`, `status: backlog` |
 | `[area]` tag | `tags: [area]` + `category` mapping (see below) |
 | Sprint number from section header | `sprint_target: N` |
 | Tech Debt section | `category: chore`, `tags: [tech-debt]` |
@@ -161,7 +162,7 @@ project-root/
 Add an optional `specialist` field to BacklogItem model:
 
 ```python
-specialist: str | None = None  # e.g., "python-pro", "frontend-developer + security-auditor"
+specialist: list[str] = Field(default_factory=list)  # e.g., ["python-pro"] or ["frontend-developer", "security-auditor"]
 ```
 
 This maps directly to the template's `Specialist:` field in task specs and integrates with the specialist agent selection in sprint-execute.
@@ -231,21 +232,6 @@ docs:
 4. `agile-backlog edit {id} --sprint N --goal "..." --acceptance-criteria "..." --technical-specs "..." --complexity M`
 5. Sprint branch created by `/sprint-start` skill
 6. Items automatically filtered by `agile-backlog list --status doing --sprint N`
-
-### Sprint Execution (before vs after)
-
-**Before:**
-1. Read TODO.md to find next task
-2. Implement, write tests
-3. Manually check off DoD checkboxes in TODO.md
-4. Commit with task reference
-
-**After:**
-1. `agile-backlog list --status doing` — find next task
-2. `agile-backlog show {id}` — read full spec with AC, tech specs, test plan
-3. Implement, write tests
-4. `agile-backlog edit {id} --phase build` (then `--phase review` when done)
-5. Commit — sprint-end will verify AC against code before marking done
 
 ### Sprint End (before vs after)
 
@@ -327,10 +313,12 @@ agile-backlog import-kanban docs/process/KANBAN.md
 
 **Parser logic:**
 1. Read KANBAN.md, identify sections (Backlog, Doing, Done, Tech Debt, Candidate)
-2. For each item line: `- [area] description (complexity: S/M/L)`
-   - Extract: area (→ tags + category), description (→ title), complexity
+2. For each item line: `- [area] description (S/M/L)` (note: actual format omits `complexity:` prefix)
+   - Extract: area (→ tags + category), description (→ title), complexity from bare letter in parens
+   - Done section has different format: `- [Sprint N] T{N}.{X} — description` — extract sprint number and title
    - Set status based on section (Backlog → backlog, Doing → doing, Done → done)
-   - Set sprint_target from section header if present
+   - Set sprint_target from section header (e.g., `## Sprint 14 — Candidate` → `sprint_target: 14`)
+   - Support `--sprint N` flag to specify current sprint for relative parsing
    - Tech Debt items: `category: chore`, `tags: [tech-debt, area]`
 3. Create YAML files in `backlog/`
 4. Report: "Imported N items from KANBAN.md"
@@ -361,16 +349,18 @@ Both commands support `--dry-run` to preview changes without writing files.
 | File | Change |
 |------|--------|
 | `CLAUDE.md` | Add agile-backlog commands section. Update "Bug Tracking" to reference agile-backlog. Add `backlog/` to project structure. |
-| `BOOTSTRAP.md` | Replace "Read TODO.md" with `agile-backlog list --status doing`. Replace "Read KANBAN.md" with `agile-backlog list --status backlog`. |
-| `AGENTIC_AGILE_MANIFEST.md` | Update context table: TODO.md → `agile-backlog list --doing`, KANBAN.md → `agile-backlog list --backlog`. Update workflow diagram. |
+| `docs/process/BOOTSTRAP.md` | Thorough rewrite — replace all TODO.md/KANBAN.md references with agile-backlog commands. Affects: On-Demand Context table, Session Start sections, Session Recovery, Quick Reference blocks. |
+| `docs/process/AGENTIC_AGILE_MANIFEST.md` | Update context table: TODO.md → `agile-backlog list --doing`, KANBAN.md → `agile-backlog list --backlog`. Update workflow diagram. |
 | `TASK_TEMPLATE.md` | Add section showing agile-backlog CLI equivalent for each field. Keep markdown template for reference. |
 | `SPRINT_START_CHECKLIST.md` | Replace "Edit KANBAN.md" steps with `agile-backlog move/edit` commands. Replace "Write TODO.md" with `agile-backlog edit --goal --acceptance-criteria`. |
 | `SPRINT_END_CHECKLIST.md` | Replace "Update KANBAN.md" with `agile-backlog move --status done`. Replace "Check TODO.md DoD" with `agile-backlog show {id}` + AC verification. |
 | `SQUAD_PLANNING.md` | Add note: specialist field in agile-backlog maps to squad assignment. |
-| `.claude/project.json` | Add `tracker.type: "agile-backlog"` as default. Keep `"github"` as fallback option. |
-| `.gitignore` | Add `.agile-backlog.pid` |
+| `.claude/project.json` | Change `tracker.type` default from `"github"` to `"agile-backlog"`. Update all conditional logic in template docs that branches on tracker type (currently handles `"github"` / `"none"` — add `"agile-backlog"` as third option). |
+| `.claude/sprint-config.yaml` | **CREATE** — new file with project-specific commands for sprint skills (test, lint, backlog tool, doc paths). Required by framework integration spec Phase 1. |
+| `.gitignore` | Add `.agile-backlog.pid`, `.agile-backlog.yaml` |
 | `package.json` or setup docs | Add `pip install agile-backlog` to setup instructions |
-| `bin/init-project.sh` | Add `pip install agile-backlog` step. Create initial `backlog/` directory. |
+| `bin/init-project.sh` | Add `pip install agile-backlog` step. Create initial `backlog/` directory. Create `.claude/sprint-config.yaml` from template. |
+| `landing/content/*.md` | Update parallel copies of process docs (AGENTIC_AGILE_MANIFEST.md, SPRINT_START_CHECKLIST.md, etc.) to match updated originals. The landing page build uses these copies. |
 
 ### Files to Remove (after migration)
 
