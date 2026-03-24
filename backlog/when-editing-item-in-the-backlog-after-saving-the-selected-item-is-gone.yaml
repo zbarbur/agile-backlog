@@ -1,22 +1,36 @@
 title: when editing item in the backlog , after saving the selected item is gone
-status: backlog
+status: done
 priority: P2
 category: bug
-sprint_target: 18
+sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: After saving an edit, re-select the edited item in the list and keep side panel
+  open
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 save_fn callback should preserve selected_id\
+  \ in panel_state"
+- "File: src/agile_backlog/components.py \u2014 after refresh, re-open panel with\
+  \ saved item_id"
 description: 'after editing, I lose the selected item, it''ll be great to return to
   it highlightef in the list , '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- After saving edits, the same item remains selected and highlighted
+- Side panel stays open showing the updated item
+- Works in both backlog list and board views
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual: edit item title in side panel, save \u2014 item stays selected with new\
+  \ title"
+- "Manual: edit item on board, save \u2014 card stays selected"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

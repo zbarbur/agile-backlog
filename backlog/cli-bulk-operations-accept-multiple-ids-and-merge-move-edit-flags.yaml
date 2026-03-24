@@ -1,22 +1,38 @@
 title: "CLI bulk operations \u2014 accept multiple IDs and merge move+edit flags"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - cli
-goal: ''
-complexity: null
-technical_specs: []
+goal: Reduce CLI calls by accepting multiple IDs in move/edit and adding --sprint/--phase
+  to move
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 change move and edit item_id to nargs=-1\
+  \ tuple"
+- "File: src/agile_backlog/cli.py \u2014 add --sprint option to move command"
+- "File: tests/test_cli.py \u2014 multi-ID tests for move and edit"
 description: 'Reduce CLI calls by: (1) accepting multiple item IDs in move/edit commands,
   (2) adding --sprint to move command so move+edit can be one call'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- move accepts multiple item IDs (nargs=-1)
+- edit accepts multiple item IDs (nargs=-1)
+- move supports --sprint flag to set sprint_target in same call
+- "Errors on individual items don't abort the batch \u2014 report per-item results"
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_cli.py: test_move_multiple_ids \u2014 move 3 items at once"
+- "tests/test_cli.py: test_edit_multiple_ids \u2014 edit sprint on 2 items"
+- "tests/test_cli.py: test_move_with_sprint_flag \u2014 move + set sprint in one call"
+- "tests/test_cli.py: test_bulk_partial_failure \u2014 one bad ID doesn't abort others"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

@@ -34,5 +34,6 @@ Python 3.11+ · NiceGUI · Click · Pydantic · YAML · Ruff · pytest
 | `.claude/sprint-config.yaml` | Commands, paths, sprint settings |
 | `backlog/*.yaml` | Backlog items (single source of truth) |
 | `docs/process/PROJECT_CONTEXT.md` | Project snapshot |
+| `docs/process/DEFINITION_OF_DONE.md` | Quality gates |
 
 ## ⚠️ REMINDER: DO NOT RE-READ FILES YOU ALREADY HAVE IN CONTEXT

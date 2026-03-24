@@ -2,9 +2,9 @@ title: "Bundled Claude plugin \u2014 ship sprint skills with package"
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 20
 created: 2026-03-22
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - plugin
@@ -31,3 +31,4 @@ comments:
   resolved: true
   created: '2026-03-22'
   author: user
+images: []

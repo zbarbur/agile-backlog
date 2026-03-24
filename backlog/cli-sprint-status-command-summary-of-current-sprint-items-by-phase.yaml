@@ -1,22 +1,37 @@
 title: "CLI sprint status command \u2014 summary of current sprint items by phase"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - cli
 - planning
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add 'sprint-status' command showing current sprint items grouped by phase with
+  counts
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 new sprint-status command reading sprint-config\
+  \ for current sprint"
+- "File: src/agile_backlog/yaml_store.py \u2014 may need filter_items by sprint_target"
+- "File: tests/test_cli.py \u2014 sprint-status tests"
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- New sprint-status command shows items for current sprint grouped by phase
+- Shows count per phase (plan/spec/build/review/done)
+- Shows overall progress (e.g. 3/6 complete)
+- Works with --sprint N flag to check any sprint
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_cli.py: test_sprint_status_default \u2014 shows current sprint items"
+- "tests/test_cli.py: test_sprint_status_by_number \u2014 --sprint flag filters correctly"
+- "tests/test_cli.py: test_sprint_status_empty \u2014 no items prints clean message"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

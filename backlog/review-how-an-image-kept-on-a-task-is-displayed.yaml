@@ -1,18 +1,17 @@
-title: use markdown also for comments
+title: Review how an image kept on a task is displayed
 status: backlog
 priority: P2
-category: feature
-sprint_target: 20
-created: 2026-03-23
+category: bug
+sprint_target: null
+created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'the comment chat are also not that readable from what the agent responds
-
-  '
+description: The usability of viewing saved images is still not good, image appear
+  to big
 acceptance_criteria: []
 test_plan: []
 notes: ''

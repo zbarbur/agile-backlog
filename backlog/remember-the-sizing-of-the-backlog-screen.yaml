@@ -1,5 +1,5 @@
 title: remember the sizing of the backlog screen
-status: backlog
+status: done
 priority: P2
 category: bug
 sprint_target: 19
@@ -7,16 +7,29 @@ created: 2026-03-23
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Persist UI state (active page, panel sizes, selected item) across page reloads
+  using browser localStorage
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 JS localStorage read/write via run_javascript"
+- "File: src/agile_backlog/app.py \u2014 on page load, read stored state and restore"
+- "File: src/agile_backlog/components.py \u2014 save state on panel open/close, page\
+  \ switch"
 description: "the sizes of backlog/v.next/v.future are not retained when revisiting\
   \ the page \ncan remember the overall stage , which page was open backlog/board\
   \ and what was the size and selected item"
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Active page (backlog vs board) remembered on reload
+- Side panel open/closed state and selected item restored
+- Column sizing ratios preserved
+- Uses browser localStorage, not server-side state
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual: open backlog, select item, reload \u2014 item and panel state restored"
+- "Manual: switch to board view, reload \u2014 board view shown"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -1,18 +1,16 @@
-title: use markdown also for comments
+title: Usability of the sprint filter
 status: backlog
 priority: P2
 category: feature
-sprint_target: 20
-created: 2026-03-23
+sprint_target: null
+created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'the comment chat are also not that readable from what the agent responds
-
-  '
+description: as more and more sprint are done, the selection gets longer
 acceptance_criteria: []
 test_plan: []
 notes: ''
@@ -20,4 +18,6 @@ phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
-images: []
+images:
+- filename: pasted-1.png
+  created: '2026-03-24'

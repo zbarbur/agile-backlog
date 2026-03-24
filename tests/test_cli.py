@@ -159,6 +159,37 @@ class TestMove:
         data = yaml.safe_load((backlog_dir / "task-phase3.yaml").read_text())
         assert data["phase"] is None
 
+    def test_move_multiple_ids(self, runner: CliRunner):
+        """Move multiple items at once."""
+        runner.invoke(main, ["add", "Alpha", "--category", "feature"])
+        runner.invoke(main, ["add", "Beta", "--category", "feature"])
+        runner.invoke(main, ["add", "Gamma", "--category", "feature"])
+        result = runner.invoke(main, ["move", "alpha", "beta", "gamma", "--status", "doing"])
+        assert result.exit_code == 0
+        assert "alpha" in result.output
+        assert "beta" in result.output
+        assert "gamma" in result.output
+
+    def test_move_with_sprint_flag(self, runner: CliRunner, backlog_dir: Path):
+        """Move + set sprint in one call."""
+        import yaml
+
+        runner.invoke(main, ["add", "Task Sprint", "--category", "feature"])
+        result = runner.invoke(main, ["move", "task-sprint", "--status", "doing", "--sprint", "5"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "task-sprint.yaml").read_text())
+        assert data["sprint_target"] == 5
+
+    def test_move_bulk_partial_failure(self, runner: CliRunner):
+        """One bad ID doesn't abort others."""
+        runner.invoke(main, ["add", "Real item", "--category", "feature"])
+        result = runner.invoke(main, ["move", "real-item", "fake-item", "--status", "doing"])
+        assert result.exit_code == 1
+        assert "real-item" in result.output
+        assert "Moved" in result.output
+        assert "fake-item" in result.output
+        assert "not found" in result.output
+
 
 class TestShow:
     def test_show_item(self, runner: CliRunner):
@@ -207,6 +238,25 @@ class TestEdit:
     def test_edit_nonexistent(self, runner):
         result = runner.invoke(main, ["edit", "nope", "--goal", "test"])
         assert result.exit_code != 0
+
+    def test_edit_multiple_ids(self, runner, backlog_dir):
+        """Edit sprint on multiple items at once."""
+        runner.invoke(main, ["add", "Item A", "--category", "feature"])
+        runner.invoke(main, ["add", "Item B", "--category", "feature"])
+        result = runner.invoke(main, ["edit", "item-a", "item-b", "--sprint", "7"])
+        assert result.exit_code == 0
+        assert "item-a" in result.output
+        assert "item-b" in result.output
+
+    def test_edit_bulk_partial_failure(self, runner):
+        """One bad ID doesn't abort others."""
+        runner.invoke(main, ["add", "Real edit", "--category", "feature"])
+        result = runner.invoke(main, ["edit", "real-edit", "fake-edit", "--goal", "G"])
+        assert result.exit_code == 1
+        assert "real-edit" in result.output
+        assert "Updated" in result.output
+        assert "fake-edit" in result.output
+        assert "not found" in result.output
 
 
 class TestNote:
@@ -369,3 +419,102 @@ class TestTagsFilter:
         result = runner.invoke(main, ["list", "--tags", "ui"])
         assert "A" in result.output
         assert "B" not in result.output
+
+
+class TestSprintStatus:
+    def test_sprint_status_default(self, runner: CliRunner, backlog_dir: Path):
+        """Shows current sprint items grouped by phase."""
+        # Create items in sprint 5 with different phases
+        for title, phase in [("Task A", "spec"), ("Task B", "build"), ("Task C", "build")]:
+            runner.invoke(main, ["add", title, "--category", "feature", "--sprint", "5"])
+            slug = title.lower().replace(" ", "-")
+            runner.invoke(main, ["move", slug, "--status", "doing", "--phase", phase])
+
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["sprint-status"])
+        assert result.exit_code == 0
+        assert "spec" in result.output
+        assert "build" in result.output
+        assert "Task A" in result.output
+        assert "Task B" in result.output
+        # Should show progress
+        assert "3" in result.output
+
+    def test_sprint_status_by_number(self, runner: CliRunner, backlog_dir: Path):
+        """--sprint flag filters to a specific sprint."""
+        runner.invoke(main, ["add", "Sprint 5", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["add", "Sprint 6", "--category", "feature", "--sprint", "6"])
+
+        result = runner.invoke(main, ["sprint-status", "--sprint", "6"])
+        assert result.exit_code == 0
+        assert "Sprint 6" in result.output
+        assert "Sprint 5" not in result.output
+
+    def test_sprint_status_empty(self, runner: CliRunner):
+        """No items prints clean message."""
+        with patch("agile_backlog.cli.get_current_sprint", return_value=99):
+            result = runner.invoke(main, ["sprint-status"])
+        assert result.exit_code == 0
+        assert "No items" in result.output
+
+
+class TestValidate:
+    def test_validate_passing(self, runner: CliRunner):
+        """Fully specced items pass validation."""
+        runner.invoke(main, ["add", "Good item", "--category", "feature", "--sprint", "5"])
+        runner.invoke(
+            main,
+            [
+                "edit",
+                "good-item",
+                "--goal",
+                "Deliver X",
+                "--complexity",
+                "S",
+                "--acceptance-criteria",
+                "AC one",
+                "--acceptance-criteria",
+                "AC two",
+                "--technical-specs",
+                "File: foo.py",
+            ],
+        )
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["validate"])
+        assert result.exit_code == 0
+        assert "PASS" in result.output
+
+    def test_validate_missing_fields(self, runner: CliRunner):
+        """Reports missing goal, complexity, AC."""
+        runner.invoke(main, ["add", "Bare item", "--category", "feature", "--sprint", "5"])
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["validate"])
+        assert result.exit_code == 1
+        assert "FAIL" in result.output
+        assert "goal" in result.output
+        assert "complexity" in result.output
+
+    def test_validate_exit_code(self, runner: CliRunner):
+        """Returns exit code 1 on any failure."""
+        runner.invoke(main, ["add", "Good", "--category", "feature", "--sprint", "5"])
+        runner.invoke(
+            main,
+            [
+                "edit",
+                "good",
+                "--goal",
+                "G",
+                "--complexity",
+                "S",
+                "--acceptance-criteria",
+                "A1",
+                "--acceptance-criteria",
+                "A2",
+                "--technical-specs",
+                "File: x.py",
+            ],
+        )
+        runner.invoke(main, ["add", "Bad", "--category", "feature", "--sprint", "5"])
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["validate"])
+        assert result.exit_code == 1

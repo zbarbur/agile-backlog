@@ -1,22 +1,38 @@
 title: "CLI validate command \u2014 check items have required spec fields"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - cli
 - planning
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add 'validate' command that checks sprint items have required spec fields before
+  execution
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 new validate command"
+- "File: tests/test_cli.py \u2014 validate tests with passing and failing items"
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- New validate command checks items for current sprint
+- 'Checks: goal, complexity, at least 2 acceptance criteria, at least 1 technical
+  spec'
+- Reports per-item pass/fail with missing fields listed
+- Exit code 1 if any item fails validation
+- Works with --sprint N flag
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_cli.py: test_validate_passing \u2014 fully specced items pass"
+- "tests/test_cli.py: test_validate_missing_fields \u2014 reports missing goal, complexity,\
+  \ AC"
+- "tests/test_cli.py: test_validate_exit_code \u2014 returns 1 on failure"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

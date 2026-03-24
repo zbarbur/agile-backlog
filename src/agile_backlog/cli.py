@@ -9,6 +9,7 @@ import click
 import yaml
 
 import agile_backlog.yaml_store as _yaml_store
+from agile_backlog.config import get_current_sprint
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
@@ -94,7 +95,7 @@ def list_items(
 
 
 @main.command()
-@click.argument("item_id")
+@click.argument("item_ids", nargs=-1, required=True)
 @click.option("--status", type=click.Choice(["backlog", "doing", "done"]), required=True)
 @click.option(
     "--phase",
@@ -102,20 +103,29 @@ def list_items(
     default=None,
     help="Workflow phase.",
 )
-def move(item_id: str, status: str, phase: str | None):
-    """Change an item's status."""
-    try:
-        item = load_item(item_id)
-    except FileNotFoundError:
-        raise SystemExit(f"Error: item '{item_id}' not found.")
-    item.status = status
-    if status == "doing":
-        item.phase = phase or item.phase or "plan"
-    elif status == "backlog":
-        item.phase = None
-    item.updated = date.today()
-    save_item(item)
-    click.echo(f"Moved {item_id} → {status}")
+@click.option("--sprint", "sprint_target", type=int, default=None, help="Set sprint target.")
+def move(item_ids: tuple[str, ...], status: str, phase: str | None, sprint_target: int | None):
+    """Change an item's status (accepts multiple IDs)."""
+    errors = False
+    for item_id in item_ids:
+        try:
+            item = load_item(item_id)
+        except FileNotFoundError:
+            click.echo(f"Error: item '{item_id}' not found.", err=True)
+            errors = True
+            continue
+        item.status = status
+        if status == "doing":
+            item.phase = phase or item.phase or "plan"
+        elif status == "backlog":
+            item.phase = None
+        if sprint_target is not None:
+            item.sprint_target = sprint_target
+        item.updated = date.today()
+        save_item(item)
+        click.echo(f"Moved {item_id} → {status}")
+    if errors:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -179,7 +189,7 @@ def show(item_id: str, output_json: bool):
 
 
 @main.command()
-@click.argument("item_id")
+@click.argument("item_ids", nargs=-1, required=True)
 @click.option("--title", default=None)
 @click.option("--priority", type=click.Choice(["P0", "P1", "P2", "P3", "P4"]), default=None)
 @click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), default=None)
@@ -203,27 +213,33 @@ def show(item_id: str, output_json: bool):
 @click.option(
     "--resolve-notes", "resolve_notes", is_flag=True, default=False, help="Mark all flagged notes as resolved."
 )
-def edit(item_id, resolve_notes: bool, **kwargs):
-    """Edit fields on a backlog item."""
-    try:
-        item = load_item(item_id)
-    except FileNotFoundError:
-        raise SystemExit(f"Error: item '{item_id}' not found.")
+def edit(item_ids: tuple[str, ...], resolve_notes: bool, **kwargs):
+    """Edit fields on a backlog item (accepts multiple IDs)."""
+    errors = False
+    for item_id in item_ids:
+        try:
+            item = load_item(item_id)
+        except FileNotFoundError:
+            click.echo(f"Error: item '{item_id}' not found.", err=True)
+            errors = True
+            continue
 
-    for field, value in kwargs.items():
-        if value is not None and value != ():
-            if isinstance(value, tuple):
-                setattr(item, field, list(value))
-            else:
-                setattr(item, field, value)
+        for field, value in kwargs.items():
+            if value is not None and value != ():
+                if isinstance(value, tuple):
+                    setattr(item, field, list(value))
+                else:
+                    setattr(item, field, value)
 
-    if resolve_notes:
-        for n in item.comments:
-            if n.get("flagged"):
-                n["resolved"] = True
+        if resolve_notes:
+            for n in item.comments:
+                if n.get("flagged"):
+                    n["resolved"] = True
 
-    save_item(item)
-    click.echo(f"Updated: {item_id}")
+        save_item(item)
+        click.echo(f"Updated: {item_id}")
+    if errors:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -303,6 +319,84 @@ def set_sprint(number: int):
 
     set_current_sprint(number)
     click.echo(f"Current sprint set to {number}")
+
+
+@main.command("sprint-status")
+@click.option("--sprint", "sprint_number", type=int, default=None, help="Sprint number (default: current sprint).")
+def sprint_status(sprint_number: int | None):
+    """Show current sprint items grouped by phase."""
+    target = sprint_number if sprint_number is not None else get_current_sprint()
+    if target is None:
+        raise SystemExit("Error: no current sprint set. Use 'set-sprint' or pass --sprint N.")
+
+    items = [i for i in load_all() if i.sprint_target == target]
+    if not items:
+        click.echo(f"No items found for sprint {target}.")
+        return
+
+    phases = ["plan", "spec", "build", "review"]
+    no_phase = [i for i in items if not i.phase or i.phase not in phases]
+    done_items = [i for i in items if i.status == "done"]
+
+    click.echo(f"Sprint {target} — {len(items)} items\n")
+
+    for phase in phases:
+        phase_items = [i for i in items if i.phase == phase]
+        if not phase_items:
+            continue
+        click.echo(f"  {phase} ({len(phase_items)}):")
+        for item in phase_items:
+            click.echo(f"    {item.id:<50} {item.title}")
+
+    if done_items:
+        click.echo(f"  done ({len(done_items)}):")
+        for item in done_items:
+            click.echo(f"    {item.id:<50} {item.title}")
+
+    if no_phase:
+        click.echo(f"  unphased ({len(no_phase)}):")
+        for item in no_phase:
+            click.echo(f"    {item.id:<50} {item.title}")
+
+    done_count = len(done_items)
+    click.echo(f"\nProgress: {done_count}/{len(items)} complete")
+
+
+@main.command()
+@click.option("--sprint", "sprint_number", type=int, default=None, help="Sprint number (default: current sprint).")
+def validate(sprint_number: int | None):
+    """Check sprint items have required spec fields."""
+    target = sprint_number if sprint_number is not None else get_current_sprint()
+    if target is None:
+        raise SystemExit("Error: no current sprint set. Use 'set-sprint' or pass --sprint N.")
+
+    items = [i for i in load_all() if i.sprint_target == target]
+    if not items:
+        click.echo(f"No items found for sprint {target}.")
+        raise SystemExit(0)
+
+    any_fail = False
+    for item in items:
+        missing = []
+        if not item.goal:
+            missing.append("goal")
+        if not item.complexity:
+            missing.append("complexity")
+        if len(item.acceptance_criteria) < 2:
+            missing.append(f"acceptance_criteria (need >=2, have {len(item.acceptance_criteria)})")
+        if len(item.technical_specs) < 1:
+            missing.append(f"technical_specs (need >=1, have {len(item.technical_specs)})")
+
+        if missing:
+            any_fail = True
+            click.echo(f"FAIL  {item.id}")
+            for m in missing:
+                click.echo(f"        missing: {m}")
+        else:
+            click.echo(f"PASS  {item.id}")
+
+    if any_fail:
+        raise SystemExit(1)
 
 
 @main.command()
