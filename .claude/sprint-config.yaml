@@ -27,6 +27,7 @@ backlog_commands:
   move: ".venv/bin/agile-backlog move {id} --status {status}"
   edit: ".venv/bin/agile-backlog edit {id}"
   flagged: ".venv/bin/agile-backlog flagged"
+  context_report: ".venv/bin/agile-backlog context-report"
 
 # Documentation paths
 docs:
