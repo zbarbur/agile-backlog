@@ -31,7 +31,7 @@ test_plan:
 - "tests/test_cli.py: test_move_with_sprint_flag \u2014 move + set sprint in one call"
 - "tests/test_cli.py: test_bulk_partial_failure \u2014 one bad ID doesn't abort others"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

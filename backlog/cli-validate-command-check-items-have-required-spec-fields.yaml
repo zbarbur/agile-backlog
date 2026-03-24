@@ -31,7 +31,7 @@ test_plan:
   \ AC"
 - "tests/test_cli.py: test_validate_exit_code \u2014 returns 1 on failure"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

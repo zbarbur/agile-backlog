@@ -30,7 +30,7 @@ test_plan:
 - "tests/test_cli.py: test_sprint_status_by_number \u2014 --sprint flag filters correctly"
 - "tests/test_cli.py: test_sprint_status_empty \u2014 no items prints clean message"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
