@@ -1,5 +1,5 @@
 title: Usability of the sprint filter
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 22
@@ -7,14 +7,22 @@ created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Improve sprint filter UX \u2014 show only recent/active sprints, not all historical\
+  \ ones"
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 filter sprint_options to recent range"
+- "File: src/agile_backlog/pure.py \u2014 helper to determine recent sprint range"
 description: as more and more sprint are done, the selection gets longer
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Sprint filter shows only recent sprints (current +/- 2) plus 'current' option
+- Option to show all sprints if needed
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: verify sprint dropdown shows only recent sprints'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

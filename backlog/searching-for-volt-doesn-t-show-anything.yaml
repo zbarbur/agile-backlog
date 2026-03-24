@@ -1,20 +1,27 @@
 title: Searching for "Volt" doesn't show anything
-status: backlog
+status: doing
 priority: P2
 category: bug
-sprint_target: null
+sprint_target: 22
 created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix search in backlog view to find items that match in board view
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/pure.py \u2014 check filter_items search logic"
+- "File: src/agile_backlog/app.py \u2014 verify search is applied consistently"
 description: 'but I do find it when in the board '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Search finds items by title substring (case-insensitive)
+- Search works consistently in both board and backlog views
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: test_filter_items_search_case_insensitive'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []
