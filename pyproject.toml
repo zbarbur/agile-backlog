@@ -41,7 +41,7 @@ agile-backlog = "agile_backlog.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-agile_backlog = ["schema.yaml", "py.typed", "bundled_skills/**/*.md"]
+agile_backlog = ["schema.yaml", "py.typed", "bundled_skills/**/*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "agile_backlog.__version__"}

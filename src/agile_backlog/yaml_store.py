@@ -74,7 +74,9 @@ def load_all() -> list[BacklogItem]:
 
 
 def delete_item(item_id: str) -> None:
-    path = get_backlog_dir() / f"{item_id}.yaml"
+    path = (get_backlog_dir() / f"{item_id}.yaml").resolve()
+    if not path.is_relative_to(get_backlog_dir().resolve()):
+        raise ValueError(f"Invalid item_id: {item_id!r}")
     if not path.exists():
         raise FileNotFoundError(f"No backlog item: {item_id}")
     path.unlink()
