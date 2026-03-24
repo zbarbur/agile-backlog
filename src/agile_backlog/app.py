@@ -310,30 +310,30 @@ if (!window._mcAddPasteListenerAdded) {
             )
 
             # Archive toggle + days config — only visible in Board view
-            with ui.element("div").style("display:flex;align-items:center;gap:8px;"):
+            from agile_backlog.config import get_archive_days as _get_ad
+            from agile_backlog.config import set_archive_days as _set_ad
+
+            archive_days_options = {7: "7d", 14: "14d", 30: "30d", 90: "90d"}
+            current_ad = _get_ad()
+
+            def _on_archive_days_change(e):
+                if e.value is not None:
+                    _set_ad(int(e.value))
+                    render_board.refresh()
+
+            with ui.element("div").style("display:flex;align-items:center;gap:6px;"):
                 archive_toggle = (
                     ui.checkbox("Show archived", value=False)
                     .classes("mc-done-check")
                     .style("font-size:11px;color:#71717a;")
                 )
-
-                from agile_backlog.config import get_archive_days as _get_ad
-                from agile_backlog.config import set_archive_days as _set_ad
-
-                def _on_archive_days_change(e):
-                    try:
-                        val = int(e.value)
-                        if val > 0:
-                            _set_ad(val)
-                            render_board.refresh()
-                    except (ValueError, TypeError):
-                        pass
-
                 (
-                    ui.number(label="days", value=_get_ad(), min=1, max=365, step=1)
-                    .props("dense outlined")
-                    .style("max-width:70px;font-size:10px;color:#71717a;")
-                    .on("change", _on_archive_days_change)
+                    ui.select(options=archive_days_options, value=current_ad, on_change=_on_archive_days_change)
+                    .props("dense borderless dark")
+                    .style(
+                        "min-width:55px;max-width:65px;font-size:10px;color:#71717a;"
+                        "font-family:'IBM Plex Mono',monospace;"
+                    )
                 )
 
         # === Filter Bar ===
