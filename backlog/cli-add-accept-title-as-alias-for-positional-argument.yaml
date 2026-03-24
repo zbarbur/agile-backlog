@@ -25,7 +25,7 @@ test_plan:
 - 'tests/test_cli.py: test add with --title, test add with positional, test error
   when both given'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

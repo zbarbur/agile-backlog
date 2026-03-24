@@ -27,7 +27,7 @@ test_plan:
 - 'tests/test_components.py: test card renders sprint badge, test card without sprint
   has no badge'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_components.py: test image rendering has max-width/max-height constraints'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
