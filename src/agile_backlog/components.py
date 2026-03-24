@@ -639,10 +639,12 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
         with images_container:
             if item.images:
                 with ui.element("div").style("display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;"):
-                    for idx, img_entry in enumerate(item.images):
-                        fname = img_entry.get("filename", "")
+                    for img_entry in item.images:
+                        fname = Path(img_entry.get("filename", "")).name  # sanitize path components
                         img_path = _get_images_dir(item.id) / fname
-                        if not img_path.exists():
+                        if not img_path.exists() or not img_path.resolve().is_relative_to(
+                            _get_images_dir(item.id).resolve()
+                        ):
                             continue
                         # Read file as base64 data URL for reliable display
                         mime_type = mimetypes.guess_type(str(img_path))[0] or "image/png"
@@ -674,8 +676,9 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
 
                             img_el.on("click", _view_image)
 
-                            def _delete_image(_e, i=idx):
-                                item.images.pop(i)
+                            def _delete_image(_e, entry=img_entry):
+                                if entry in item.images:
+                                    item.images.remove(entry)
                                 _save_and_refresh_images()
 
                             ui.button(
