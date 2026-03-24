@@ -581,6 +581,24 @@ class TestInstallSkills:
         assert "Skipped" not in result.output
 
 
+class TestContextReport:
+    def test_context_report_command(self, tmp_path: Path):
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "reads-test.jsonl"
+        log_file.write_text('{"ts":"2026-03-24T10:00:00Z","file":"/src/app.py","offset":0,"limit":200}\n')
+        output_dir = tmp_path / "reports"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            ["context-report", "--log-dir", str(log_dir), "--output-dir", str(output_dir), "--sprint", "23"],
+        )
+        assert result.exit_code == 0
+        assert "SPRINT23_CONTEXT_REPORT.json" in result.output
+        assert (output_dir / "SPRINT23_CONTEXT_REPORT.json").exists()
+
+
 class TestBacklogDirOverride:
     @pytest.fixture(autouse=True)
     def _patch_backlog_dir(self):

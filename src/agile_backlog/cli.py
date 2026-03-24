@@ -10,6 +10,7 @@ import yaml
 
 import agile_backlog.yaml_store as _yaml_store
 from agile_backlog.config import get_current_sprint
+from agile_backlog.context_report import generate_sprint_report
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
 
@@ -509,6 +510,16 @@ def migrate(dry_run: bool):
         click.echo(f"\n{len(changes)} item(s) would be migrated. Run without --dry-run to apply.")
     else:
         click.echo(f"\n{len(changes)} item(s) migrated.")
+
+
+@main.command("context-report")
+@click.option("--log-dir", default="/tmp/claude-context-logs", help="Directory with session read logs")
+@click.option("--output-dir", default="docs/sprints", help="Output directory for report")
+@click.option("--sprint", required=True, type=int, help="Sprint number")
+def context_report(log_dir, output_dir, sprint):
+    """Generate a sprint context report from session read logs."""
+    report_path = generate_sprint_report(Path(log_dir), Path(output_dir), sprint)
+    click.echo(f"Report generated: {report_path}")
 
 
 def _pid_file() -> Path:
