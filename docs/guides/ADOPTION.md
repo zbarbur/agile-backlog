@@ -9,9 +9,10 @@ This is a one-time migration runbook. Follow each section in order.
 ## 1. Install agile-backlog
 
 ```bash
-pip install agile-backlog
+# Install from GitHub (not yet published to PyPI)
+pip install git+https://github.com/zbarbur/agile-backlog.git
 # or if using uv:
-uv pip install agile-backlog
+uv pip install git+https://github.com/zbarbur/agile-backlog.git
 ```
 
 Verify:
