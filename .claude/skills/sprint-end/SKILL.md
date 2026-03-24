@@ -122,6 +122,32 @@ Run a structured memory audit, then update:
 
 **4. Verify MEMORY.md index** matches actual files in the memory directory.
 
+## Phase 3b: Code Review (MANDATORY before merge)
+
+**This phase is mandatory — never skip it.** Run a code review on the full sprint diff before creating the PR.
+
+### Review the Sprint Diff
+
+```bash
+git diff main...HEAD --stat
+git diff main...HEAD
+```
+
+Use the `superpowers:requesting-code-review` skill or the `review` skill to perform a two-stage review:
+
+1. **Spec compliance** — does each item's implementation satisfy its acceptance criteria?
+2. **Code quality** — style, naming, XSS safety (html.escape), test coverage, no regressions, no dead code
+
+### Report Findings
+
+Present findings to the user:
+- Critical issues (must fix before merge)
+- Warnings (should fix, but not blocking)
+- Notes (informational)
+
+**If critical issues exist:** fix them, re-run CI, then proceed to merge.
+**If no critical issues:** proceed to Phase 4.
+
 ## Phase 4: Clean Slate
 
 ### Merge and Cleanup

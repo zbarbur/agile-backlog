@@ -2,6 +2,7 @@
 
 import base64
 import html as _html
+import mimetypes
 from datetime import date
 from pathlib import Path
 
@@ -93,7 +94,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         ui.element("div")
         .classes("mc-board-card")
         .style("margin:2px 0;")
-        .props(f'draggable="true" data-item-id="{item.id}" data-status="{status}"')
+        .props(f'draggable="true" data-item-id="{_html.escape(item.id)}" data-status="{_html.escape(status)}"')
     ):
         # Card (clickable)
         card_container = ui.element("div").style("cursor:pointer;")
@@ -327,7 +328,7 @@ def _render_side_panel_content(
                         with ui.element("div").style("display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"):
                             ui.html(
                                 f'<span style="font-size:10px;color:#71717a;font-style:italic;">'
-                                f'Resolve: "{preview}..."</span>'
+                                f'Resolve: "{_html.escape(preview)}..."</span>'
                             )
                             ui.button(
                                 "\u2713 Resolve",
@@ -608,8 +609,6 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
                         if not img_path.exists():
                             continue
                         # Read file as base64 data URL for reliable display
-                        import mimetypes
-
                         mime_type = mimetypes.guess_type(str(img_path))[0] or "image/png"
                         img_b64 = base64.b64encode(img_path.read_bytes()).decode()
                         data_url = f"data:{mime_type};base64,{img_b64}"
@@ -662,7 +661,7 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
     # Upload widget — outside _refresh_images so it's only created once
     def _handle_upload(e):
         content = e.content.read()
-        fname = e.name
+        fname = Path(e.name).name  # sanitize — strip directory components
         images_dir = _get_images_dir(item.id)
         dest = images_dir / fname
         counter = 1
@@ -896,7 +895,10 @@ def _render_backlog_list(
                 ui.element("div")
                 .classes(f"mc-card-row{selected_class}")
                 .style("position:relative;margin:2px 0;padding:0 4px;")
-                .props(f'draggable="true" data-item-id="{card_item.id}" data-section="{section}"')
+                .props(
+                    f'draggable="true" data-item-id="{_html.escape(card_item.id)}"'
+                    f' data-section="{_html.escape(section)}"'
+                )
             ):
                 # Card (clickable)
                 card_container = ui.element("div").style("cursor:pointer;")

@@ -4,14 +4,15 @@ priority: P2
 category: bug
 sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: the sizes of backlog/v.next/v.future are not retained when revisiting
-  the page
+description: "the sizes of backlog/v.next/v.future are not retained when revisiting\
+  \ the page \ncan remember the overall stage , which page was open backlog/board\
+  \ and what was the size and selected item"
 acceptance_criteria: []
 test_plan: []
 notes: ''
@@ -19,3 +20,4 @@ phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []
