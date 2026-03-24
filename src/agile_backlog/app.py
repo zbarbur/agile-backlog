@@ -466,7 +466,7 @@ if (!window._mcAddPasteListenerAdded) {
                     )
 
         # === Main Content Area ===
-        main_content = ui.element("div").style("flex:1;overflow:hidden;padding:8px 24px 16px;")
+        main_content = ui.element("div").style("flex:1;overflow:auto;padding:8px 24px 16px;")
 
         # === Board ===
         def move_item(item: BacklogItem, target: str):
@@ -667,7 +667,7 @@ if (!window._mcAddPasteListenerAdded) {
                             with (
                                 ui.element("div")
                                 .classes("mc-board-drop-zone")
-                                .style(f"flex:1;min-width:0;{col_style}")
+                                .style(f"flex:1;min-width:0;overflow-y:auto;{col_style}")
                                 .props(f'data-target-status="{col_status}"')
                             ):
                                 with ui.element("div").style(
