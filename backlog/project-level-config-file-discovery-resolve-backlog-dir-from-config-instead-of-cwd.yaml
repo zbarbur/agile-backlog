@@ -1,6 +1,6 @@
 title: "Project-level config file discovery \u2014 resolve backlog dir from config\
   \ instead of CWD"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 20

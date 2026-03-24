@@ -1,5 +1,5 @@
 title: Split CLI and UI dependencies
-status: doing
+status: done
 priority: P3
 category: chore
 sprint_target: 20
@@ -36,7 +36,7 @@ comments:
     NiceGUI. Use extras: agile-backlog[ui] for full install, base package for CLI
     only. Also recommend uv pip install for speed.'
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-24'
   author: agent
 images: []
