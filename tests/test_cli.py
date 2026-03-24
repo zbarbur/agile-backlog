@@ -311,6 +311,13 @@ class TestServe:
         assert calls[0]["port"] == 8501
         assert calls[0]["reload"] is False
 
+    def test_serve_without_nicegui(self, runner: CliRunner):
+        """Serve shows helpful error when NiceGUI not installed."""
+        with patch.dict("sys.modules", {"agile_backlog.app": None}):
+            result = runner.invoke(main, ["serve"])
+        assert result.exit_code != 0
+        assert "agile-backlog[ui]" in result.output
+
 
 class TestJsonOutput:
     def test_list_json(self, backlog_dir):
@@ -518,3 +525,55 @@ class TestValidate:
         with patch("agile_backlog.cli.get_current_sprint", return_value=5):
             result = runner.invoke(main, ["validate"])
         assert result.exit_code == 1
+
+
+class TestDelete:
+    def test_delete_item(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Doomed", "--category", "feature"])
+        assert (backlog_dir / "doomed.yaml").exists()
+        result = runner.invoke(main, ["delete", "doomed", "--yes"])
+        assert result.exit_code == 0
+        assert "Deleted" in result.output
+        assert not (backlog_dir / "doomed.yaml").exists()
+
+    def test_delete_multiple(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "A", "--category", "feature"])
+        runner.invoke(main, ["add", "B", "--category", "feature"])
+        result = runner.invoke(main, ["delete", "a", "b", "--yes"])
+        assert result.exit_code == 0
+        assert not (backlog_dir / "a.yaml").exists()
+        assert not (backlog_dir / "b.yaml").exists()
+
+    def test_delete_nonexistent(self, runner: CliRunner):
+        result = runner.invoke(main, ["delete", "nope", "--yes"])
+        assert result.exit_code == 1
+        assert "not found" in result.output
+
+    def test_delete_confirm_abort(self, runner: CliRunner):
+        runner.invoke(main, ["add", "Keep me", "--category", "feature"])
+        result = runner.invoke(main, ["delete", "keep-me"], input="n\n")
+        assert "Aborted" in result.output
+
+
+class TestBacklogDirOverride:
+    @pytest.fixture(autouse=True)
+    def _patch_backlog_dir(self):
+        """Override the module-level autouse fixture — let real get_backlog_dir run."""
+        from agile_backlog.yaml_store import set_backlog_dir
+
+        yield
+        set_backlog_dir(None)
+
+    def test_backlog_dir_flag(self, runner: CliRunner, tmp_path: Path):
+        """Global --backlog-dir flag overrides default backlog directory."""
+        custom_dir = tmp_path / "my-backlog"
+        result = runner.invoke(main, ["--backlog-dir", str(custom_dir), "add", "Test item", "--category", "feature"])
+        assert result.exit_code == 0
+        assert (custom_dir / "test-item.yaml").exists()
+
+    def test_backlog_dir_list(self, runner: CliRunner, tmp_path: Path):
+        """Items created with --backlog-dir are found with same flag."""
+        custom_dir = tmp_path / "my-backlog"
+        runner.invoke(main, ["--backlog-dir", str(custom_dir), "add", "Custom item", "--category", "feature"])
+        result = runner.invoke(main, ["--backlog-dir", str(custom_dir), "list"])
+        assert "custom-item" in result.output

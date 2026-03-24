@@ -234,6 +234,7 @@ The sprint skills are not yet distributed with the pip package. Adopt them from 
 
 | Skill | Purpose | Likely needs adaptation? |
 |-------|---------|------------------------|
+| `cli-reference` | All CLI commands, flags, and usage patterns | No — copy as-is, always keep updated |
 | `sprint-start` | Initialize sprint — scope selection, task specs, branch | Yes — commands, branch pattern |
 | `sprint-execute` | Implement tasks — TDD, CI gates, specialist agents | Yes — specialist defaults, CI command |
 | `sprint-end` | Close sprint — handover doc, status updates | Minimal |

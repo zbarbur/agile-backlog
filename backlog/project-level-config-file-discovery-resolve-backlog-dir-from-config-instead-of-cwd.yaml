@@ -34,7 +34,7 @@ test_plan:
   \ error"
 - "tests/test_cli.py: test_backlog_dir_override \u2014 global flag works"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

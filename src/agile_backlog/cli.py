@@ -11,12 +11,19 @@ import yaml
 import agile_backlog.yaml_store as _yaml_store
 from agile_backlog.config import get_current_sprint
 from agile_backlog.models import BacklogItem, slugify
-from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
+from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
 
 
 @click.group()
-def main():
+@click.option(
+    "--backlog-dir", "backlog_dir", type=click.Path(exists=False), default=None, help="Override backlog directory path."
+)
+def main(backlog_dir: str | None):
     """Lightweight Kanban board tool for agentic development."""
+    if backlog_dir:
+        from agile_backlog.yaml_store import set_backlog_dir
+
+        set_backlog_dir(Path(backlog_dir))
 
 
 @main.command()
@@ -186,6 +193,28 @@ def show(item_id: str, output_json: bool):
             flag_marker = " [FLAGGED]" if n.get("flagged") else ""
             resolved_marker = " [resolved]" if n.get("resolved") else ""
             click.echo(f"  - {n['text']} ({n['created']}){flag_marker}{resolved_marker}")
+
+
+@main.command()
+@click.argument("item_ids", nargs=-1, required=True)
+@click.option("--yes", "skip_confirm", is_flag=True, help="Skip confirmation prompt.")
+def delete(item_ids: tuple[str, ...], skip_confirm: bool):
+    """Delete backlog items (accepts multiple IDs)."""
+    if not skip_confirm:
+        names = ", ".join(item_ids)
+        if not click.confirm(f"Delete {len(item_ids)} item(s): {names}?"):
+            click.echo("Aborted.")
+            return
+    errors = False
+    for item_id in item_ids:
+        try:
+            delete_item(item_id)
+            click.echo(f"Deleted: {item_id}")
+        except FileNotFoundError:
+            click.echo(f"Error: item '{item_id}' not found.", err=True)
+            errors = True
+    if errors:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -481,7 +510,10 @@ def serve(port: int, host: str, reload: bool):
     """Open the Kanban board in the browser."""
     import atexit
 
-    from agile_backlog.app import run_app
+    try:
+        from agile_backlog.app import run_app
+    except ImportError:
+        raise SystemExit("Error: NiceGUI is not installed. Install with: pip install agile-backlog[ui]")
 
     pf = _pid_file()
     pf.write_text(str(os.getpid()))

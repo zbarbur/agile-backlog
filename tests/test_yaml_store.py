@@ -129,3 +129,26 @@ class TestSaveOverwrite:
         save_item(_make_item(description="v2"))
         loaded = load_item("test-item")
         assert loaded.description == "v2"
+
+
+class TestBacklogDirOverride:
+    def test_set_backlog_dir_override(self, tmp_path: Path):
+        import agile_backlog.yaml_store as store
+
+        custom = tmp_path / "custom-backlog"
+        store.set_backlog_dir(custom)
+        try:
+            assert store._backlog_dir_override == custom
+        finally:
+            store.set_backlog_dir(None)
+            assert store._backlog_dir_override is None
+
+    def test_override_creates_dir(self, tmp_path: Path):
+        import agile_backlog.yaml_store as store
+
+        nested = tmp_path / "deep" / "nested" / "backlog"
+        store.set_backlog_dir(nested)
+        try:
+            assert store._backlog_dir_override == nested
+        finally:
+            store.set_backlog_dir(None)

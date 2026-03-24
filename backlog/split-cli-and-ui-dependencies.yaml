@@ -28,7 +28,7 @@ test_plan:
 - "tests/test_cli.py: test_serve_without_nicegui \u2014 ImportError caught gracefully"
 - 'Manual: pip install without [ui], verify CLI commands work'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:

@@ -27,7 +27,7 @@ test_plan:
 - "tests/test_cli.py: test_delete_nonexistent \u2014 reports error"
 - "tests/test_cli.py: test_delete_with_yes_flag \u2014 skips confirmation"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
