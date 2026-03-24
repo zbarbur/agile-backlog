@@ -13,6 +13,7 @@ from agile_backlog.pure import (
     relative_time,
     render_card_html,
     render_comment_html,
+    safe_html,
 )
 
 
@@ -455,3 +456,23 @@ class TestArchiveDone:
     def test_non_done_items_always_visible(self):
         item = _item(status="doing", updated=date.today() - timedelta(days=30))
         assert is_recently_done(item, days=7)
+
+
+class TestSafeHtml:
+    def test_escapes_angle_brackets(self):
+        assert safe_html("<script>alert('xss')</script>") == "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;"
+
+    def test_escapes_ampersand(self):
+        assert safe_html("A & B") == "A &amp; B"
+
+    def test_escapes_quotes(self):
+        assert "&quot;" in safe_html('"hello"')
+
+    def test_passthrough_safe_text(self):
+        assert safe_html("Hello World") == "Hello World"
+
+    def test_render_card_html_escapes_title(self):
+        item = _item(title='<img src=x onerror="alert(1)">')
+        html = render_card_html(item)
+        assert "<img" not in html
+        assert "&lt;img" in html

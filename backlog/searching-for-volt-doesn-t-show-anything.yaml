@@ -1,8 +1,8 @@
-title: add the project name to the header of the page
+title: Searching for "Volt" doesn't show anything
 status: backlog
-priority: P1
-category: feature
-sprint_target: 22
+priority: P2
+category: bug
+sprint_target: null
 created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
@@ -10,8 +10,7 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'As now we have multiple projects, I need to know which one I''m looking
-  at '
+description: 'but I do find it when in the board '
 acceptance_criteria: []
 test_plan: []
 notes: ''

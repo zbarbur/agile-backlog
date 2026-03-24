@@ -53,7 +53,7 @@ def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
 @ui.page("/")
 def kanban_page():
     """Render the Kanban board — Mission Control dark theme."""
-    from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
+    from agile_backlog.yaml_store import get_backlog_dir, item_exists, load_all, load_item, save_item
 
     # --- Inject global styles ---
     ui.add_head_html(GLOBAL_CSS)
@@ -170,9 +170,93 @@ def kanban_page():
                             .style("min-width:120px;")
                         )
                     add_description = ui.textarea("Description").props("outlined").style("width:100%;min-height:150px;")
+
+                    # Image paste/upload in add dialog — store in memory until save
+                    pending_images: list[dict] = []
+                    images_preview = ui.element("div")
+
+                    def _refresh_add_preview():
+                        images_preview.clear()
+                        if not pending_images:
+                            return
+                        with images_preview:
+                            with ui.element("div").style("display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;"):
+                                for pidx, pimg in enumerate(pending_images):
+                                    with ui.element("div").style(
+                                        "position:relative;width:80px;height:60px;overflow:hidden;"
+                                        "border-radius:4px;border:1px solid #27272a;"
+                                    ):
+                                        ui.image(f"data:{pimg['mime']};base64,{pimg['b64']}").style(
+                                            "width:100%;height:100%;object-fit:cover;"
+                                        )
+
+                                        def _remove(i=pidx):
+                                            pending_images.pop(i)
+                                            _refresh_add_preview()
+
+                                        ui.button("\u00d7", on_click=_remove).props("flat dense no-caps").style(
+                                            "position:absolute;top:1px;right:1px;min-width:16px;min-height:16px;"
+                                            "padding:0;font-size:11px;color:#f87171;background:rgba(0,0,0,0.7);"
+                                            "border-radius:3px;line-height:1;"
+                                        )
+
+                    add_paste_trigger = ui.element("div").props('id="mc-add-paste-trigger"').style("display:none;")
+
+                    async def _handle_add_paste(_e):
+                        data_url = await ui.run_javascript("window._addPastedImage || null")
+                        if not data_url or not isinstance(data_url, str):
+                            return
+                        await ui.run_javascript("window._addPastedImage = null")
+                        if not data_url.startswith("data:image/"):
+                            return
+                        header, b64data = data_url.split(",", 1)
+                        mime = header.split(":")[1].split(";")[0]
+                        ext_map = {
+                            "image/png": ".png",
+                            "image/jpeg": ".jpg",
+                            "image/gif": ".gif",
+                            "image/webp": ".webp",
+                        }
+                        ext = ext_map.get(mime, ".png")
+                        fname = f"pasted-{len(pending_images) + 1}{ext}"
+                        pending_images.append({"filename": fname, "mime": mime, "b64": b64data})
+                        _refresh_add_preview()
+
+                    add_paste_trigger.on("click", _handle_add_paste)
+
+                    _add_paste_js = """
+if (!window._mcAddPasteListenerAdded) {
+    window._mcAddPasteListenerAdded = true;
+    document.addEventListener('paste', function(e) {
+        const trigger = document.getElementById('mc-add-paste-trigger');
+        if (!trigger) return;
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = function() {
+                    window._addPastedImage = reader.result;
+                    trigger.click();
+                };
+                reader.readAsDataURL(blob);
+                e.preventDefault();
+                break;
+            }
+        }
+    });
+}
+"""
+                    ui.timer(0.1, lambda: ui.run_javascript(_add_paste_js), once=True)
+
+                    ui.html('<div style="font-size:10px;color:#52525b;margin-top:4px;">Paste image with Cmd+V</div>')
+
                     add_error = ui.label("").style("color:#f87171;font-size:11px;display:none;")
 
                     def _save_new_item():
+                        import base64 as _b64
+
                         title = (add_title.value or "").strip()
                         cat = (add_category.value or "").strip()
                         if not title or not cat:
@@ -184,13 +268,22 @@ def kanban_page():
                             add_error.style("display:block;")
                             add_error.set_text("Title produces an invalid ID.")
                             return
-                        # Handle slug collision
                         base_id = item_id
                         counter = 2
                         while item_exists(item_id):
                             item_id = f"{base_id}-{counter}"
                             counter += 1
                         sprint_val = add_sprint.value
+                        image_entries = []
+                        if pending_images:
+                            images_dir = get_backlog_dir() / "images" / item_id
+                            images_dir.mkdir(parents=True, exist_ok=True)
+                            for pimg in pending_images:
+                                dest = images_dir / pimg["filename"]
+                                dest.write_bytes(_b64.b64decode(pimg["b64"]))
+                                from datetime import date as _date
+
+                                image_entries.append({"filename": pimg["filename"], "created": str(_date.today())})
                         new_item = BacklogItem(
                             id=item_id,
                             title=title,
@@ -198,6 +291,7 @@ def kanban_page():
                             category=cat,
                             description=add_description.value or "",
                             sprint_target=int(sprint_val) if sprint_val is not None and sprint_val != "" else None,
+                            images=image_entries,
                         )
                         save_item(new_item)
                         add_dialog.close()
@@ -215,12 +309,32 @@ def kanban_page():
                 "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
             )
 
-            # Archive toggle — only visible in Board view
-            archive_toggle = (
-                ui.checkbox("Show archived", value=False)
-                .classes("mc-done-check")
-                .style("font-size:11px;color:#71717a;")
-            )
+            # Archive toggle + days config — only visible in Board view
+            from agile_backlog.config import get_archive_days as _get_ad
+            from agile_backlog.config import set_archive_days as _set_ad
+
+            archive_days_options = {7: "7d", 14: "14d", 30: "30d", 90: "90d"}
+            current_ad = _get_ad()
+
+            def _on_archive_days_change(e):
+                if e.value is not None:
+                    _set_ad(int(e.value))
+                    render_board.refresh()
+
+            with ui.element("div").style("display:flex;align-items:center;gap:6px;"):
+                archive_toggle = (
+                    ui.checkbox("Show archived", value=False)
+                    .classes("mc-done-check")
+                    .style("font-size:11px;color:#71717a;")
+                )
+                (
+                    ui.select(options=archive_days_options, value=current_ad, on_change=_on_archive_days_change)
+                    .props("dense borderless dark")
+                    .style(
+                        "min-width:55px;max-width:65px;font-size:10px;color:#71717a;"
+                        "font-family:'IBM Plex Mono',monospace;"
+                    )
+                )
 
         # === Filter Bar ===
         priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
@@ -352,7 +466,7 @@ def kanban_page():
                     )
 
         # === Main Content Area ===
-        main_content = ui.element("div").style("flex:1;overflow:hidden;padding:8px 24px 16px;")
+        main_content = ui.element("div").style("flex:1;overflow:auto;padding:8px 24px 16px;")
 
         # === Board ===
         def move_item(item: BacklogItem, target: str):
@@ -388,7 +502,12 @@ def kanban_page():
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
-            done_items = [i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=7))]
+            from agile_backlog.config import get_archive_days
+
+            archive_days = get_archive_days()
+            done_items = [
+                i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=archive_days))
+            ]
 
             # Apply search filter via filter_items (sprint handled below for multi-select)
             filtered_backlog = filter_items(backlog_items, search=sq)
@@ -548,7 +667,7 @@ def kanban_page():
                             with (
                                 ui.element("div")
                                 .classes("mc-board-drop-zone")
-                                .style(f"flex:1;min-width:0;{col_style}")
+                                .style(f"flex:1;min-width:0;overflow-y:auto;{col_style}")
                                 .props(f'data-target-status="{col_status}"')
                             ):
                                 with ui.element("div").style(
@@ -653,6 +772,26 @@ document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
                     _set_view(saved)
 
             ui.timer(0.1, _restore_view, once=True)
+
+            # Auto-reload when YAML files change on disk
+            last_mtime = {"value": 0.0}
+
+            def _check_file_changes():
+                from agile_backlog.yaml_store import get_backlog_dir
+
+                backlog_dir = get_backlog_dir()
+                if not backlog_dir.exists():
+                    return
+                current_mtime = max(
+                    (f.stat().st_mtime for f in backlog_dir.glob("*.yaml")),
+                    default=0.0,
+                )
+                if current_mtime > last_mtime["value"]:
+                    if last_mtime["value"] > 0:
+                        render_board.refresh()
+                    last_mtime["value"] = current_mtime
+
+            ui.timer(2.0, _check_file_changes)
 
 
 def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = False):

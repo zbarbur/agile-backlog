@@ -6,7 +6,7 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 20
+current_sprint: 21
 
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
@@ -41,6 +41,9 @@ branch_pattern: "sprint{N}/main"
 commit_style: conventional
 
 # Sprint settings
+# Archive — done items older than this are hidden on the board
+archive_days: 7
+
 default_sprint_capacity:
   small: 3-4
   medium: 2-3

@@ -1,5 +1,5 @@
 title: review the comments feature once again
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 21
@@ -7,16 +7,24 @@ created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Review and fix comments UX \u2014 resolve pain points from real usage"
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 review comment rendering and actions"
+- "File: src/agile_backlog/pure.py \u2014 comment_thread_html review"
 description: review the comments feature once again  in terms of usability, flow and
   see how to use it more for backlog work not related for current sprint plan and
   execution
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Comments display correctly in side panel
+- Flagged comments visually distinct
+- Resolve action works from side panel
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual: add, flag, resolve comments \u2014 verify full flow"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

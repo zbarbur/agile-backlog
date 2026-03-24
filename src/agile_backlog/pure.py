@@ -8,6 +8,11 @@ from agile_backlog.models import BacklogItem
 from agile_backlog.tokens import CATEGORY_STYLES, PRIORITY_COLORS, PRIORITY_ORDER
 
 
+def safe_html(text: str) -> str:
+    """Escape user content for safe embedding in HTML. Use this for ALL user-provided text."""
+    return _html.escape(text)
+
+
 def category_style(category: str) -> tuple[str, str]:
     """Return (text_color, bg_color) for a category."""
     return CATEGORY_STYLES.get(category, ("#9ca3af", "rgba(156,163,175,0.10)"))

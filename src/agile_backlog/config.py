@@ -33,6 +33,32 @@ def get_current_sprint() -> int | None:
     return data.get("current_sprint")
 
 
+def get_archive_days() -> int:
+    sprint_config = _sprint_config_path()
+    if sprint_config.exists():
+        data = yaml.safe_load(sprint_config.read_text()) or {}
+        return data.get("archive_days", 7)
+    path = _config_path()
+    if path.exists():
+        data = yaml.safe_load(path.read_text()) or {}
+        return data.get("archive_days", 7)
+    return 7
+
+
+def set_archive_days(days: int) -> None:
+    path = _sprint_config_path()
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"archive_days: {days}\n")
+        return
+    text = path.read_text()
+    if re.search(r"^archive_days:", text, re.MULTILINE):
+        text = re.sub(r"^archive_days:.*$", f"archive_days: {days}", text, flags=re.MULTILINE)
+    else:
+        text = text.rstrip() + f"\narchive_days: {days}\n"
+    path.write_text(text)
+
+
 def set_current_sprint(sprint: int | None) -> None:
     path = _sprint_config_path()
     if not path.exists():

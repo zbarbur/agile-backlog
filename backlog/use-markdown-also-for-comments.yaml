@@ -1,22 +1,32 @@
 title: use markdown also for comments
-status: backlog
+status: done
 priority: P2
 category: feature
-sprint_target: 22
+sprint_target: 21
 created: 2026-03-23
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Render comment text as markdown in the side panel for richer formatting
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/pure.py \u2014 render_comment_html uses markdown"
+- "File: src/agile_backlog/components.py \u2014 comment display uses ui.markdown or\
+  \ safe HTML"
 description: 'the comment chat are also not that readable from what the agent responds
 
   '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Comments render markdown (bold, links, code, lists)
+- "Raw text still works \u2014 no breaking change for plain comments"
+- "XSS safe \u2014 markdown renderer escapes user content"
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: test_comment_markdown_renders_bold'
+- 'tests/test_pure.py: test_comment_markdown_escapes_script_tags'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

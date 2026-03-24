@@ -1,5 +1,5 @@
 title: "Image paste in Add Item dialog \u2014 temp storage before save"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 21
@@ -8,16 +8,28 @@ updated: 2026-03-24
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: Allow pasting images in the Add Item dialog using temp storage before the item
+  is saved
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 paste handler in add dialog with temp\
+  \ dir"
+- "File: src/agile_backlog/app.py \u2014 move temp images on save, cleanup on cancel"
 description: Allow pasting images when creating a new item. Use temp directory during
   creation, move files to backlog/images/{item-id}/ on save. Currently images can
   only be added after item exists.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Cmd+V pastes an image in the Add Item dialog
+- Images stored in temp location until item is saved
+- On save, images move to backlog/images/{item-id}/
+- On cancel, temp images cleaned up
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual: paste image in add dialog, save \u2014 image persists"
+- "Manual: paste image in add dialog, cancel \u2014 no orphan files"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
