@@ -29,7 +29,7 @@ test_plan:
   \ title"
 - "Manual: edit item on board, save \u2014 card stays selected"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

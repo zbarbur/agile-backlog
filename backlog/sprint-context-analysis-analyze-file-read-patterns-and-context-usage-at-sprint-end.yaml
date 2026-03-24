@@ -30,7 +30,12 @@ comments:
     report, suggest CLAUDE.md/memory improvements. Track: files read count, token
     cost, re-read ratio (justified vs wasteful), subagent waste.'
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-24'
   author: agent
+- text: agreed , need to consider a sprint retrospective in general
+  flagged: true
+  resolved: false
+  created: '2026-03-24'
+  author: user
 images: []

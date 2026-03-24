@@ -53,7 +53,7 @@ def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
 @ui.page("/")
 def kanban_page():
     """Render the Kanban board — Mission Control dark theme."""
-    from agile_backlog.yaml_store import item_exists, load_all, save_item
+    from agile_backlog.yaml_store import item_exists, load_all, load_item, save_item
 
     # --- Inject global styles ---
     ui.add_head_html(GLOBAL_CSS)
@@ -96,6 +96,7 @@ def kanban_page():
 
             def _set_view(mode: str):
                 view_mode["current"] = mode
+                ui.run_javascript(f"localStorage.setItem('ab_view_mode', '{mode}')")
                 # Update button styles
                 if mode == "board":
                     board_btn_el.style("background:#fafafa;color:#09090b;")
@@ -476,6 +477,13 @@ def kanban_page():
                 board_list_ref: dict[str, object] = {"el": None}
                 board_panel_ref: dict[str, object] = {"el": None}
 
+                def _reselect_board_panel(item_id: str):
+                    try:
+                        reloaded = load_item(item_id)
+                        _open_board_panel(reloaded)
+                    except FileNotFoundError:
+                        pass
+
                 def _open_board_panel(item: BacklogItem):
                     board_panel_state["selected_id"] = item.id
                     if board_list_ref["el"]:
@@ -492,6 +500,7 @@ def kanban_page():
                                 render_board.refresh,
                                 _close_board_panel,
                                 all_items=items,
+                                reselect_fn=_reselect_board_panel,
                             )
 
                 def _close_board_panel():
@@ -636,6 +645,14 @@ document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
             archive_toggle.on_value_change(lambda _: render_board.refresh())
 
             render_board()
+
+            # Restore view mode from localStorage
+            async def _restore_view():
+                saved = await ui.run_javascript("localStorage.getItem('ab_view_mode')")
+                if saved and saved != view_mode["current"]:
+                    _set_view(saved)
+
+            ui.timer(0.1, _restore_view, once=True)
 
 
 def run_app(host: str = "127.0.0.1", port: int = 8501, reload: bool = False):

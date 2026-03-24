@@ -135,6 +135,8 @@ def _render_side_panel_content(
     refresh_fn,
     close_fn,
     all_items: list[BacklogItem] | None = None,
+    *,
+    reselect_fn=None,
 ) -> None:
     """Render the side panel with click-to-edit fields, comments thread, and pinned comment input."""
     from agile_backlog.yaml_store import load_all as _load_all
@@ -156,7 +158,10 @@ def _render_side_panel_content(
 
     def _save_and_refresh():
         save_fn(item)
+        item_id = item.id
         refresh_fn()
+        if reselect_fn:
+            reselect_fn(item_id)
 
     # Outer flex column: scrollable content + pinned comment input
     with ui.element("div").style("display:flex;flex-direction:column;height:100%;"):
@@ -777,6 +782,15 @@ def _render_backlog_list(
     nav_state: dict[str, int | None] = {"index": None}
     all_section_items = filtered_backlog + vnext_items + vfuture_items
 
+    def _reselect_after_refresh(item_id: str):
+        from agile_backlog.yaml_store import load_item as _load_item
+
+        try:
+            reloaded = _load_item(item_id)
+            _open_side_panel(reloaded)
+        except FileNotFoundError:
+            pass
+
     def _open_side_panel(item: BacklogItem):
         panel_state["selected_id"] = item.id
         # Sync keyboard nav index
@@ -790,7 +804,14 @@ def _render_backlog_list(
             panel_container_ref["el"].style("flex:4;min-width:320px;display:block;")
             panel_container_ref["el"].clear()
             with panel_container_ref["el"]:
-                _render_side_panel_content(item, save_fn, refresh_fn, _close_side_panel, all_items=all_items)
+                _render_side_panel_content(
+                    item,
+                    save_fn,
+                    refresh_fn,
+                    _close_side_panel,
+                    all_items=all_items,
+                    reselect_fn=_reselect_after_refresh,
+                )
 
     def _close_side_panel():
         panel_state["selected_id"] = None

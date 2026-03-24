@@ -29,7 +29,7 @@ test_plan:
 - "Manual: open backlog, select item, reload \u2014 item and panel state restored"
 - "Manual: switch to board view, reload \u2014 board view shown"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
