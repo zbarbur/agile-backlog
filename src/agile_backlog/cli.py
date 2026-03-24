@@ -28,13 +28,26 @@ def main(backlog_dir: str | None):
 
 
 @main.command()
-@click.argument("title")
+@click.argument("title_pos", required=False, default=None, metavar="TITLE")
+@click.option("--title", "title_opt", default=None, help="Item title (alternative to positional argument).")
 @click.option("--priority", type=click.Choice(["P0", "P1", "P2", "P3", "P4"]), default="P2", help="Priority level.")
 @click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), required=True, help="Category.")
 @click.option("--description", default="", help="Item description.")
 @click.option("--sprint", "sprint_target", type=int, default=None, help="Target sprint number.")
-def add(title: str, priority: str, category: str, description: str, sprint_target: int | None):
+def add(
+    title_pos: str | None,
+    title_opt: str | None,
+    priority: str,
+    category: str,
+    description: str,
+    sprint_target: int | None,
+):
     """Create a new backlog item."""
+    if title_pos and title_opt:
+        raise click.UsageError("Cannot specify both positional TITLE and --title option.")
+    title = title_pos or title_opt
+    if not title:
+        raise click.UsageError("Missing title. Provide as positional argument or --title option.")
     item_id = slugify(title)
 
     # Handle slug collision
