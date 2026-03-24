@@ -219,7 +219,35 @@ agile-backlog list --status backlog
 
 ---
 
-## 6. Start Your First Sprint
+## 6. Copy Sprint Skills (Manual — Temporary)
+
+The sprint skills (`sprint-start`, `sprint-execute`, `sprint-end`, etc.) are not yet distributed with the pip package. For now, copy them manually from the agile-backlog repo:
+
+```bash
+# From the agile-backlog source repo
+cp -r .claude/skills/sprint-start <target-project>/.claude/skills/
+cp -r .claude/skills/sprint-execute <target-project>/.claude/skills/
+cp -r .claude/skills/sprint-end <target-project>/.claude/skills/
+cp -r .claude/skills/sprint-plan-next <target-project>/.claude/skills/
+```
+
+> **Known limitation:** Skills copied this way won't auto-update when agile-backlog is upgraded. A bundled Claude Code plugin is planned to solve this — once shipped, `pip install --upgrade agile-backlog` will update both the CLI/UI and the sprint skills together.
+
+## 7. Updating
+
+The CLI and web UI update via pip:
+
+```bash
+pip install --upgrade agile-backlog
+```
+
+This picks up new commands, UI features, bug fixes, and model changes. Your project-specific files (`sprint-config.yaml`, `backlog/*.yaml`, `CLAUDE.md`) are untouched by upgrades.
+
+Sprint skills must be re-copied manually until plugin packaging is available.
+
+---
+
+## 8. Start Your First Sprint
 
 With agile-backlog set up and items imported, you can now use the sprint workflow:
 
