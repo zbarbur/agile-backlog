@@ -1,6 +1,6 @@
 title: "Sprint context analysis \u2014 analyze file read patterns and context usage\
   \ at sprint end"
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 23
@@ -10,18 +10,32 @@ depends_on: []
 tags:
 - skills
 - planning
-goal: ''
-complexity: null
-technical_specs: []
+goal: Analyze file read patterns during sessions and generate context efficiency reports
+  at sprint end
+complexity: L
+technical_specs:
+- "File: .claude/hooks/post-tool-use-read-logger \u2014 PostToolUse hook for Read\
+  \ tool"
+- "File: .claude/skills/sprint-end \u2014 add context report generation step"
+- "File: src/agile_backlog/context_report.py \u2014 report aggregation logic"
+- "File: tests/test_context_report.py \u2014 unit tests for report generation"
 description: 'At the end of each sprint, analyze the session to understand context
   patterns: which files were read most, which re-reads were wasteful, which files
   should be cached in memory vs read on demand, average file size vs tokens consumed.
   Output a context efficiency report and suggest CLAUDE.md or workflow improvements.
   Could use a Stop hook or be part of sprint-end skill.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- PostToolUse hook logs Read tool calls (file, line count, timestamp) to temp file
+- Sprint-end skill step generates context efficiency report
+- 'Report includes: files read count, re-read ratio, token estimate, top re-read files'
+- Report suggests CLAUDE.md or memory improvements based on patterns
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_context_report.py: test log parsing, aggregation, re-read detection,
+  report formatting'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments:

@@ -1,5 +1,5 @@
 title: Show sprint number on board cards
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 23
@@ -8,17 +8,26 @@ updated: 2026-03-24
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: Display sprint number badge on all board cards
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 add sprint badge to card rendering"
+- "File: tests/test_components.py \u2014 test sprint badge rendering"
 description: "Done cards (and all board cards) should display the sprint number. Currently\
   \ the card shows title, priority, category, complexity, tags, and timestamp \u2014\
   \ but not the sprint number. See screenshot: done column shows 6 Sprint 18 items\
   \ but no sprint badge on any card."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Board cards show sprint number when set
+- Badge styled consistently with existing card badges (priority, category)
+- Cards without sprint_target show no badge
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_components.py: test card renders sprint badge, test card without sprint
+  has no badge'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []
