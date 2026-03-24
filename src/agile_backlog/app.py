@@ -649,7 +649,7 @@ document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
             # Restore view mode from localStorage
             async def _restore_view():
                 saved = await ui.run_javascript("localStorage.getItem('ab_view_mode')")
-                if saved and saved != view_mode["current"]:
+                if saved in ("board", "backlog") and saved != view_mode["current"]:
                     _set_view(saved)
 
             ui.timer(0.1, _restore_view, once=True)

@@ -184,6 +184,7 @@ class TestMove:
         """One bad ID doesn't abort others."""
         runner.invoke(main, ["add", "Real item", "--category", "feature"])
         result = runner.invoke(main, ["move", "real-item", "fake-item", "--status", "doing"])
+        assert result.exit_code == 1
         assert "real-item" in result.output
         assert "Moved" in result.output
         assert "fake-item" in result.output
@@ -251,6 +252,7 @@ class TestEdit:
         """One bad ID doesn't abort others."""
         runner.invoke(main, ["add", "Real edit", "--category", "feature"])
         result = runner.invoke(main, ["edit", "real-edit", "fake-edit", "--goal", "G"])
+        assert result.exit_code == 1
         assert "real-edit" in result.output
         assert "Updated" in result.output
         assert "fake-edit" in result.output
