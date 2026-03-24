@@ -795,7 +795,7 @@ def _render_backlog_list(
     vnext_items = sections["vnext"]
     vfuture_items = sections["vfuture"]
 
-    # Apply filters to backlog section ONLY
+    # Apply filters to all sections
     filtered_backlog = backlog_items
     if priorities:
         filtered_backlog = [i for i in filtered_backlog if i.priority in priorities]
@@ -806,6 +806,8 @@ def _render_backlog_list(
         filtered_backlog = [i for i in filtered_backlog if tag_set & set(i.tags)]
     if search:
         filtered_backlog = filter_items(filtered_backlog, search=search)
+        vnext_items = filter_items(vnext_items, search=search)
+        vfuture_items = filter_items(vfuture_items, search=search)
 
     # Side panel state
     panel_state = {"selected_id": None}

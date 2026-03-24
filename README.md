@@ -1,5 +1,7 @@
 # agile-backlog
 
+[![CI](https://github.com/zbarbur/agile-backlog/actions/workflows/ci.yml/badge.svg)](https://github.com/zbarbur/agile-backlog/actions/workflows/ci.yml)
+
 Lightweight Kanban board tool for agentic development. Track backlog items as YAML files, move them through workflow stages via CLI or web UI, and keep everything git-tracked.
 
 ## Features

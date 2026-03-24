@@ -21,7 +21,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_pure.py: test_filter_items_search_case_insensitive'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -33,6 +33,14 @@ def get_current_sprint() -> int | None:
     return data.get("current_sprint")
 
 
+def get_project_name() -> str:
+    sprint_config = _sprint_config_path()
+    if sprint_config.exists():
+        data = yaml.safe_load(sprint_config.read_text()) or {}
+        return data.get("project_name", "agile-backlog")
+    return "agile-backlog"
+
+
 def get_archive_days() -> int:
     sprint_config = _sprint_config_path()
     if sprint_config.exists():

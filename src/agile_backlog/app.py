@@ -13,6 +13,7 @@ from agile_backlog.pure import (
     detect_current_sprint,
     filter_items,
     is_recently_done,
+    safe_html,
 )
 from agile_backlog.styles import (
     COLUMN_STYLES,
@@ -68,10 +69,13 @@ def kanban_page():
         with ui.element("div").style(
             "flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #1e1e23;"
         ):
+            from agile_backlog.config import get_project_name
+
+            project_name = get_project_name()
             ui.html(
-                '<span style="font-size:16px;font-weight:700;color:#fafafa;'
-                "letter-spacing:-0.02em;font-family:'DM Sans',sans-serif;"
-                '">agile-backlog</span>'
+                f'<span style="font-size:16px;font-weight:700;color:#fafafa;'
+                f"letter-spacing:-0.02em;font-family:'DM Sans',sans-serif;"
+                f'">{safe_html(project_name)}</span>'
             )
 
             # Sprint badge container — visibility toggled by view mode
@@ -340,13 +344,20 @@ if (!window._mcAddPasteListenerAdded) {
         priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
         categories = sorted({i.category for i in all_items})
         category_options = {c: c for c in categories}
-        sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
+        all_sprints = sorted({i.sprint_target for i in all_items if i.sprint_target is not None})
         sprint_options = {}
         if current_sprint is not None:
             sprint_options["current"] = f"Current (S{current_sprint})"
         sprint_options["unplanned"] = "Unplanned"
-        for s in sprints:
-            sprint_options[s] = f"Sprint {s}"
+        # Show only recent sprints (current -2 to current +2) to avoid long dropdown
+        if current_sprint is not None:
+            recent_range = range(max(1, current_sprint - 2), current_sprint + 3)
+            for s in all_sprints:
+                if s in recent_range:
+                    sprint_options[s] = f"Sprint {s}"
+        else:
+            for s in all_sprints:
+                sprint_options[s] = f"Sprint {s}"
         phases = sorted({i.phase for i in all_items if i.phase})
         phase_options = {None: "All phases", **{p: p for p in phases}}
         all_tags_filter = sorted({t for i in all_items for t in i.tags})
@@ -509,10 +520,10 @@ if (!window._mcAddPasteListenerAdded) {
                 i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=archive_days))
             ]
 
-            # Apply search filter via filter_items (sprint handled below for multi-select)
+            # Apply search filter to all columns
             filtered_backlog = filter_items(backlog_items, search=sq)
-            filtered_doing = doing_items
-            filtered_done = done_items
+            filtered_doing = filter_items(doing_items, search=sq)
+            filtered_done = filter_items(done_items, search=sq)
 
             # Multi-select priority filter
             if pf_list:
