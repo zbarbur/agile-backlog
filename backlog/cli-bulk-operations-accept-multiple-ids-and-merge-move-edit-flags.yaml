@@ -1,5 +1,5 @@
 title: "CLI bulk operations \u2014 accept multiple IDs and merge move+edit flags"
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 19

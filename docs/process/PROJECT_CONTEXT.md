@@ -2,14 +2,14 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 19 Planning |
+| **Status** | Sprint 20 Planning |
 | **Last Sync** | 2026-03-24 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
 
 Single Python package with three interfaces:
-- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, show, serve, note, flagged, set-sprint, resolve-note
+- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, show, serve, note, flagged, set-sprint, resolve-note, sprint-status, validate
 - **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view with click-to-edit, chat comments
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 193 |
+| **Tests** | 204 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -48,4 +48,5 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 15 | Backlog view redesign Phase 1 + polish | 156 | #14 |
 | 16 | Sprint Planning Phase 2 + Framework Integration | 162 | #15 |
 | 17 | Sprint Execute + Framework Completion | 173 | #16 |
-| 18 | UI Polish + CLI Visibility | 193 | — |
+| 18 | UI Polish + CLI Visibility | 193 | #17 |
+| 19 | CLI Power Tools + Adoption Guide | 204 | — |
