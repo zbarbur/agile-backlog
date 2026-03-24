@@ -9,9 +9,15 @@ import yaml
 
 from agile_backlog.models import BacklogItem
 
+_backlog_dir_override: Path | None = None
+
+
+def set_backlog_dir(path: Path | None) -> None:
+    global _backlog_dir_override
+    _backlog_dir_override = path
+
 
 def _git_root() -> Path:
-    """Find the git repository root."""
     result = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
         capture_output=True,
@@ -24,7 +30,9 @@ def _git_root() -> Path:
 
 
 def get_backlog_dir() -> Path:
-    """Return the backlog/ directory path, creating it if needed."""
+    if _backlog_dir_override is not None:
+        _backlog_dir_override.mkdir(parents=True, exist_ok=True)
+        return _backlog_dir_override
     backlog = _git_root() / "backlog"
     backlog.mkdir(exist_ok=True)
     return backlog
@@ -65,6 +73,14 @@ def load_all() -> list[BacklogItem]:
     return items
 
 
+def delete_item(item_id: str) -> None:
+    path = (get_backlog_dir() / f"{item_id}.yaml").resolve()
+    if not path.is_relative_to(get_backlog_dir().resolve()):
+        raise ValueError(f"Invalid item_id: {item_id!r}")
+    if not path.exists():
+        raise FileNotFoundError(f"No backlog item: {item_id}")
+    path.unlink()
+
+
 def item_exists(item_id: str) -> bool:
-    """Check if a backlog item file exists."""
     return (get_backlog_dir() / f"{item_id}.yaml").exists()

@@ -1,22 +1,42 @@
 title: Split CLI and UI dependencies
-status: backlog
+status: done
 priority: P3
 category: chore
-sprint_target: null
+sprint_target: 20
 created: 2026-03-21
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - packaging
-goal: ''
-complexity: null
-technical_specs: []
+goal: Make NiceGUI optional so CLI-only installs are fast and lightweight
+complexity: S
+technical_specs:
+- "File: pyproject.toml \u2014 move nicegui to optional [ui] extra"
+- "File: src/agile_backlog/cli.py \u2014 lazy import nicegui in serve command, catch\
+  \ ImportError"
+- "File: tests/test_cli.py \u2014 test serve without nicegui shows error"
 description: pip install agile-backlog for CLI only (no NiceGUI). pip install agile-backlog[ui]
   for the board. Keeps CLI lightweight for projects that only use the command line.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- pip install agile-backlog installs CLI only (no NiceGUI)
+- pip install agile-backlog[ui] installs CLI + NiceGUI web UI
+- agile-backlog serve shows helpful error if NiceGUI not installed
+- All other commands work without NiceGUI
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_cli.py: test_serve_without_nicegui \u2014 ImportError caught gracefully"
+- 'Manual: pip install without [ui], verify CLI commands work'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
-comments: []
+comments:
+- text: 'Adoption use case: projects that only need CLI shouldn''t have to install
+    NiceGUI. Use extras: agile-backlog[ui] for full install, base package for CLI
+    only. Also recommend uv pip install for speed.'
+  flagged: true
+  resolved: true
+  created: '2026-03-24'
+  author: agent
+images: []

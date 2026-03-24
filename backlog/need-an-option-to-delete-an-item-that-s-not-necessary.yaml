@@ -1,5 +1,5 @@
 title: need an option to delete an item that's not necessary
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 20
@@ -7,14 +7,27 @@ created: 2026-03-23
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add delete command to remove backlog items and their YAML files
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 new delete command"
+- "File: src/agile_backlog/yaml_store.py \u2014 delete_item function"
+- "File: tests/test_cli.py \u2014 delete tests"
 description: 'If I add just for testing '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- New delete command removes the YAML file for given item ID(s)
+- Accepts multiple IDs (nargs=-1, consistent with move/edit)
+- Asks for confirmation unless --yes flag is passed
+- Reports per-item result (deleted or not found)
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_cli.py: test_delete_item \u2014 deletes YAML file"
+- "tests/test_cli.py: test_delete_multiple \u2014 bulk delete"
+- "tests/test_cli.py: test_delete_nonexistent \u2014 reports error"
+- "tests/test_cli.py: test_delete_with_yes_flag \u2014 skips confirmation"
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

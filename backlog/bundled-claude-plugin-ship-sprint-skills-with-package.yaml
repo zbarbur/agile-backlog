@@ -1,5 +1,5 @@
 title: "Bundled Claude plugin \u2014 ship sprint skills with package"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 20
@@ -8,20 +8,31 @@ updated: 2026-03-24
 depends_on: []
 tags:
 - plugin
-goal: ''
-complexity: null
-technical_specs: []
+goal: Bundle sprint skills as a Claude Code plugin so pip install distributes skills
+  automatically
+complexity: M
+technical_specs:
+- "File: plugin.json \u2014 Claude Code plugin manifest"
+- "File: pyproject.toml \u2014 include plugin.json and skills in package data"
+- "File: docs/guides/ADOPTION.md \u2014 update Step 6 for plugin auto-discovery"
 description: Design and bundle a Claude Code plugin that ships with the agile-backlog
   package. After pip install, users register the plugin and get sprint management
   skills, backlog management, and hooks. Plugin references installed CLI commands
   and works independently of the dev repo. Needs its own brainstorm/design session.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- plugin.json manifest in package root with skill declarations
+- Skills discoverable by Claude Code after pip install
+- pip install --upgrade updates skills alongside CLI/UI
+- Adoption guide updated to reference plugin instead of manual copy
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: pip install in fresh venv, verify skills appear in Claude Code'
+- 'Manual: pip install --upgrade, verify skills updated'
 notes: "Must include: SessionStart hook or skill that runs 'agile-backlog flagged'\
   \ and surfaces unresolved flagged comments at the beginning of every session. This\
   \ is the core async communication channel between user and agent \u2014 it should\
   \ work out of the box, not require manual memory setup."
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:

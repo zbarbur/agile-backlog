@@ -1,8 +1,8 @@
-title: Usability of the sprint filter
+title: add the project name to the header of the page
 status: backlog
-priority: P2
+priority: P1
 category: feature
-sprint_target: 22
+sprint_target: null
 created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
@@ -10,7 +10,8 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: as more and more sprint are done, the selection gets longer
+description: 'As now we have multiple projects, I need to know which one I''m looking
+  at '
 acceptance_criteria: []
 test_plan: []
 notes: ''
@@ -18,6 +19,4 @@ phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
-images:
-- filename: pasted-1.png
-  created: '2026-03-24'
+images: []
