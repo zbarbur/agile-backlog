@@ -1,0 +1,41 @@
+title: "Project-level config file discovery \u2014 resolve backlog dir from config\
+  \ instead of CWD"
+status: doing
+priority: P1
+category: feature
+sprint_target: 20
+created: 2026-03-24
+updated: 2026-03-24
+depends_on: []
+tags: []
+goal: Resolve backlog dir from config file discovery instead of CWD so CLI works from
+  any directory
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/yaml_store.py \u2014 _git_root() or new discovery function"
+- "File: src/agile_backlog/cli.py \u2014 add --backlog-dir global option to main group"
+- "File: tests/test_yaml_store.py \u2014 config discovery tests"
+description: 'The CLI currently resolves backlog/ relative to CWD, which silently
+  returns wrong data when invoked from a different project. Add config file discovery:
+  look for .agile-backlog.yaml or .claude/sprint-config.yaml walking up from CWD,
+  read backlog_dir from it. Fail explicitly if no config found and no ./backlog/ exists.
+  Also support --backlog-dir flag as override.'
+acceptance_criteria:
+- CLI walks up from CWD looking for .claude/sprint-config.yaml or .agile-backlog.yaml
+- Reads backlog_dir from config if present, falls back to ./backlog/
+- Fails explicitly with helpful error if no config found and no ./backlog/ exists
+- Supports --backlog-dir global flag as override
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "tests/test_yaml_store.py: test_discovers_config_walking_up \u2014 finds config\
+  \ in parent"
+- "tests/test_yaml_store.py: test_fails_without_config_or_backlog \u2014 explicit\
+  \ error"
+- "tests/test_cli.py: test_backlog_dir_override \u2014 global flag works"
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
