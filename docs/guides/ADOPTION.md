@@ -220,15 +220,21 @@ agile-backlog list --status backlog
 
 ---
 
-## 6. Adopt Sprint Skills (Manual — Temporary)
+## 6. Install Sprint Skills
 
-The sprint skills are not yet distributed with the pip package. Adopt them from the agile-backlog source repo into the target project.
+Sprint skills are bundled with the agile-backlog package. Install them into the current project:
 
-**Do NOT blindly copy.** The target project may already have its own skills. For each skill below:
+```bash
+agile-backlog install-skills
+```
 
-1. **Check if the target project already has a skill with the same name** in `.claude/skills/`
-2. **If it doesn't exist** — copy it from the agile-backlog repo
-3. **If it already exists** — read both versions and merge: keep project-specific customizations, add agile-backlog workflow steps that are missing
+This copies all bundled skills to `.claude/skills/`. Existing skills are **not overwritten** by default — use `--force` to replace them:
+
+```bash
+agile-backlog install-skills --force
+```
+
+**If the target project already has skills with the same name**, review before using `--force`. The existing skills may have project-specific customizations worth keeping.
 
 ### Skills to Adopt
 
@@ -252,7 +258,7 @@ All sprint skills read commands from `.claude/sprint-config.yaml` using placehol
 - **Branch pattern** — `sprint{N}/main` is the default, change if your project uses a different convention
 - **CI command** — ensure it matches your project's actual test/lint setup
 
-> **Known limitation:** Skills adopted this way won't auto-update when agile-backlog is upgraded. A bundled Claude Code plugin is planned to solve this — once shipped, `pip install --upgrade agile-backlog` will update both the CLI/UI and the sprint skills together.
+> **Updating skills:** After `pip install --upgrade agile-backlog`, run `agile-backlog install-skills --force` to get the latest skill versions.
 
 ## 7. Updating
 
@@ -264,7 +270,11 @@ pip install --upgrade agile-backlog
 
 This picks up new commands, UI features, bug fixes, and model changes. Your project-specific files (`sprint-config.yaml`, `backlog/*.yaml`, `CLAUDE.md`) are untouched by upgrades.
 
-Sprint skills must be re-copied manually until plugin packaging is available.
+After upgrading, update skills too:
+
+```bash
+agile-backlog install-skills --force
+```
 
 ---
 

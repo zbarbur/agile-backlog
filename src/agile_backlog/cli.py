@@ -350,6 +350,42 @@ def set_sprint(number: int):
     click.echo(f"Current sprint set to {number}")
 
 
+@main.command("install-skills")
+@click.option("--target", default=".claude/skills", help="Target directory for skills.")
+@click.option("--force", is_flag=True, help="Overwrite existing skills.")
+def install_skills(target: str, force: bool):
+    """Install bundled sprint skills into the current project."""
+    import shutil
+
+    skills_src = Path(__file__).parent / "bundled_skills"
+    if not skills_src.exists():
+        raise SystemExit("Error: bundled skills not found in package.")
+
+    target_dir = Path(target)
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    installed = []
+    skipped = []
+    for skill_dir in sorted(skills_src.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        dest = target_dir / skill_dir.name
+        if dest.exists() and not force:
+            skipped.append(skill_dir.name)
+            continue
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(skill_dir, dest)
+        installed.append(skill_dir.name)
+
+    if installed:
+        click.echo(f"Installed {len(installed)} skill(s): {', '.join(installed)}")
+    if skipped:
+        click.echo(f"Skipped {len(skipped)} existing skill(s): {', '.join(skipped)} (use --force to overwrite)")
+    if not installed and not skipped:
+        click.echo("No skills found to install.")
+
+
 @main.command("sprint-status")
 @click.option("--sprint", "sprint_number", type=int, default=None, help="Sprint number (default: current sprint).")
 def sprint_status(sprint_number: int | None):

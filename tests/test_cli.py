@@ -555,6 +555,32 @@ class TestDelete:
         assert "Aborted" in result.output
 
 
+class TestInstallSkills:
+    def test_install_skills(self, runner: CliRunner, tmp_path: Path):
+        """Install-skills copies bundled skills to target dir."""
+        target = tmp_path / ".claude" / "skills"
+        result = runner.invoke(main, ["install-skills", "--target", str(target)])
+        assert result.exit_code == 0
+        assert "Installed" in result.output
+        assert (target / "sprint-start").exists()
+        assert (target / "cli-reference").exists()
+
+    def test_install_skills_skip_existing(self, runner: CliRunner, tmp_path: Path):
+        """Existing skills are not overwritten without --force."""
+        target = tmp_path / ".claude" / "skills"
+        runner.invoke(main, ["install-skills", "--target", str(target)])
+        result = runner.invoke(main, ["install-skills", "--target", str(target)])
+        assert "Skipped" in result.output
+
+    def test_install_skills_force(self, runner: CliRunner, tmp_path: Path):
+        """--force overwrites existing skills."""
+        target = tmp_path / ".claude" / "skills"
+        runner.invoke(main, ["install-skills", "--target", str(target)])
+        result = runner.invoke(main, ["install-skills", "--target", str(target), "--force"])
+        assert "Installed" in result.output
+        assert "Skipped" not in result.output
+
+
 class TestBacklogDirOverride:
     @pytest.fixture(autouse=True)
     def _patch_backlog_dir(self):
