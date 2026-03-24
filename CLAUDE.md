@@ -1,53 +1,38 @@
 # agile-backlog — Project Rules
 
-> Lightweight Kanban board tool for agentic development.
-> Three interfaces: CLI, NiceGUI web UI, Claude Code plugin.
-> One data format: YAML files per backlog item, git-tracked.
+## ⚠️ CRITICAL: DO NOT RE-READ FILES
 
-## Project Brief
+**BEFORE calling the Read tool, CHECK if the file was already read in this conversation.** If you have already read a file, use the information from the earlier read. Only re-read if you made edits and need to verify the current state. Re-reading large files like `components.py`, `app.py`, `cli.py` wastes thousands of tokens. Use offset/limit for targeted reads when you only need a specific section.
 
-See `docs/superpowers/specs/2026-03-21-agile-backlog-tool-brief.md` for the full product spec.
+## Stack
 
-## Code Style — Python
+Python 3.11+ · NiceGUI · Click · Pydantic · YAML · Ruff · pytest
 
-- **Python 3.11+**
-- **Ruff** for linting + formatting — config in `pyproject.toml`
-- Line length: 120
-- Type hints: modern syntax (`list[dict]`, `str | None`)
-- Docstrings: module-level for purpose, not per-function boilerplate
+## Commands
 
-### Commands
+- **CI:** `.venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest tests/ -v`
+- **Web UI:** `.venv/bin/agile-backlog serve`
+- **CLI:** `.venv/bin/agile-backlog`
+- Sprint config: `.claude/sprint-config.yaml`
 
-Commands are defined in `.claude/sprint-config.yaml` — all skills read from there.
+## Code Style
 
-- **Run tests:** `.venv/bin/pytest tests/ -v`
-- **Lint:** `.venv/bin/ruff check . && .venv/bin/ruff format --check .`
-- **Full CI:** `.venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest tests/ -v`
-- **Run Web UI:** `.venv/bin/agile-backlog serve`
-- **Run CLI:** `.venv/bin/agile-backlog` (venv not auto-activated in Claude Code sessions)
-
-### Dependencies
-- `nicegui` — web UI
-- `pyyaml` — read/write YAML backlog items
-- `click` — CLI framework
-- `pydantic` — BacklogItem model validation
-- `ruff` — linting (dev)
-- `pytest` — testing (dev)
+- Ruff linting + formatting (120 char lines)
+- Type hints: `list[dict]`, `str | None`
+- No per-function docstrings — module-level only
 
 ## Design Principles
 
-- **Research first, design second, code third** — validate before building
-- **Quality review at every stage** — spec review, plan review, code review (9-point checklist)
-- **DRY, YAGNI, TDD** — no premature abstractions
-- **When adding deps** — update Dependabot config + dependency inventory
+- Research first, design second, code third
+- Code review before every merge
+- DRY, YAGNI, TDD
 
-## Context System
+## Context
 
 | File | Purpose |
 |---|---|
-| `CLAUDE.md` | Project rules (this file) |
-| `.claude/sprint-config.yaml` | Sprint configuration — commands, paths, settings |
-| `.claude/MEMORY.md` | Agent memory across sessions |
+| `.claude/sprint-config.yaml` | Commands, paths, sprint settings |
 | `backlog/*.yaml` | Backlog items (single source of truth) |
 | `docs/process/PROJECT_CONTEXT.md` | Project snapshot |
-| `docs/process/DEFINITION_OF_DONE.md` | Quality gates |
+
+## ⚠️ REMINDER: DO NOT RE-READ FILES YOU ALREADY HAVE IN CONTEXT
