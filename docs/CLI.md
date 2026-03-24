@@ -5,11 +5,31 @@ Lightweight Kanban board tool for agentic development.
 ## Installation
 
 ```bash
+# CLI only (lightweight, no NiceGUI)
+pip install git+https://github.com/zbarbur/agile-backlog.git
+
+# CLI + web UI
+pip install "agile-backlog[ui] @ git+https://github.com/zbarbur/agile-backlog.git"
+
 # From source (development)
 git clone https://github.com/zbarbur/agile-backlog.git
 cd agile-backlog
 python -m venv .venv
-.venv/bin/pip install -e .
+.venv/bin/pip install -e ".[dev]"
+```
+
+### Install Sprint Skills
+
+After installing the package, deploy the bundled sprint skills into your project:
+
+```bash
+agile-backlog install-skills
+```
+
+This copies skills (`sprint-start`, `sprint-execute`, `sprint-end`, etc.) to `.claude/skills/`. Existing skills are not overwritten — use `--force` to update:
+
+```bash
+agile-backlog install-skills --force
 ```
 
 ## Quickstart
@@ -215,9 +235,78 @@ agile-backlog set-sprint NUMBER
 agile-backlog set-sprint 18
 ```
 
+### delete
+
+Delete backlog items. Accepts multiple IDs. Asks for confirmation unless `--yes` is passed.
+
+```
+agile-backlog delete ID [ID...] [OPTIONS]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--yes` | Skip confirmation prompt |
+
+```bash
+agile-backlog delete old-item --yes
+agile-backlog delete item-a item-b item-c --yes
+```
+
+### sprint-status
+
+Show current sprint items grouped by phase with progress count.
+
+```
+agile-backlog sprint-status [OPTIONS]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--sprint N` | Sprint number | Current sprint from config |
+
+```bash
+agile-backlog sprint-status
+agile-backlog sprint-status --sprint 19
+```
+
+### validate
+
+Check sprint items have required spec fields (goal, complexity, >=2 acceptance criteria, >=1 technical spec). Exit code 1 on failure.
+
+```
+agile-backlog validate [OPTIONS]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--sprint N` | Sprint number | Current sprint from config |
+
+```bash
+agile-backlog validate
+agile-backlog validate --sprint 20
+```
+
+### install-skills
+
+Install bundled sprint skills into the current project's `.claude/skills/` directory.
+
+```
+agile-backlog install-skills [OPTIONS]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--target DIR` | Target directory | `.claude/skills` |
+| `--force` | Overwrite existing skills | No |
+
+```bash
+agile-backlog install-skills
+agile-backlog install-skills --force
+```
+
 ### serve
 
-Start the web UI (NiceGUI Kanban board).
+Start the web UI (NiceGUI Kanban board). Requires `agile-backlog[ui]` install.
 
 ```
 agile-backlog serve [OPTIONS]
