@@ -1,4 +1,10 @@
-from agile_backlog.config import get_archive_days, get_current_sprint, set_archive_days, set_current_sprint
+from agile_backlog.config import (
+    get_archive_days,
+    get_current_sprint,
+    get_project_name,
+    set_archive_days,
+    set_current_sprint,
+)
 
 
 def test_get_current_sprint_from_sprint_config(tmp_path, monkeypatch):
@@ -66,3 +72,18 @@ def test_set_archive_days(tmp_path, monkeypatch):
     text = config.read_text()
     assert "archive_days: 30" in text
     assert "current_sprint: 21" in text
+
+
+def test_get_project_name_default(tmp_path, monkeypatch):
+    """Returns 'agile-backlog' when no config exists."""
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: tmp_path / "nope.yaml")
+    assert get_project_name() == "agile-backlog"
+
+
+def test_get_project_name_from_config(tmp_path, monkeypatch):
+    """Reads project_name from sprint-config.yaml."""
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("project_name: my-project\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    assert get_project_name() == "my-project"

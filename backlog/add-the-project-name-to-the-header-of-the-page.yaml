@@ -1,5 +1,5 @@
 title: add the project name to the header of the page
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 22
@@ -7,15 +7,23 @@ created: 2026-03-24
 updated: 2026-03-24
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Show the project name from sprint-config.yaml in the board header
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/config.py \u2014 get_project_name()"
+- "File: src/agile_backlog/app.py \u2014 display in header"
 description: 'As now we have multiple projects, I need to know which one I''m looking
   at '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Project name displayed in the header bar
+- Reads project_name from sprint-config.yaml
+- Falls back gracefully if not configured
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_config.py: test_get_project_name'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
