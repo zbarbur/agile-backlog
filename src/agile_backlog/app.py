@@ -309,12 +309,32 @@ if (!window._mcAddPasteListenerAdded) {
                 "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
             )
 
-            # Archive toggle — only visible in Board view
-            archive_toggle = (
-                ui.checkbox("Show archived", value=False)
-                .classes("mc-done-check")
-                .style("font-size:11px;color:#71717a;")
-            )
+            # Archive toggle + days config — only visible in Board view
+            with ui.element("div").style("display:flex;align-items:center;gap:8px;"):
+                archive_toggle = (
+                    ui.checkbox("Show archived", value=False)
+                    .classes("mc-done-check")
+                    .style("font-size:11px;color:#71717a;")
+                )
+
+                from agile_backlog.config import get_archive_days as _get_ad
+                from agile_backlog.config import set_archive_days as _set_ad
+
+                def _on_archive_days_change(e):
+                    try:
+                        val = int(e.value)
+                        if val > 0:
+                            _set_ad(val)
+                            render_board.refresh()
+                    except (ValueError, TypeError):
+                        pass
+
+                (
+                    ui.number(label="days", value=_get_ad(), min=1, max=365, step=1)
+                    .props("dense outlined")
+                    .style("max-width:70px;font-size:10px;color:#71717a;")
+                    .on("change", _on_archive_days_change)
+                )
 
         # === Filter Bar ===
         priority_options = {"P1": "P1", "P2": "P2", "P3": "P3"}
@@ -482,7 +502,12 @@ if (!window._mcAddPasteListenerAdded) {
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
-            done_items = [i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=7))]
+            from agile_backlog.config import get_archive_days
+
+            archive_days = get_archive_days()
+            done_items = [
+                i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=archive_days))
+            ]
 
             # Apply search filter via filter_items (sprint handled below for multi-select)
             filtered_backlog = filter_items(backlog_items, search=sq)

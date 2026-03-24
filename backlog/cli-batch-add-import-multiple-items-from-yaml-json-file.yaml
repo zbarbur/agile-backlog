@@ -2,9 +2,9 @@ title: "CLI batch add \u2014 import multiple items from YAML/JSON file"
 status: backlog
 priority: P3
 category: feature
-sprint_target: null
+sprint_target: 23
 created: 2026-03-22
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - cli
@@ -21,3 +21,4 @@ phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

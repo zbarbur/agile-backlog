@@ -1,4 +1,4 @@
-from agile_backlog.config import get_current_sprint, set_current_sprint
+from agile_backlog.config import get_archive_days, get_current_sprint, set_archive_days, set_current_sprint
 
 
 def test_get_current_sprint_from_sprint_config(tmp_path, monkeypatch):
@@ -38,3 +38,31 @@ def test_set_current_sprint_writes_to_sprint_config(tmp_path, monkeypatch):
     assert "current_sprint: 17" in text
     assert "project_name: test" in text
     assert "# Project config" in text  # comments preserved
+
+
+def test_get_archive_days_default(tmp_path, monkeypatch):
+    """Returns 7 when no config exists."""
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: tmp_path / "nope.yaml")
+    monkeypatch.setattr("agile_backlog.config._config_path", lambda: tmp_path / "nope2.yaml")
+    assert get_archive_days() == 7
+
+
+def test_get_archive_days_from_config(tmp_path, monkeypatch):
+    """Reads archive_days from sprint-config.yaml."""
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("archive_days: 14\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    assert get_archive_days() == 14
+
+
+def test_set_archive_days(tmp_path, monkeypatch):
+    """Writes archive_days to sprint-config.yaml."""
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("current_sprint: 21\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    set_archive_days(30)
+    text = config.read_text()
+    assert "archive_days: 30" in text
+    assert "current_sprint: 21" in text

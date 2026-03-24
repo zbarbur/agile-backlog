@@ -1,6 +1,6 @@
 title: "Systematic XSS prevention \u2014 html.escape helper or lint rule for ui.html\
   \ calls"
-status: doing
+status: done
 priority: P2
 category: chore
 sprint_target: 21
