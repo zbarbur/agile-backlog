@@ -1,5 +1,5 @@
 title: Archiving of done items
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 21
@@ -8,16 +8,26 @@ updated: 2026-03-24
 depends_on: []
 tags:
 - data
-goal: ''
-complexity: null
-technical_specs: []
+goal: Auto-archive done items older than N days so the board stays clean
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/pure.py \u2014 is_recently_done already exists, verify\
+  \ threshold"
+- "File: src/agile_backlog/app.py \u2014 archive toggle filters done column"
 description: The done items list is only getting bigger, need an archiving capability,
   how is this managed in other platforms , what's the best way to do it, need some
   research and brainstorming to execute
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Done items older than configurable threshold hidden by default
+- "Show archived toggle already exists \u2014 integrates with it"
+- CLI list --status done shows all items regardless of age
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: test_is_recently_done_threshold'
+- 'Manual: create old done items, verify hidden without toggle'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

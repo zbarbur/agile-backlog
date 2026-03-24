@@ -1,0 +1,32 @@
+title: when data changes, reload the UI
+status: doing
+priority: P2
+category: feature
+sprint_target: 21
+created: 2026-03-24
+updated: 2026-03-24
+depends_on: []
+tags:
+- ui
+goal: Auto-reload the web UI when YAML files change on disk so CLI and board stay
+  in sync
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 file watcher on backlog/ dir, triggers render_board.refresh"
+- 'Consider: watchfiles or polling approach for cross-platform support'
+description: if an agent makes changes, I want to see them in the UI without refresh
+acceptance_criteria:
+- Board refreshes automatically when a YAML file is created, modified, or deleted
+- No manual browser refresh needed
+- "Debounced \u2014 rapid changes don't cause excessive refreshes"
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "Manual: run serve, use CLI to add item \u2014 board updates without refresh"
+- "Manual: rapid edits \u2014 verify debounce works"
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
