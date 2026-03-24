@@ -219,19 +219,38 @@ agile-backlog list --status backlog
 
 ---
 
-## 6. Copy Sprint Skills (Manual — Temporary)
+## 6. Adopt Sprint Skills (Manual — Temporary)
 
-The sprint skills (`sprint-start`, `sprint-execute`, `sprint-end`, etc.) are not yet distributed with the pip package. For now, copy them manually from the agile-backlog repo:
+The sprint skills are not yet distributed with the pip package. Adopt them from the agile-backlog source repo into the target project.
 
-```bash
-# From the agile-backlog source repo
-cp -r .claude/skills/sprint-start <target-project>/.claude/skills/
-cp -r .claude/skills/sprint-execute <target-project>/.claude/skills/
-cp -r .claude/skills/sprint-end <target-project>/.claude/skills/
-cp -r .claude/skills/sprint-plan-next <target-project>/.claude/skills/
-```
+**Do NOT blindly copy.** The target project may already have its own skills. For each skill below:
 
-> **Known limitation:** Skills copied this way won't auto-update when agile-backlog is upgraded. A bundled Claude Code plugin is planned to solve this — once shipped, `pip install --upgrade agile-backlog` will update both the CLI/UI and the sprint skills together.
+1. **Check if the target project already has a skill with the same name** in `.claude/skills/`
+2. **If it doesn't exist** — copy it from the agile-backlog repo
+3. **If it already exists** — read both versions and merge: keep project-specific customizations, add agile-backlog workflow steps that are missing
+
+### Skills to Adopt
+
+| Skill | Purpose | Likely needs adaptation? |
+|-------|---------|------------------------|
+| `sprint-start` | Initialize sprint — scope selection, task specs, branch | Yes — commands, branch pattern |
+| `sprint-execute` | Implement tasks — TDD, CI gates, specialist agents | Yes — specialist defaults, CI command |
+| `sprint-end` | Close sprint — handover doc, status updates | Minimal |
+| `sprint-plan-next` | Pre-plan next sprint scope while current runs | Minimal |
+| `plan` | Project inception, roadmap review, scope analysis | May conflict with existing |
+| `fix-bug` | Investigate and fix a bug from the backlog | May conflict with existing |
+| `report-bug` | Report a bug with structured details | May conflict with existing |
+| `document` | Research, design docs, architecture docs, audits | May conflict with existing |
+
+### Adaptation Notes
+
+All sprint skills read commands from `.claude/sprint-config.yaml` using placeholders like `{ci_command}`, `{backlog_commands.list}`, etc. As long as the sprint-config is set up correctly (Step 3), the skills work without modification to their core logic. The main things to adapt:
+
+- **Specialist defaults** in sprint-config — map your project's domains to agent types
+- **Branch pattern** — `sprint{N}/main` is the default, change if your project uses a different convention
+- **CI command** — ensure it matches your project's actual test/lint setup
+
+> **Known limitation:** Skills adopted this way won't auto-update when agile-backlog is upgraded. A bundled Claude Code plugin is planned to solve this — once shipped, `pip install --upgrade agile-backlog` will update both the CLI/UI and the sprint skills together.
 
 ## 7. Updating
 
