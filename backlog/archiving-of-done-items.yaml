@@ -27,7 +27,7 @@ test_plan:
 - 'tests/test_pure.py: test_is_recently_done_threshold'
 - 'Manual: create old done items, verify hidden without toggle'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

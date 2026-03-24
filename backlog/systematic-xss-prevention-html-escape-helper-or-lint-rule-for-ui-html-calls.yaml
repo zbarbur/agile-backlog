@@ -26,7 +26,7 @@ test_plan:
 - 'tests/test_pure.py: test_safe_html_escapes_angle_brackets'
 - 'Manual: grep for ui.html calls without escape'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

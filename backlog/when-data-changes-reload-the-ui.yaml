@@ -25,7 +25,7 @@ test_plan:
 - "Manual: run serve, use CLI to add item \u2014 board updates without refresh"
 - "Manual: rapid edits \u2014 verify debounce works"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

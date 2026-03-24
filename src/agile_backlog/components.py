@@ -1,7 +1,6 @@
 """NiceGUI UI components for agile-backlog."""
 
 import base64
-import html as _html
 import mimetypes
 from datetime import date
 from pathlib import Path
@@ -12,11 +11,11 @@ from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
     apply_reopen,
     category_style,
-    comment_thread_html,
     filter_items,
     group_items_by_section,
     relative_time,
     render_card_html,
+    safe_html,
 )
 from agile_backlog.tokens import PRIORITY_COLORS
 from agile_backlog.yaml_store import get_backlog_dir
@@ -37,7 +36,7 @@ def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = Fa
         style += "font-style:italic;text-transform:none;"
     else:
         style += "text-transform:uppercase;"
-    ui.html(f'<span style="{style}">{_html.escape(text)}</span>')
+    ui.html(f'<span style="{style}">{safe_html(text)}</span>')
 
 
 def _render_reopen_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
@@ -52,7 +51,7 @@ def _render_reopen_dialog(item: BacklogItem, save_fn, refresh_fn) -> None:
     ):
         ui.html(
             f'<div style="font-size:14px;font-weight:700;color:#e4e4e7;margin-bottom:12px;">'
-            f"Reopen: {_html.escape(item.title)}</div>"
+            f"Reopen: {safe_html(item.title)}</div>"
         )
         reason_input = (
             ui.textarea(placeholder="Why is this being reopened?")
@@ -94,7 +93,7 @@ def _render_card(item: BacklogItem, status: str, move_fn, save_fn=None, refresh_
         ui.element("div")
         .classes("mc-board-card")
         .style("margin:2px 0;")
-        .props(f'draggable="true" data-item-id="{_html.escape(item.id)}" data-status="{_html.escape(status)}"')
+        .props(f'draggable="true" data-item-id="{safe_html(item.id)}" data-status="{safe_html(status)}"')
     ):
         # Card (clickable)
         card_container = ui.element("div").style("cursor:pointer;")
@@ -320,27 +319,59 @@ def _render_side_panel_content(
             # 13. Comments thread
             ui.html(f'<div style="{label_style}">Comments</div>')
             if item.comments:
-                ui.html(comment_thread_html(item.comments))
-                # Resolve buttons for flagged, unresolved comments
                 for idx, comment in enumerate(item.comments):
-                    if comment.get("flagged") and not comment.get("resolved"):
-                        preview = comment.get("text", "")[:40]
+                    author = comment.get("author", "agent")
+                    text = comment.get("text", "")
+                    created = comment.get("created", "")
+                    flagged = comment.get("flagged", False)
+                    resolved = comment.get("resolved", False)
+                    is_user = author == "user"
+                    align = "flex-end" if is_user else "flex-start"
+                    icon = "\U0001f464" if is_user else "\U0001f916"
+                    bg = "rgba(59,130,246,0.12)" if is_user else "#18181b"
+                    flat_corner = "border-bottom-right-radius:4px;" if is_user else "border-bottom-left-radius:4px;"
+                    meta_align = "text-align:right;" if is_user else "text-align:left;"
+                    border = "border-left:2px solid #f87171;" if flagged and not resolved else ""
+                    opacity = "opacity:0.35;" if resolved else ""
 
-                        def _resolve_comment(comment_idx=idx):
-                            item.comments[comment_idx]["resolved"] = True
-                            _save_and_refresh()
+                    with ui.element("div").style(
+                        f"display:flex;flex-direction:column;max-width:82%;align-self:{align};{opacity}"
+                        "margin-bottom:6px;"
+                    ):
+                        flag_marker = "  \u00b7 \U0001f6a9" if flagged and not resolved else ""
+                        ui.html(
+                            f'<div style="font-size:9px;color:#3f3f46;margin-bottom:2px;padding:0 4px;{meta_align}">'
+                            f"{icon} {safe_html(author)} \u00b7 {safe_html(str(created))}"
+                            f"{flag_marker}</div>"
+                        )
+                        with ui.element("div").style(
+                            f"padding:4px 12px;border-radius:12px;{flat_corner}"
+                            f"background:{bg};color:#d4d4d8;font-size:12px;line-height:1.5;{border}"
+                        ):
+                            md = ui.markdown(text)
+                            md.style("font-size:12px;")
 
-                        with ui.element("div").style("display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"):
-                            ui.html(
-                                f'<span style="font-size:10px;color:#71717a;font-style:italic;">'
-                                f'Resolve: "{_html.escape(preview)}..."</span>'
-                            )
-                            ui.button(
-                                "\u2713 Resolve",
-                                on_click=_resolve_comment,
-                            ).props("flat dense no-caps").style(
-                                "color:#4ade80;font-size:10px;min-width:0;padding:1px 6px;"
-                            )
+                        # Resolve button for flagged, unresolved comments
+                        if flagged and not resolved:
+                            preview = text[:40]
+
+                            def _resolve_comment(comment_idx=idx):
+                                item.comments[comment_idx]["resolved"] = True
+                                _save_and_refresh()
+
+                            with ui.element("div").style(
+                                "display:flex;align-items:center;gap:6px;margin:2px 0 2px 12px;"
+                            ):
+                                ui.html(
+                                    f'<span style="font-size:10px;color:#71717a;font-style:italic;">'
+                                    f'Resolve: "{safe_html(preview)}..."</span>'
+                                )
+                                ui.button(
+                                    "\u2713 Resolve",
+                                    on_click=_resolve_comment,
+                                ).props("flat dense no-caps").style(
+                                    "color:#4ade80;font-size:10px;min-width:0;padding:1px 6px;"
+                                )
             else:
                 ui.html('<div style="font-size:11px;color:#52525b;font-style:italic;">No comments yet.</div>')
 
@@ -384,7 +415,7 @@ def _render_editable_title(item: BacklogItem, container, save_and_refresh) -> No
     def _show_label():
         container.clear()
         with container:
-            label_el = ui.html(f'<div style="{title_style}">{_html.escape(item.title)}</div>').classes("mc-editable")
+            label_el = ui.html(f'<div style="{title_style}">{safe_html(item.title)}</div>').classes("mc-editable")
             label_el.on("click", lambda _e: _show_input())
 
     def _show_input():
@@ -447,7 +478,7 @@ def _render_editable_tags(item: BacklogItem, all_items: list[BacklogItem], save_
             f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
             f"background:#1e1e23;color:#a1a1aa;padding:1px 6px;"
             f'border-radius:3px;display:inline-flex;align-items:center;gap:3px;">'
-            f'{_html.escape(tag)} <span style="cursor:pointer;color:#71717a;font-size:11px;">\u00d7</span></span>'
+            f'{safe_html(tag)} <span style="cursor:pointer;color:#71717a;font-size:11px;">\u00d7</span></span>'
         )
         tag_el = ui.html(tag_html).style("cursor:pointer;")
 
@@ -519,7 +550,7 @@ def _render_editable_textarea(
                 if use_markdown:
                     el = ui.markdown(current_value).style(value_style).classes("mc-editable")
                 else:
-                    escaped = _html.escape(current_value)
+                    escaped = safe_html(current_value)
                     el = ui.html(f'<div style="{value_style}">{escaped}</div>').classes("mc-editable")
             else:
                 el = ui.html(f'<div style="{empty_style}">Click to add...</div>').classes("mc-editable")
@@ -562,7 +593,7 @@ def _render_editable_list_field(
         with container:
             if current_values:
                 li_items = "".join(
-                    f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{_html.escape(v)}</li>'
+                    f'<li style="margin-bottom:1px;color:#a1a1aa;font-size:11px;">{safe_html(v)}</li>'
                     for v in current_values
                 )
                 el = ui.html(f'<ul style="padding-left:14px;">{li_items}</ul>').classes("mc-editable")
@@ -916,10 +947,7 @@ def _render_backlog_list(
                 ui.element("div")
                 .classes(f"mc-card-row{selected_class}")
                 .style("position:relative;margin:2px 0;padding:0 4px;")
-                .props(
-                    f'draggable="true" data-item-id="{_html.escape(card_item.id)}"'
-                    f' data-section="{_html.escape(section)}"'
-                )
+                .props(f'draggable="true" data-item-id="{safe_html(card_item.id)}" data-section="{safe_html(section)}"')
             ):
                 # Card (clickable)
                 card_container = ui.element("div").style("cursor:pointer;")

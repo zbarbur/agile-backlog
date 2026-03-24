@@ -29,7 +29,7 @@ test_plan:
 - "Manual: paste image in add dialog, save \u2014 image persists"
 - "Manual: paste image in add dialog, cancel \u2014 no orphan files"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - "Manual: add, flag, resolve comments \u2014 verify full flow"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
