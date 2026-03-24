@@ -1,5 +1,5 @@
 title: "GitHub Actions CI workflow \u2014 lint, test, format check"
-status: doing
+status: done
 priority: P2
 category: chore
 sprint_target: 22
