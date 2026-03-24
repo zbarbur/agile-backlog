@@ -1,24 +1,38 @@
-title: Add an option to import a kanban board from an existing project
-status: backlog
+title: "Agile-backlog adoption guide \u2014 onboarding runbook for new projects"
+status: doing
 priority: P2
-category: feature
+category: docs
 sprint_target: 19
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-03-24
 depends_on: []
 tags:
 - data
-goal: ''
-complexity: null
-technical_specs: []
+goal: Write a reusable runbook that any Claude Code agent can follow to adopt agile-backlog
+  in an existing project
+complexity: M
+technical_specs:
+- "File: docs/guides/ADOPTION.md \u2014 the runbook"
+- 'Reference: .claude/sprint-config.yaml as template'
+- 'Reference: KANBAN.md mapping heuristics from brainstorm session'
+- 'Reference: .claude/settings.local.json for statusline config'
 description: 'When integrating with a project that used the previous kanban.md as
   the source , I want to be able to  import the tasks to the new system , this is
   something which better handled as a prompt, so the idea is to provide the right
   prompt for it '
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Covers agile-backlog installation and CLI verification
+- Covers KANBAN.md/TODO.md import with mapping heuristics and preview-confirm flow
+- Covers sprint-config.yaml setup with project-specific commands
+- Covers sprint skill installation and CLAUDE.md process additions
+- Covers statusline configuration porting
+- "Not project-specific \u2014 works for any project"
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: follow the guide on BigQuery-connector project to validate completeness'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []
