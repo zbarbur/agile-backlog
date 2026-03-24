@@ -74,6 +74,7 @@ def render_card_html(item: BacklogItem) -> str:
         f'padding:1px 6px;border-radius:3px;font-weight:600;">{esc_pri}</span>'
     )
     complexity = _complexity_badge(item.complexity) if item.complexity else ""
+    sprint_pill = _sprint_badge(item.sprint_target) if item.sprint_target else ""
 
     tag_chips = "".join(
         f'<span style="font-size:9px;color:#52525b;background:rgba(82,82,91,0.10);'
@@ -90,7 +91,7 @@ def render_card_html(item: BacklogItem) -> str:
         f'<span style="color:{title_color};font-size:12.5px;font-weight:500;'
         f'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{_html.escape(item.title)}</span>'
         f'<span style="display:flex;gap:5px;align-items:center;flex-shrink:0;">'
-        f"{badge}{complexity}{cat_pill}{pri_pill}</span>"
+        f"{badge}{sprint_pill}{complexity}{cat_pill}{pri_pill}</span>"
         f"</div>"
         f'<div style="display:flex;align-items:center;gap:5px;margin-top:3px;">'
         f"{tag_chips}"
@@ -118,6 +119,16 @@ def _complexity_badge(complexity: str) -> str:
         f"font-size:11px;font-weight:600;text-transform:uppercase;"
         f"color:{text_color};background:{bg_color};"
         f'padding:2px 8px;border-radius:4px;">{complexity}</span>'
+    )
+
+
+def _sprint_badge(sprint: int) -> str:
+    """Return an HTML badge for the sprint number (e.g. S23)."""
+    return (
+        f'<span style="display:inline-flex;align-items:center;height:20px;'
+        f"font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;"
+        f"color:#0e7490;background:rgba(6,182,212,0.12);"
+        f'padding:1px 5px;border-radius:3px;white-space:nowrap;">S{sprint}</span>'
     )
 
 

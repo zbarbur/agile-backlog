@@ -667,11 +667,28 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
                                         .style(
                                             "background:rgba(0,0,0,0.95);width:100%;height:100%;"
                                             "display:flex;align-items:center;justify-content:center;"
-                                            "cursor:pointer;"
+                                            "cursor:pointer;overflow:hidden;"
                                         )
                                         .on("click", lambda: dlg.close())
-                                    ):
-                                        ui.image(src).style("max-width:90vw;max-height:90vh;object-fit:contain;")
+                                    ) as card:
+                                        img = ui.image(src).style(
+                                            "max-width:90vw;max-height:90vh;object-fit:contain;"
+                                            "transition:transform 0.15s ease-out;"
+                                        )
+                                        ui.run_javascript(f"""
+                                            (function() {{
+                                                const card = getElement({card.id}).$el;
+                                                const img = getElement({img.id}).$el;
+                                                let scale = 1;
+                                                card.addEventListener('wheel', function(e) {{
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                                                    scale = Math.min(Math.max(0.2, scale + delta), 5);
+                                                    img.style.transform = 'scale(' + scale + ')';
+                                                }}, {{passive: false}});
+                                            }})();
+                                        """)
                                 dlg.open()
 
                             img_el.on("click", _view_image)
