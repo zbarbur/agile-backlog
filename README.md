@@ -1,6 +1,8 @@
 # agile-backlog
 
 [![CI](https://github.com/zbarbur/agile-backlog/actions/workflows/ci.yml/badge.svg)](https://github.com/zbarbur/agile-backlog/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/agile-backlog)](https://pypi.org/project/agile-backlog/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Lightweight Kanban board tool for agentic development. Track backlog items as YAML files, move them through workflow stages via CLI or web UI, and keep everything git-tracked.
 
@@ -16,11 +18,14 @@ Lightweight Kanban board tool for agentic development. Track backlog items as YA
 ## Installation
 
 ```bash
-# CLI only (fast, no NiceGUI)
-pip install git+https://github.com/zbarbur/agile-backlog.git
+# From PyPI
+pip install agile-backlog
 
-# CLI + web UI
-pip install "agile-backlog[ui] @ git+https://github.com/zbarbur/agile-backlog.git"
+# With web UI
+pip install "agile-backlog[ui]"
+
+# From source
+pip install git+https://github.com/zbarbur/agile-backlog.git
 ```
 
 ### Install Sprint Skills

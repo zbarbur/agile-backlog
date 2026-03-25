@@ -172,6 +172,21 @@ Present findings to the user:
 
 ### Merge and Cleanup
 
+### Auto-tag Release
+
+Create a git tag for the sprint release:
+
+```bash
+# Read version from sprint-config.yaml
+VERSION=$(grep 'current_version' .claude/sprint-config.yaml | awk '{print $2}' | tr -d '"')
+git tag -a "v${VERSION}" -m "Release v${VERSION} — Sprint {N}"
+git push origin "v${VERSION}"
+```
+
+**Keep version in sync** — update BOTH files (they must match):
+1. `src/agile_backlog/__init__.py` — `__version__ = "0.{next_sprint}.0"`
+2. `.claude/sprint-config.yaml` — `current_version: "0.{next_sprint}.0"`
+
 ```bash
 # Create PR and merge
 gh pr create --title "Sprint N: <theme>" --body "..."

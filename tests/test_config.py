@@ -2,6 +2,7 @@ from agile_backlog.config import (
     get_archive_days,
     get_current_sprint,
     get_project_name,
+    get_version,
     set_archive_days,
     set_current_sprint,
 )
@@ -87,3 +88,9 @@ def test_get_project_name_from_config(tmp_path, monkeypatch):
     config.write_text("project_name: my-project\n")
     monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
     assert get_project_name() == "my-project"
+
+
+def test_get_version_returns_string():
+    version = get_version()
+    assert isinstance(version, str)
+    assert "." in version  # semver-like
