@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: verify workflow syntax, dry-run with act or push test tag'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

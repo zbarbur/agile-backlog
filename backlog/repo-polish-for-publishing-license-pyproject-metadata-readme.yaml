@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: verify LICENSE, pyproject metadata, README rendering'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

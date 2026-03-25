@@ -27,7 +27,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_config.py: test version fields in config'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

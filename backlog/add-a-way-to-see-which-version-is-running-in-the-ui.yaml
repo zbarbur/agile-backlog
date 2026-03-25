@@ -22,7 +22,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_config.py: test get_version returns valid semver'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
