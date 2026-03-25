@@ -32,7 +32,7 @@ LOG_DIR="/tmp/claude-context-logs"
 mkdir -p "$LOG_DIR"
 SESSION_ID="${CLAUDE_SESSION_ID:-${TERM_SESSION_ID:-$(date +%Y%m%d-%H%M)}}"
 # Sanitize colons from session IDs for safe filenames
-SESSION_ID="${SESSION_ID//:/-}"
+SESSION_ID=$(echo "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
 LOG_FILE="$LOG_DIR/reads-${SESSION_ID}.jsonl"
 
 # Extract offset and limit
@@ -42,16 +42,25 @@ data = json.load(sys.stdin)
 inp = data.get('tool_input', {})
 print(inp.get('offset', 0), inp.get('limit', 0))
 " 2>/dev/null)
+OFFSET="${OFFSET:-0}"
+LIMIT="${LIMIT:-0}"
 
-# Check for re-read BEFORE logging
-if [ -f "$LOG_FILE" ] && grep -q "\"file\":\"${FILE_PATH}\"" "$LOG_FILE"; then
+# Check for re-read BEFORE logging (use -F for fixed string, not regex)
+if [ -f "$LOG_FILE" ] && grep -Fq "\"file\":\"${FILE_PATH}\"" "$LOG_FILE"; then
   # Count previous reads of this file
-  PREV_COUNT=$(grep -c "\"file\":\"${FILE_PATH}\"" "$LOG_FILE")
+  PREV_COUNT=$(grep -Fc "\"file\":\"${FILE_PATH}\"" "$LOG_FILE")
   echo "⚠️ Re-read detected: ${FILE_PATH} (read #$((PREV_COUNT + 1))). Consider using cached context from earlier in this conversation."
 fi
 
-# Always log the read
+# Always log the read — use python3 for valid JSON encoding
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-echo "{\"ts\":\"${TIMESTAMP}\",\"file\":\"${FILE_PATH}\",\"offset\":${OFFSET},\"limit\":${LIMIT}}" >> "$LOG_FILE"
+echo "$INPUT" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+fp = data.get('tool_input', {}).get('file_path', '')
+offset = data.get('tool_input', {}).get('offset', 0) or 0
+limit = data.get('tool_input', {}).get('limit', 0) or 0
+print(json.dumps({'ts': '$TIMESTAMP', 'file': fp, 'offset': offset, 'limit': limit}))
+" >> "$LOG_FILE" 2>/dev/null
 
 exit 0
