@@ -19,11 +19,17 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install build tools
-        run: pip install build
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Lint check
+        run: ruff check . && ruff format --check .
 
       - name: Build package
-        run: python -m build
+        run: pip install build && python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

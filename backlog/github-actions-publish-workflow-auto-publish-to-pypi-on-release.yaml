@@ -1,5 +1,5 @@
 title: "GitHub Actions publish workflow \u2014 auto-publish to PyPI on release"
-status: doing
+status: done
 priority: P3
 category: chore
 sprint_target: 24

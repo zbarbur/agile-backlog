@@ -183,7 +183,9 @@ git tag -a "v${VERSION}" -m "Release v${VERSION} — Sprint {N}"
 git push origin "v${VERSION}"
 ```
 
-Update `current_version` in sprint-config.yaml to reflect the next patch (e.g., bump sprint number).
+**Keep version in sync** — update BOTH files (they must match):
+1. `src/agile_backlog/__init__.py` — `__version__ = "0.{next_sprint}.0"`
+2. `.claude/sprint-config.yaml` — `current_version: "0.{next_sprint}.0"`
 
 ```bash
 # Create PR and merge
