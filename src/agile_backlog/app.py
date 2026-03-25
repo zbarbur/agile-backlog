@@ -69,13 +69,18 @@ def kanban_page():
         with ui.element("div").style(
             "flex-shrink:0;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #1e1e23;"
         ):
-            from agile_backlog.config import get_project_name
+            from agile_backlog.config import get_project_name, get_version
 
             project_name = get_project_name()
+            version = get_version()
             ui.html(
                 f'<span style="font-size:16px;font-weight:700;color:#fafafa;'
                 f"letter-spacing:-0.02em;font-family:'DM Sans',sans-serif;"
                 f'">{safe_html(project_name)}</span>'
+            )
+            ui.html(
+                f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:10px;"
+                f'color:#52525b;letter-spacing:0.02em;">v{safe_html(version)}</span>'
             )
 
             # Sprint badge container — visibility toggled by view mode
