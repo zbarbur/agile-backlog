@@ -18,6 +18,12 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Utilities",
 ]
+
+[project.urls]
+Homepage = "https://github.com/zbarbur/agile-backlog"
+Repository = "https://github.com/zbarbur/agile-backlog"
+Issues = "https://github.com/zbarbur/agile-backlog/issues"
+
 dependencies = [
     "pyyaml>=6.0.0",
     "click>=8.1.0",
