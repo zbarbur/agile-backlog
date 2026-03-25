@@ -1,23 +1,31 @@
 title: "GitHub Actions publish workflow \u2014 auto-publish to PyPI on release"
-status: backlog
+status: doing
 priority: P3
 category: chore
-sprint_target: null
+sprint_target: 24
 created: 2026-03-22
-updated: 2026-03-23
+updated: 2026-03-25
 depends_on: []
 tags:
 - packaging
-goal: ''
-complexity: null
-technical_specs: []
+goal: Auto-publish to PyPI when a version tag is pushed
+complexity: S
+technical_specs:
+- "File: .github/workflows/publish.yml \u2014 new workflow"
+- "File: pyproject.toml \u2014 ensure build-system configured"
 description: 'Add .github/workflows/publish.yml triggered by GitHub release tags (v*).
   Uses Trusted Publishers (OIDC) for secure upload. Depends on: package restructure,
   PyPI account setup.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- GitHub Actions workflow triggers on tag push (v*)
+- Workflow builds and publishes to PyPI via trusted publishing
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: verify workflow syntax, dry-run with act or push test tag'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

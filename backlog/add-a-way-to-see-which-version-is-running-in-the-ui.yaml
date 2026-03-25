@@ -1,21 +1,28 @@
 title: add a way to see which version is running in the UI
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 24
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-25
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Display current version in the web UI header
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 display version in header"
+- "File: src/agile_backlog/config.py \u2014 get_version() helper"
 description: It would be helpful to know which version is running , is the version
   updated on every sprint ?
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Version shown in header or footer of web UI
+- Version reads from package metadata (not hardcoded)
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_config.py: test get_version returns valid semver'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

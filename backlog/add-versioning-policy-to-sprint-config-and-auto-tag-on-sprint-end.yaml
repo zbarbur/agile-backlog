@@ -1,24 +1,33 @@
 title: Add versioning policy to sprint-config and auto-tag on sprint end
-status: backlog
+status: doing
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 24
 created: 2026-03-25
 updated: 2026-03-25
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add versioning config and auto-tag git releases at sprint end
+complexity: M
+technical_specs:
+- "File: .claude/sprint-config.yaml \u2014 add version fields"
+- "File: .claude/skills/sprint-end/SKILL.md \u2014 add tagging step to Phase 4"
+- "File: src/agile_backlog/__init__.py \u2014 expose __version__"
 description: 'Add versioning config to sprint-config.yaml (scheme: sprint-based v0.{sprint}.{patch},
   major version bumped manually for breaking changes). Sprint-end skill should auto-create
   a git tag after merge (e.g., v0.23.0). Patch increments for hotfixes between sprints.
   Config fields: version_scheme, current_version, major_version. Update sprint-end
   skill to tag and push tag.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- sprint-config.yaml has version_scheme and current_version fields
+- Sprint-end skill auto-creates git tag (v0.{sprint}.0) after merge
+- Version readable programmatically from package
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_config.py: test version fields in config'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

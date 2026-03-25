@@ -1,5 +1,5 @@
 title: Publish to PyPI
-status: backlog
+status: doing
 priority: P3
 category: chore
 sprint_target: 24
@@ -8,15 +8,23 @@ updated: 2026-03-25
 depends_on: []
 tags:
 - packaging
-goal: ''
-complexity: null
-technical_specs: []
+goal: Make agile-backlog publishable to PyPI
+complexity: M
+technical_specs:
+- "File: pyproject.toml \u2014 verify build config, add project-urls"
+- "File: .github/workflows/ \u2014 reference for publish workflow"
 description: Publish agile-backlog to PyPI for pip install agile-backlog. Requires
   account setup, build workflow, and release process.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- python -m build produces wheel and sdist
+- twine check passes on built artifacts
+- Package installs from built wheel
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: build, twine check, test install in fresh venv'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

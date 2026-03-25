@@ -1,0 +1,31 @@
+title: "Repo polish for publishing \u2014 LICENSE, pyproject metadata, README"
+status: doing
+priority: P2
+category: chore
+sprint_target: 24
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: Add LICENSE file, polish pyproject.toml metadata, update README for PyPI
+complexity: S
+technical_specs:
+- "File: LICENSE \u2014 MIT license text"
+- "File: pyproject.toml \u2014 add project-urls section"
+- "File: README.md \u2014 install instructions, badges"
+description: Add MIT LICENSE file (referenced in pyproject.toml but missing). Review
+  pyproject.toml metadata for PyPI (author, URLs, project-urls). Update README with
+  install instructions, badges, and screenshots for PyPI listing.
+acceptance_criteria:
+- MIT LICENSE file exists at repo root
+- pyproject.toml has project-urls (homepage, repository, issues)
+- README has install instructions and badges
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: verify LICENSE, pyproject metadata, README rendering'
+notes: ''
+phase: plan
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

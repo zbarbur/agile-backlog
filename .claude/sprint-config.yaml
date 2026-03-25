@@ -6,7 +6,7 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 23
+current_sprint: 24
 
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
