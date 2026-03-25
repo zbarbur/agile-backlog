@@ -26,10 +26,13 @@ if [ -z "$FILE_PATH" ]; then
   exit 0
 fi
 
-# Log file location — one per session, keyed by CLAUDE_SESSION_ID or PID
+# Log file location — one per session
+# Try CLAUDE_SESSION_ID first, then TERM_SESSION_ID (stable per terminal), then fallback to date
 LOG_DIR="/tmp/claude-context-logs"
 mkdir -p "$LOG_DIR"
-SESSION_ID="${CLAUDE_SESSION_ID:-$$}"
+SESSION_ID="${CLAUDE_SESSION_ID:-${TERM_SESSION_ID:-$(date +%Y%m%d-%H%M)}}"
+# Sanitize colons from session IDs for safe filenames
+SESSION_ID="${SESSION_ID//:/-}"
 LOG_FILE="$LOG_DIR/reads-${SESSION_ID}.jsonl"
 
 # Extract offset and limit
