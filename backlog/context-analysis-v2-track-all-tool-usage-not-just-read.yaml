@@ -1,0 +1,26 @@
+title: "Context analysis v2 \u2014 track all tool usage, not just Read"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Expand context analysis hook to capture all context-consuming tools:
+  Read, Grep, Glob, Bash, WebFetch, Agent. Each tool result consumes tokens in Claude''s
+  context window. Log tool name + output size, analyze per-tool token spend, identify
+  which tools are the biggest context consumers. Requires: adding tool field to log
+  format, per-tool matchers in settings.json, updating analyze/report to break down
+  by tool type.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

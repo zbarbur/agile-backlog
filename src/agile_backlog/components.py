@@ -667,26 +667,79 @@ def _render_images_section(item: BacklogItem, save_fn) -> None:
                                         .style(
                                             "background:rgba(0,0,0,0.95);width:100%;height:100%;"
                                             "display:flex;align-items:center;justify-content:center;"
-                                            "cursor:pointer;overflow:hidden;"
+                                            "cursor:pointer;overflow:hidden;position:relative;"
                                         )
                                         .on("click", lambda: dlg.close())
                                     ) as card:
                                         img = ui.image(src).style(
-                                            "max-width:90vw;max-height:90vh;object-fit:contain;"
-                                            "transition:transform 0.15s ease-out;"
+                                            "object-fit:contain;transition:transform 0.15s ease-out;"
+                                        )
+                                        zoom_label = ui.label("100%").style(
+                                            "position:absolute;bottom:20px;right:20px;"
+                                            "color:rgba(255,255,255,0.8);font-size:14px;"
+                                            "background:rgba(0,0,0,0.6);padding:4px 10px;"
+                                            "border-radius:4px;pointer-events:none;"
+                                            "transition:opacity 0.3s;"
+                                        )
+                                        hint = ui.label("Scroll to zoom \u00b7 Double-click to reset").style(
+                                            "position:absolute;top:20px;left:50%;transform:translateX(-50%);"
+                                            "color:rgba(255,255,255,0.6);font-size:13px;"
+                                            "background:rgba(0,0,0,0.5);padding:4px 12px;"
+                                            "border-radius:4px;pointer-events:none;"
+                                            "transition:opacity 1.5s;"
                                         )
                                         ui.run_javascript(f"""
                                             (function() {{
                                                 const card = getElement({card.id}).$el;
-                                                const img = getElement({img.id}).$el;
+                                                const imgEl = getElement({img.id}).$el;
+                                                const zoomEl = getElement({zoom_label.id}).$el;
+                                                const hintEl = getElement({hint.id}).$el;
                                                 let scale = 1;
+                                                let fadeTimer = null;
+
+                                                // Fit to natural size capped at viewport
+                                                const inner = imgEl.querySelector('img');
+                                                if (inner) {{
+                                                    inner.onload = function() {{
+                                                        const vw = window.innerWidth * 0.9;
+                                                        const vh = window.innerHeight * 0.9;
+                                                        const nw = inner.naturalWidth;
+                                                        const nh = inner.naturalHeight;
+                                                        const fitScale = Math.min(vw / nw, vh / nh, 1);
+                                                        imgEl.style.width = (nw * fitScale) + 'px';
+                                                        imgEl.style.height = (nh * fitScale) + 'px';
+                                                    }};
+                                                    if (inner.complete) inner.onload();
+                                                }}
+
+                                                // Fade hint after 3s
+                                                setTimeout(function() {{ hintEl.style.opacity = '0'; }}, 3000);
+
+                                                function showZoom() {{
+                                                    zoomEl.style.opacity = '1';
+                                                    zoomEl.textContent = Math.round(scale * 100) + '%';
+                                                    clearTimeout(fadeTimer);
+                                                    fadeTimer = setTimeout(function() {{
+                                                        zoomEl.style.opacity = '0.4';
+                                                    }}, 1500);
+                                                }}
+
                                                 card.addEventListener('wheel', function(e) {{
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-                                                    scale = Math.min(Math.max(0.2, scale + delta), 5);
-                                                    img.style.transform = 'scale(' + scale + ')';
+                                                    scale = Math.min(Math.max(0.1, scale + delta), 5);
+                                                    imgEl.style.transform = 'scale(' + scale + ')';
+                                                    showZoom();
                                                 }}, {{passive: false}});
+
+                                                // Double-click to reset
+                                                card.addEventListener('dblclick', function(e) {{
+                                                    e.stopPropagation();
+                                                    scale = 1;
+                                                    imgEl.style.transform = 'scale(1)';
+                                                    showZoom();
+                                                }});
                                             }})();
                                         """)
                                 dlg.open()

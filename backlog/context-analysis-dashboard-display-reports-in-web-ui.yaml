@@ -1,0 +1,26 @@
+title: "Context analysis dashboard \u2014 display reports in web UI"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Add a dashboard view to the web UI that visualizes context analysis\
+  \ reports (SPRINT{N}_CONTEXT_REPORT.json). Show: re-read ratio trend across sprints,\
+  \ top files heatmap, token spend per session, wasteful reads highlighted. This ties\
+  \ into the planned Done/Retro view \u2014 the context report becomes one of several\
+  \ sprint retrospective data sources alongside task completion stats, test coverage,\
+  \ and other metrics."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

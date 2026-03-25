@@ -1,0 +1,23 @@
+title: The show archive is by days, can it be modified to the last X.. sprints ?
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Days don''t make since for the pace we''re moving '
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images:
+- filename: pasted-1.png
+  created: '2026-03-25'
