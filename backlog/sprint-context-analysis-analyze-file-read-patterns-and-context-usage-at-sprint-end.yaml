@@ -1,11 +1,11 @@
 title: "Sprint context analysis \u2014 analyze file read patterns and context usage\
   \ at sprint end"
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 23
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-25
 depends_on: []
 tags:
 - skills
