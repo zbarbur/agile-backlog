@@ -1,0 +1,25 @@
+title: Add versioning policy to sprint-config and auto-tag on sprint end
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add versioning config to sprint-config.yaml (scheme: sprint-based v0.{sprint}.{patch},
+  major version bumped manually for breaking changes). Sprint-end skill should auto-create
+  a git tag after merge (e.g., v0.23.0). Patch increments for hotfixes between sprints.
+  Config fields: version_scheme, current_version, major_version. Update sprint-end
+  skill to tag and push tag.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

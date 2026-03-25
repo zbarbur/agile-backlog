@@ -1,0 +1,23 @@
+title: Add serve port to sprint-config.yaml
+status: backlog
+priority: P3
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: The serve command accepts --port as CLI flag (default 8501) but it's
+  not in sprint-config.yaml. Add it as a project-level setting so it's discoverable
+  and consistent.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
