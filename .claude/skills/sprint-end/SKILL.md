@@ -122,6 +122,26 @@ Run a structured memory audit, then update:
 
 **4. Verify MEMORY.md index** matches actual files in the memory directory.
 
+## Phase 3c: Context Efficiency Report
+
+Generate the context analysis report for this sprint:
+
+```bash
+{backlog_commands.context_report} --sprint {N} --log-dir /tmp/claude-context-logs --output-dir docs/sprints
+```
+
+If log data exists, include a brief summary in the handover doc:
+- Total reads / unique files / re-read ratio
+- Top 3 most-read files
+- Any wasteful re-reads to address
+
+If no log data exists (hook wasn't active for this sprint), skip and note "No context logs available."
+
+Add the report JSON to the commit:
+```bash
+git add docs/sprints/SPRINT{N}_CONTEXT_REPORT.json
+```
+
 ## Phase 3b: Code Review (MANDATORY before merge)
 
 **This phase is mandatory — never skip it.** Run a code review on the full sprint diff before creating the PR.

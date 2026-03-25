@@ -1,0 +1,74 @@
+{
+  "sprint": 23,
+  "total_reads": 4,
+  "unique_files": 1,
+  "reread_count": 3,
+  "reread_ratio": 0.75,
+  "estimated_tokens": 1600,
+  "top_files": [
+    {
+      "file": "/tmp/test.txt",
+      "count": 4
+    }
+  ],
+  "wasteful_reads": [
+    {
+      "file": "/tmp/test.txt",
+      "count": 4,
+      "range": "0-100"
+    }
+  ],
+  "sessions": [
+    {
+      "total_reads": 1,
+      "unique_files": 1,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 400,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "42162"
+    },
+    {
+      "total_reads": 1,
+      "unique_files": 1,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 400,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "42288"
+    },
+    {
+      "total_reads": 2,
+      "unique_files": 1,
+      "reread_count": 1,
+      "reread_ratio": 0.5,
+      "estimated_tokens": 800,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 2
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 2,
+          "range": "0-100"
+        }
+      ],
+      "session_id": "smoketest"
+    }
+  ]
+}

@@ -1,22 +1,31 @@
 title: "CLI add \u2014 accept --title as alias for positional argument"
-status: backlog
+status: done
 priority: P3
 category: feature
 sprint_target: 23
 created: 2026-03-22
-updated: 2026-03-24
+updated: 2026-03-25
 depends_on: []
 tags:
 - cli
-goal: ''
-complexity: null
-technical_specs: []
+goal: Accept --title as alias for positional TITLE argument in CLI add command
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 add --title option to add command"
+- "File: tests/test_cli.py \u2014 test --title alias and conflict handling"
 description: Currently add takes TITLE as positional arg. Also accept --title for
   discoverability. Agents and scripts tend to guess --title first.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- agile-backlog add --title 'foo' works identically to agile-backlog add 'foo'
+- Both positional and --title work; error if both provided
+- Help text shows both options
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: test add with --title, test add with positional, test error
+  when both given'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

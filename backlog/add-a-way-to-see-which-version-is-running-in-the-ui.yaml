@@ -1,4 +1,4 @@
-title: Add also a "Done" view
+title: add a way to see which version is running in the UI
 status: backlog
 priority: P2
 category: feature
@@ -10,8 +10,8 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: In the level board/backlog add a view for all done items and group them
-  by sprint
+description: It would be helpful to know which version is running , is the version
+  updated on every sprint ?
 acceptance_criteria: []
 test_plan: []
 notes: ''

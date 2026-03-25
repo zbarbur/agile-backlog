@@ -202,6 +202,16 @@ class TestRenderCardHtml:
         html = render_card_html(_item(design_reviewed=True))
         assert "design" not in html
 
+    def test_shows_sprint_badge_when_sprint_target_set(self):
+        html = render_card_html(_item(sprint_target=23))
+        assert "S23" in html
+
+    def test_no_sprint_badge_when_sprint_target_none(self):
+        import re
+
+        html = render_card_html(_item(sprint_target=None))
+        assert not re.search(r"\bS\d+\b", html)
+
 
 class TestCommentBadgeHtml:
     def test_red_badge_for_unresolved_flagged(self):

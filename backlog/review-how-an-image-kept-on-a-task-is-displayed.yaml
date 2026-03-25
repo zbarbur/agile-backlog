@@ -1,21 +1,30 @@
 title: Review how an image kept on a task is displayed
-status: backlog
+status: done
 priority: P2
 category: bug
 sprint_target: 23
 created: 2026-03-24
-updated: 2026-03-24
+updated: 2026-03-25
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Fix image display on task cards \u2014 constrain size for usability"
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/components.py \u2014 constrain image rendering in task\
+  \ detail"
+- "File: src/agile_backlog/app.py \u2014 CSS for image constraints if needed"
 description: The usability of viewing saved images is still not good, image appear
   to big
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Images on task detail view are constrained to reasonable max dimensions
+- Images are clickable to view full size
+- Layout does not break with large or small images
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_components.py: test image rendering has max-width/max-height constraints'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

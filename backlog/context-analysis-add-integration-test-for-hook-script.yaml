@@ -1,0 +1,24 @@
+title: "Context analysis \u2014 add integration test for hook script"
+status: backlog
+priority: P3
+category: chore
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Add automated test for post-read-logger.sh: feed stdin, verify JSONL
+  output, verify re-read detection warning. Currently only has manual smoke test.
+  Unit + CLI tests cover the Python side but the hook script itself is untested in
+  CI.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

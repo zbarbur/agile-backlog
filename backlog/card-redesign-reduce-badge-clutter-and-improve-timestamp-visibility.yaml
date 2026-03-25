@@ -1,0 +1,24 @@
+title: "Card redesign \u2014 reduce badge clutter and improve timestamp visibility"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 25
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Cards are getting crowded with 5 badges (comment count, sprint, complexity,\
+  \ category, priority). Timestamp (e.g. '1d') is barely visible \u2014 color too\
+  \ faint against dark background. Needs: reduce badge count or reorganize layout,\
+  \ improve timestamp contrast."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

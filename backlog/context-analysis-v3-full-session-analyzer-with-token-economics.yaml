@@ -1,0 +1,28 @@
+title: "Context analysis v3 \u2014 full session analyzer with token economics"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Analyze complete Claude Code session files (~/.claude/projects/) to\
+  \ understand full token economics: prompt sizes, response sizes, tool call costs,\
+  \ context window utilization over time, compaction events, wasted context. Research\
+  \ existing projects doing session analysis (claude-token-counter, ccusage, etc.).\
+  \ Includes: smart prompt gate (UserPromptSubmit hook to detect trivial CLI commands\
+  \ and suggest running directly), session replay/visualization, cost-per-task estimation.\
+  \ Needs brainstorming and research before design \u2014 there may be open source\
+  \ tools already solving parts of this."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

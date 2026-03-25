@@ -56,6 +56,23 @@ class TestAdd:
         result = runner.invoke(main, ["add", "Sprint task", "--category", "feature", "--sprint", "3"])
         assert result.exit_code == 0
 
+    def test_add_with_title_option(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "--title", "foo", "--category", "feature", "--priority", "P2"])
+        assert result.exit_code == 0
+        assert "foo" in result.output
+        assert (backlog_dir / "foo.yaml").exists()
+
+    def test_add_with_positional_title(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "bar baz", "--category", "feature", "--priority", "P2"])
+        assert result.exit_code == 0
+        assert "bar-baz" in result.output
+        assert (backlog_dir / "bar-baz.yaml").exists()
+
+    def test_add_with_both_title_and_positional_errors(self, runner: CliRunner):
+        result = runner.invoke(main, ["add", "positional", "--title", "option", "--category", "feature"])
+        assert result.exit_code != 0
+        assert "Cannot specify both" in result.output or "cannot specify both" in result.output.lower()
+
 
 class TestList:
     def test_list_empty(self, runner: CliRunner):
@@ -579,6 +596,24 @@ class TestInstallSkills:
         result = runner.invoke(main, ["install-skills", "--target", str(target), "--force"])
         assert "Installed" in result.output
         assert "Skipped" not in result.output
+
+
+class TestContextReport:
+    def test_context_report_command(self, tmp_path: Path):
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        log_file = log_dir / "reads-test.jsonl"
+        log_file.write_text('{"ts":"2026-03-24T10:00:00Z","file":"/src/app.py","offset":0,"limit":200}\n')
+        output_dir = tmp_path / "reports"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            ["context-report", "--log-dir", str(log_dir), "--output-dir", str(output_dir), "--sprint", "23"],
+        )
+        assert result.exit_code == 0
+        assert "SPRINT23_CONTEXT_REPORT.json" in result.output
+        assert (output_dir / "SPRINT23_CONTEXT_REPORT.json").exists()
 
 
 class TestBacklogDirOverride:
