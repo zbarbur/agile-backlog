@@ -67,6 +67,12 @@ def set_archive_days(days: int) -> None:
     path.write_text(text)
 
 
+def get_version() -> str:
+    from agile_backlog import __version__
+
+    return __version__
+
+
 def set_current_sprint(sprint: int | None) -> None:
     path = _sprint_config_path()
     if not path.exists():

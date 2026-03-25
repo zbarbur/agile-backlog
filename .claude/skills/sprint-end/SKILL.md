@@ -172,6 +172,19 @@ Present findings to the user:
 
 ### Merge and Cleanup
 
+### Auto-tag Release
+
+Create a git tag for the sprint release:
+
+```bash
+# Read version from sprint-config.yaml
+VERSION=$(grep 'current_version' .claude/sprint-config.yaml | awk '{print $2}' | tr -d '"')
+git tag -a "v${VERSION}" -m "Release v${VERSION} — Sprint {N}"
+git push origin "v${VERSION}"
+```
+
+Update `current_version` in sprint-config.yaml to reflect the next patch (e.g., bump sprint number).
+
 ```bash
 # Create PR and merge
 gh pr create --title "Sprint N: <theme>" --body "..."
