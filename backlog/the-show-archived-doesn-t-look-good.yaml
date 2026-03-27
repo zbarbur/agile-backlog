@@ -1,5 +1,5 @@
 title: The show archived doesn't look good
-status: backlog
+status: doing
 priority: P2
 category: bug
 sprint_target: 25
@@ -7,14 +7,20 @@ created: 2026-03-24
 updated: 2026-03-27
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix visual issues in the archived items display
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 fix archived section styling"
+- "File: tests/test_pure.py \u2014 test archived card rendering"
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Archived items display looks consistent with rest of UI
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: test archived items render with correct styling'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

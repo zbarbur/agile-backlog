@@ -1,23 +1,30 @@
 title: "Card redesign \u2014 reduce badge clutter and improve timestamp visibility"
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 25
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-27
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Simplify card layout and improve timestamp readability
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 update render_card_html()"
+- "File: tests/test_pure.py \u2014 update card rendering tests"
 description: "Cards are getting crowded with 5 badges (comment count, sprint, complexity,\
   \ category, priority). Timestamp (e.g. '1d') is barely visible \u2014 color too\
   \ faint against dark background. Needs: reduce badge count or reorganize layout,\
   \ improve timestamp contrast."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- "Fewer inline badges \u2014 reorganize or consolidate"
+- Timestamp text has sufficient contrast on dark background
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: test card HTML output has updated layout'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

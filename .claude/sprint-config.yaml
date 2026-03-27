@@ -6,10 +6,10 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 24
+current_sprint: 25
 # Versioning — sprint-based: v0.{sprint}.{patch}
 version_scheme: "sprint"
-current_version: "0.24.0"
+current_version: "0.25.0"
 
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
