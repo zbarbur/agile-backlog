@@ -27,5 +27,8 @@ build/
 
 .agile-backlog.pid
 
+# Context analysis logs (session-specific, not committed)
+.claude/context-logs/
+
 # Uploaded images
 backlog/images/

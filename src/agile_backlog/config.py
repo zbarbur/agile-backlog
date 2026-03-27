@@ -97,6 +97,18 @@ def get_serve_port() -> int:
     return 8501
 
 
+def get_context_logs_dir() -> Path:
+    from agile_backlog.yaml_store import _git_root
+
+    sprint_config = _sprint_config_path()
+    if sprint_config.exists():
+        data = yaml.safe_load(sprint_config.read_text()) or {}
+        custom = data.get("context_logs_dir")
+        if custom:
+            return Path(custom) if Path(custom).is_absolute() else _git_root() / custom
+    return _git_root() / ".claude" / "context-logs"
+
+
 def get_version() -> str:
     from agile_backlog import __version__
 

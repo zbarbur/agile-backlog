@@ -14,8 +14,9 @@ if [ -z "$TOOL_NAME" ]; then
   exit 0
 fi
 
-# Log file location — one per session
-LOG_DIR="/tmp/claude-context-logs"
+# Log file location — persistent, project-local
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+LOG_DIR="${GIT_ROOT}/.claude/context-logs"
 mkdir -p "$LOG_DIR"
 SESSION_ID="${CLAUDE_SESSION_ID:-${TERM_SESSION_ID:-$(date +%Y%m%d-%H%M)}}"
 # Sanitize colons from session IDs for safe filenames

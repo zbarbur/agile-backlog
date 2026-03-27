@@ -9,7 +9,7 @@ import click
 import yaml
 
 import agile_backlog.yaml_store as _yaml_store
-from agile_backlog.config import get_current_sprint, get_serve_port
+from agile_backlog.config import get_context_logs_dir, get_current_sprint, get_serve_port
 from agile_backlog.context_report import generate_sprint_report
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
@@ -526,11 +526,13 @@ def migrate(dry_run: bool):
 
 
 @main.command("context-report")
-@click.option("--log-dir", default="/tmp/claude-context-logs", help="Directory with session read logs")
+@click.option("--log-dir", default=None, help="Directory with session tool logs (default: from config)")
 @click.option("--output-dir", default="docs/sprints", help="Output directory for report")
 @click.option("--sprint", required=True, type=int, help="Sprint number")
 def context_report(log_dir, output_dir, sprint):
     """Generate a sprint context report from session read logs."""
+    if log_dir is None:
+        log_dir = str(get_context_logs_dir())
     report_path = generate_sprint_report(Path(log_dir), Path(output_dir), sprint)
     click.echo(f"Report generated: {report_path}")
 

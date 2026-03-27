@@ -35,6 +35,9 @@ backlog_commands:
   flagged: ".venv/bin/agile-backlog flagged"
   context_report: ".venv/bin/agile-backlog context-report"
 
+# Context analysis
+context_logs_dir: ".claude/context-logs"
+
 # Documentation paths
 docs:
   handover_dir: "docs/sprints/"

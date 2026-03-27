@@ -1,6 +1,7 @@
 from agile_backlog.config import (
     get_archive_days,
     get_archive_sprints,
+    get_context_logs_dir,
     get_current_sprint,
     get_project_name,
     get_serve_port,
@@ -128,6 +129,21 @@ def test_get_serve_port_from_config(tmp_path, monkeypatch):
     config.write_text("serve_port: 9000\n")
     monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
     assert get_serve_port() == 9000
+
+
+def test_get_context_logs_dir_default(tmp_path, monkeypatch):
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: tmp_path / "nope.yaml")
+    monkeypatch.setattr("agile_backlog.yaml_store._git_root", lambda: tmp_path)
+    assert get_context_logs_dir() == tmp_path / ".claude" / "context-logs"
+
+
+def test_get_context_logs_dir_from_config(tmp_path, monkeypatch):
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text('context_logs_dir: "logs/context"\n')
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    monkeypatch.setattr("agile_backlog.yaml_store._git_root", lambda: tmp_path)
+    assert get_context_logs_dir() == tmp_path / "logs" / "context"
 
 
 def test_get_version_returns_string():
