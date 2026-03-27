@@ -57,6 +57,14 @@ elif tool == 'WebFetch':
 elif tool == 'Agent':
     prompt = inp.get('prompt', inp.get('task', ''))
     entry['prompt'] = prompt[:200] if len(prompt) > 200 else prompt
+elif tool == 'Edit':
+    entry['file'] = inp.get('file_path', '')
+    entry['replace_all'] = inp.get('replace_all', False)
+elif tool == 'Write':
+    entry['file'] = inp.get('file_path', '')
+elif tool == 'Skill':
+    entry['skill'] = inp.get('skill', '')
+    entry['args'] = (inp.get('args', '') or '')[:200]
 else:
     # Generic fallback — log tool_input keys
     entry['input_keys'] = list(inp.keys())[:10]

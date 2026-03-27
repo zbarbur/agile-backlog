@@ -2,7 +2,13 @@
 
 import json
 
-from agile_backlog.context_report import analyze_reads, analyze_tool_usage, generate_sprint_report, parse_read_log
+from agile_backlog.context_report import (
+    analyze_efficiency,
+    analyze_reads,
+    analyze_tool_usage,
+    generate_sprint_report,
+    parse_read_log,
+)
 
 # ---------------------------------------------------------------------------
 # Task 2: parse_read_log
@@ -174,6 +180,71 @@ def test_analyze_tool_usage_empty():
     result = analyze_tool_usage([])
     assert result["total_tool_calls"] == 0
     assert result["by_tool"] == {}
+
+
+def test_analyze_tool_usage_read_write_ratio():
+    entries = [
+        {"tool": "Read", "file": "a.py"},
+        {"tool": "Read", "file": "b.py"},
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Edit", "file": "a.py"},
+    ]
+    result = analyze_tool_usage(entries)
+    assert result["reads"] == 3  # 2 Read + 1 Grep
+    assert result["writes"] == 1  # 1 Edit
+    assert result["read_write_ratio"] == 3.0
+
+
+def test_analyze_tool_usage_no_writes():
+    entries = [{"tool": "Read", "file": "a.py"}, {"tool": "Grep", "pattern": "foo"}]
+    result = analyze_tool_usage(entries)
+    assert result["read_write_ratio"] is None
+
+
+def test_analyze_tool_usage_write_and_skill():
+    entries = [
+        {"tool": "Edit", "file": "a.py"},
+        {"tool": "Write", "file": "b.py"},
+        {"tool": "Skill", "skill": "commit"},
+    ]
+    result = analyze_tool_usage(entries)
+    assert result["writes"] == 2
+    assert result["by_tool"]["Skill"] == 1
+
+
+# ---------------------------------------------------------------------------
+# analyze_efficiency
+# ---------------------------------------------------------------------------
+
+
+def test_analyze_efficiency_rereads():
+    entries = [
+        {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},
+        {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},  # exact reread
+        {"tool": "Read", "file": "a.py", "offset": 50, "limit": 50},  # different range
+    ]
+    result = analyze_efficiency(entries)
+    assert result["total_reads"] == 3
+    assert result["reread_count"] == 2
+    assert result["exact_reread_count"] == 1
+    assert result["reread_waste_ratio"] == round(1 / 3, 2)
+
+
+def test_analyze_efficiency_grep_patterns():
+    entries = [
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Grep", "pattern": "bar"},
+        {"tool": "Grep", "pattern": "foo"},  # duplicate pattern
+    ]
+    result = analyze_efficiency(entries)
+    assert result["total_grep_calls"] == 3
+    assert result["unique_grep_patterns"] == 2
+
+
+def test_analyze_efficiency_empty():
+    result = analyze_efficiency([])
+    assert result["total_reads"] == 0
+    assert result["reread_waste_ratio"] == 0.0
 
 
 # ---------------------------------------------------------------------------
