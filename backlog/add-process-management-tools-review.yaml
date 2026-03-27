@@ -1,0 +1,24 @@
+title: add process management tools review
+status: backlog
+priority: P1
+category: feature
+sprint_target: 27
+created: 2026-03-27
+updated: 2026-03-27
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "add in a UI a view of all the process tools (skill files, claude.md\
+  \ , handover) , allow the user to add them , ofer review prompts for maintaining\
+  \ these over time , make sure that they stay consistent and don't overload the context.\
+  \ \nIt'll be great to show the use of the skills based on session analytics collected"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

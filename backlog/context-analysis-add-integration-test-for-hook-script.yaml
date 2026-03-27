@@ -2,9 +2,9 @@ title: "Context analysis \u2014 add integration test for hook script"
 status: backlog
 priority: P3
 category: chore
-sprint_target: null
+sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-27
 depends_on: []
 tags: []
 goal: ''

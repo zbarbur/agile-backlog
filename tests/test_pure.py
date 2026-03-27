@@ -3,13 +3,16 @@ from datetime import date, timedelta
 
 from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
+    backlog_dir_mtime,
     category_style,
     comment_badge_html,
     comment_thread_html,
     detect_current_sprint,
     filter_items,
+    group_done_by_sprint,
     group_items_by_section,
     is_recently_done,
+    parse_sprint_handover,
     relative_time,
     render_card_html,
     render_comment_html,
@@ -211,6 +214,10 @@ class TestRenderCardHtml:
 
         html = render_card_html(_item(sprint_target=None))
         assert not re.search(r"\bS\d+\b", html)
+
+    def test_timestamp_has_readable_color(self):
+        html = render_card_html(_item())
+        assert "#a1a1aa" in html
 
 
 class TestCommentBadgeHtml:
@@ -486,3 +493,114 @@ class TestSafeHtml:
         html = render_card_html(item)
         assert "<img" not in html
         assert "&lt;img" in html
+
+
+class TestBacklogDirMtime:
+    def test_empty_dir_returns_zero(self, tmp_path):
+        assert backlog_dir_mtime(tmp_path) == 0.0
+
+    def test_nonexistent_dir_returns_zero(self, tmp_path):
+        assert backlog_dir_mtime(tmp_path / "nope") == 0.0
+
+    def test_returns_max_mtime_of_yaml_files(self, tmp_path):
+        import time
+
+        (tmp_path / "a.yaml").write_text("id: a")
+        time.sleep(0.05)
+        (tmp_path / "b.yaml").write_text("id: b")
+        expected = (tmp_path / "b.yaml").stat().st_mtime
+        result = backlog_dir_mtime(tmp_path)
+        assert result == expected
+
+    def test_ignores_non_yaml_files(self, tmp_path):
+        (tmp_path / "readme.md").write_text("# hi")
+        (tmp_path / "item.yaml").write_text("id: x")
+        result = backlog_dir_mtime(tmp_path)
+        assert result == (tmp_path / "item.yaml").stat().st_mtime
+
+
+class TestGroupDoneBySprint:
+    def test_groups_by_sprint(self):
+        items = [
+            _item(id="a", status="done", sprint_target=10),
+            _item(id="b", status="done", sprint_target=10),
+            _item(id="c", status="done", sprint_target=12),
+        ]
+        result = group_done_by_sprint(items)
+        assert len(result[10]) == 2
+        assert len(result[12]) == 1
+
+    def test_descending_sprint_order(self):
+        items = [
+            _item(id="a", status="done", sprint_target=5),
+            _item(id="b", status="done", sprint_target=10),
+            _item(id="c", status="done", sprint_target=7),
+        ]
+        result = group_done_by_sprint(items)
+        keys = list(result.keys())
+        assert keys == [10, 7, 5]
+
+    def test_none_sprint_included_at_end(self):
+        items = [
+            _item(id="a", status="done", sprint_target=10),
+            _item(id="b", status="done", sprint_target=None),
+        ]
+        result = group_done_by_sprint(items)
+        keys = list(result.keys())
+        assert keys == [10, None]
+        assert len(result[None]) == 1
+
+    def test_non_done_items_excluded(self):
+        items = [
+            _item(id="a", status="done", sprint_target=10),
+            _item(id="b", status="doing", sprint_target=10),
+            _item(id="c", status="backlog", sprint_target=10),
+        ]
+        result = group_done_by_sprint(items)
+        assert len(result) == 1
+        assert len(result[10]) == 1
+        assert result[10][0].id == "a"
+
+    def test_empty_list(self):
+        assert group_done_by_sprint([]) == {}
+
+    def test_items_sorted_by_priority_within_group(self):
+        items = [
+            _item(id="low", status="done", sprint_target=10, priority="P3"),
+            _item(id="high", status="done", sprint_target=10, priority="P1"),
+            _item(id="med", status="done", sprint_target=10, priority="P2"),
+        ]
+        result = group_done_by_sprint(items)
+        ids = [i.id for i in result[10]]
+        assert ids == ["high", "med", "low"]
+
+
+class TestParseSprintHandover:
+    def test_parses_existing_handover(self, tmp_path):
+        handover = tmp_path / "SPRINT10_HANDOVER.md"
+        handover.write_text(
+            "# Sprint 10 Handover — My Theme\n\n"
+            "**Date:** 2026-01-15\n"
+            "**Tests:** 100 (was 90)\n"
+            "**Commits:** 5\n\n"
+            "## Completed Tasks (3/3)\n"
+        )
+        result = parse_sprint_handover(tmp_path, 10)
+        assert result is not None
+        assert result["theme"] == "My Theme"
+        assert result["date"] == "2026-01-15"
+        assert result["tests"] == "100 (was 90)"
+        assert result["commits"] == "5"
+        assert result["completed"] == "3/3"
+
+    def test_returns_none_for_missing_file(self, tmp_path):
+        assert parse_sprint_handover(tmp_path, 99) is None
+
+    def test_partial_metadata(self, tmp_path):
+        handover = tmp_path / "SPRINT7_HANDOVER.md"
+        handover.write_text("# Sprint 7 Handover — Quick Fix\n\n**Date:** 2026-02-01\n")
+        result = parse_sprint_handover(tmp_path, 7)
+        assert result is not None
+        assert result["theme"] == "Quick Fix"
+        assert result["date"] == "2026-02-01"
+        assert "tests" not in result

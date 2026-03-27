@@ -22,7 +22,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_pure.py: test done items render grouped by sprint'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

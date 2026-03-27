@@ -24,7 +24,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_pure.py: test card HTML output has updated layout'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

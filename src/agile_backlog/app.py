@@ -10,8 +10,10 @@ from agile_backlog.components import (
 )
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.pure import (
+    backlog_dir_mtime,
     detect_current_sprint,
     filter_items,
+    group_done_by_sprint,
     is_recently_done,
     safe_html,
 )
@@ -107,16 +109,21 @@ def kanban_page():
                 view_mode["current"] = mode
                 ui.run_javascript(f"localStorage.setItem('ab_view_mode', '{mode}')")
                 # Update button styles
-                if mode == "board":
-                    board_btn_el.style("background:#fafafa;color:#09090b;")
-                    backlog_btn_el.style("background:transparent;color:#71717a;")
-                    sprint_badge_el.style("display:block;")
-                    archive_toggle.style("display:block;font-size:11px;color:#71717a;")
-                else:
-                    board_btn_el.style("background:transparent;color:#71717a;")
-                    backlog_btn_el.style("background:#fafafa;color:#09090b;")
-                    sprint_badge_el.style("display:none;")
-                    archive_toggle.style("display:none;")
+                board_btn_el.style(
+                    "background:#fafafa;color:#09090b;" if mode == "board" else "background:transparent;color:#71717a;"
+                )
+                backlog_btn_el.style(
+                    "background:#fafafa;color:#09090b;"
+                    if mode == "backlog"
+                    else "background:transparent;color:#71717a;"
+                )
+                done_btn_el.style(
+                    "background:#fafafa;color:#09090b;" if mode == "done" else "background:transparent;color:#71717a;"
+                )
+                sprint_badge_el.style("display:block;" if mode == "board" else "display:none;")
+                archive_toggle.style(
+                    "display:block;font-size:11px;color:#71717a;" if mode == "board" else "display:none;"
+                )
                 render_board.refresh()
 
             with toggle_container:
@@ -130,6 +137,14 @@ def kanban_page():
                 )
                 backlog_btn_el = (
                     ui.button("Backlog", on_click=lambda: _set_view("backlog"))
+                    .props("flat dense no-caps unelevated")
+                    .style(
+                        "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
+                        "background:transparent;color:#71717a;min-height:0;"
+                    )
+                )
+                done_btn_el = (
+                    ui.button("Done", on_click=lambda: _set_view("done"))
                     .props("flat dense no-caps unelevated")
                     .style(
                         "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
@@ -334,13 +349,13 @@ if (!window._mcAddPasteListenerAdded) {
                 archive_toggle = (
                     ui.checkbox("Show archived", value=False)
                     .classes("mc-done-check")
-                    .style("font-size:11px;color:#71717a;")
+                    .style("font-size:12px;color:#a1a1aa;")
                 )
                 (
                     ui.select(options=archive_days_options, value=current_ad, on_change=_on_archive_days_change)
                     .props("dense borderless dark")
                     .style(
-                        "min-width:55px;max-width:65px;font-size:10px;color:#71717a;"
+                        "min-width:55px;max-width:65px;font-size:11px;color:#a1a1aa;"
                         "font-family:'IBM Plex Mono',monospace;"
                     )
                 )
@@ -593,7 +608,116 @@ if (!window._mcAddPasteListenerAdded) {
                 "done": filtered_done,
             }
 
-            if view_mode["current"] == "backlog":
+            if view_mode["current"] == "done":
+                # --- Done view: all completed items grouped by sprint ---
+                from agile_backlog.pure import parse_sprint_handover
+
+                handover_dir = "docs/sprints"
+                # Apply filters to ALL done items (not just recent), then group by sprint
+                all_done = [i for i in items if i.status == "done"]
+                all_done = filter_items(all_done, search=sq)
+                if pf_list:
+                    all_done = [i for i in all_done if i.priority in pf_list]
+                if cf_list:
+                    all_done = [i for i in all_done if i.category in cf_list]
+                if resolved_sprints:
+                    all_done = [i for i in all_done if _sprint_match(i.sprint_target)]
+                if tf_list:
+                    all_done = [i for i in all_done if tf_set & set(i.tags)]
+                sprint_groups = group_done_by_sprint(all_done)
+
+                done_panel_state: dict[str, str | None] = {"selected_id": None}
+                done_list_ref: dict[str, object] = {"el": None}
+                done_panel_ref: dict[str, object] = {"el": None}
+
+                def _reselect_done_panel(item_id: str):
+                    try:
+                        reloaded = load_item(item_id)
+                        _open_done_panel(reloaded)
+                    except FileNotFoundError:
+                        pass
+
+                def _open_done_panel(item: BacklogItem):
+                    done_panel_state["selected_id"] = item.id
+                    if done_list_ref["el"]:
+                        done_list_ref["el"].style("flex:6;min-width:0;overflow:auto;")
+                    if done_panel_ref["el"]:
+                        done_panel_ref["el"].style("flex:4;min-width:320px;display:block;")
+                        done_panel_ref["el"].clear()
+                        with done_panel_ref["el"]:
+                            _render_side_panel_content(
+                                item,
+                                save_item,
+                                render_board.refresh,
+                                _close_done_panel,
+                                all_items=items,
+                                reselect_fn=_reselect_done_panel,
+                            )
+
+                def _close_done_panel():
+                    done_panel_state["selected_id"] = None
+                    if done_list_ref["el"]:
+                        done_list_ref["el"].style("flex:1;min-width:0;overflow:auto;")
+                    if done_panel_ref["el"]:
+                        done_panel_ref["el"].style("display:none;")
+                        done_panel_ref["el"].clear()
+
+                ui.keyboard(
+                    on_key=lambda e: _close_done_panel() if e.key == "Escape" and not e.action.repeat else None,
+                )
+
+                with ui.element("div").style("display:flex;gap:0;height:100%;"):
+                    done_list = ui.element("div").style("flex:1;min-width:0;overflow:auto;")
+                    done_list_ref["el"] = done_list
+                    with done_list:
+                        if not sprint_groups:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:24px 10px;'
+                                "font-style:italic;font-family:'DM Sans',sans-serif;"
+                                'text-align:center;">No completed items yet</div>'
+                            )
+                        else:
+                            for sprint_num, sprint_items in sprint_groups.items():
+                                header = f"Sprint {sprint_num}" if sprint_num is not None else "Unplanned"
+                                meta = (
+                                    parse_sprint_handover(handover_dir, sprint_num) if sprint_num is not None else None
+                                )
+                                subtitle = ""
+                                if meta:
+                                    parts = []
+                                    if meta.get("theme"):
+                                        parts.append(meta["theme"])
+                                    if meta.get("date"):
+                                        parts.append(meta["date"])
+                                    if meta.get("tests"):
+                                        parts.append(f"{meta['tests']} tests")
+                                    if meta.get("commits"):
+                                        parts.append(f"{meta['commits']} commits")
+                                    subtitle = " · ".join(parts)
+                                with (
+                                    ui.expansion(f"{header} ({len(sprint_items)})", value=bool(sq))
+                                    .classes("mc-done-section")
+                                    .style("width:100%;margin-bottom:4px;")
+                                ):
+                                    if subtitle:
+                                        ui.html(
+                                            f'<div style="font-size:10px;color:#71717a;padding:2px 0 6px;'
+                                            f"font-family:'IBM Plex Mono',monospace;\">"
+                                            f"{safe_html(subtitle)}</div>"
+                                        )
+                                    for card_item in sprint_items:
+                                        _render_card(
+                                            card_item,
+                                            "done",
+                                            move_item,
+                                            save_item,
+                                            render_board.refresh,
+                                            on_card_click=_open_done_panel,
+                                        )
+
+                    done_panel = ui.element("div").style("display:none;")
+                    done_panel_ref["el"] = done_panel
+            elif view_mode["current"] == "backlog":
                 # --- Backlog management view ---
                 _render_backlog_list(
                     items,
@@ -714,8 +838,10 @@ if (!window._mcAddPasteListenerAdded) {
                                     else:
                                         msg = "No items."
                                     ui.html(
-                                        f'<div style="font-size:11px;color:#52525b;padding:8px 6px;'
-                                        f"font-style:italic;font-family:'DM Sans',sans-serif;\">{msg}</div>"
+                                        f'<div style="font-size:11px;color:#a1a1aa;padding:12px 10px;'
+                                        f"font-style:italic;font-family:'DM Sans',sans-serif;"
+                                        f"background:rgba(63,63,70,0.15);border-radius:4px;"
+                                        f'margin:4px 0;">{msg}</div>'
                                     )
                                     continue
 
@@ -784,28 +910,19 @@ document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
             # Restore view mode from localStorage
             async def _restore_view():
                 saved = await ui.run_javascript("localStorage.getItem('ab_view_mode')")
-                if saved in ("board", "backlog") and saved != view_mode["current"]:
+                if saved in ("board", "backlog", "done") and saved != view_mode["current"]:
                     _set_view(saved)
 
             ui.timer(0.1, _restore_view, once=True)
 
             # Auto-reload when YAML files change on disk
-            last_mtime = {"value": 0.0}
+            last_mtime = {"value": backlog_dir_mtime(get_backlog_dir())}
 
             def _check_file_changes():
-                from agile_backlog.yaml_store import get_backlog_dir
-
-                backlog_dir = get_backlog_dir()
-                if not backlog_dir.exists():
-                    return
-                current_mtime = max(
-                    (f.stat().st_mtime for f in backlog_dir.glob("*.yaml")),
-                    default=0.0,
-                )
+                current_mtime = backlog_dir_mtime(get_backlog_dir())
                 if current_mtime > last_mtime["value"]:
-                    if last_mtime["value"] > 0:
-                        render_board.refresh()
                     last_mtime["value"] = current_mtime
+                    render_board.refresh()
 
             ui.timer(2.0, _check_file_changes)
 

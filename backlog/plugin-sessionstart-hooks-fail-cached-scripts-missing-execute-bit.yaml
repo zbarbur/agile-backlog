@@ -2,9 +2,9 @@ title: 'Plugin SessionStart hooks fail: cached scripts missing execute bit'
 status: backlog
 priority: P3
 category: bug
-sprint_target: 24
+sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-27
 depends_on: []
 tags:
 - bug,plugins,hooks

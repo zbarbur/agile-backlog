@@ -22,7 +22,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_app.py: test that file change triggers data reload'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

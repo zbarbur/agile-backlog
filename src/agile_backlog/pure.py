@@ -2,6 +2,7 @@
 
 import html as _html
 from datetime import date, timedelta
+from pathlib import Path
 
 from agile_backlog.config import get_current_sprint
 from agile_backlog.models import BacklogItem
@@ -91,11 +92,11 @@ def render_card_html(item: BacklogItem) -> str:
         f'<span style="color:{title_color};font-size:12.5px;font-weight:500;'
         f'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{_html.escape(item.title)}</span>'
         f'<span style="display:flex;gap:5px;align-items:center;flex-shrink:0;">'
-        f"{badge}{sprint_pill}{complexity}{cat_pill}{pri_pill}</span>"
+        f"{badge}{cat_pill}{pri_pill}</span>"
         f"</div>"
         f'<div style="display:flex;align-items:center;gap:5px;margin-top:3px;">'
-        f"{tag_chips}"
-        f'<span style="font-size:9px;color:#27272a;margin-left:auto;">{ts}</span>'
+        f"{sprint_pill}{complexity}{tag_chips}"
+        f'<span style="font-size:9px;color:#a1a1aa;margin-left:auto;">{ts}</span>'
         f"</div>"
         f"</div>"
     )
@@ -175,6 +176,60 @@ def group_items_by_section(items: list[BacklogItem], current_sprint: int | None)
     return {"backlog": backlog, "vnext": vnext, "vfuture": vfuture}
 
 
+def group_done_by_sprint(items: list[BacklogItem]) -> dict[int | None, list[BacklogItem]]:
+    groups: dict[int | None, list[BacklogItem]] = {}
+    for item in items:
+        if item.status != "done":
+            continue
+        groups.setdefault(item.sprint_target, []).append(item)
+
+    def _sort_key(i: BacklogItem) -> int:
+        return PRIORITY_ORDER.get(i.priority, 99)
+
+    for v in groups.values():
+        v.sort(key=_sort_key)
+
+    # Return ordered: numeric sprints descending, then None
+    ordered: dict[int | None, list[BacklogItem]] = {}
+    numeric_keys = sorted((k for k in groups if k is not None), reverse=True)
+    for k in numeric_keys:
+        ordered[k] = groups[k]
+    if None in groups:
+        ordered[None] = groups[None]
+    return ordered
+
+
+def parse_sprint_handover(handover_dir: str | Path, sprint_num: int) -> dict[str, str] | None:
+    path = Path(handover_dir) / f"SPRINT{sprint_num}_HANDOVER.md"
+    if not path.exists():
+        return None
+    import re
+
+    text = path.read_text()
+    result: dict[str, str] = {}
+    # Title line: "# Sprint N Handover — Theme"
+    m = re.search(r"^# Sprint \d+ Handover\s*[—–-]\s*(.+)$", text, re.MULTILINE)
+    if m:
+        result["theme"] = m.group(1).strip()
+    # Date
+    m = re.search(r"^\*\*Date:\*\*\s*(.+)$", text, re.MULTILINE)
+    if m:
+        result["date"] = m.group(1).strip()
+    # Tests
+    m = re.search(r"^\*\*Tests:\*\*\s*(.+)$", text, re.MULTILINE)
+    if m:
+        result["tests"] = m.group(1).strip()
+    # Commits
+    m = re.search(r"^\*\*Commits:\*\*\s*(.+)$", text, re.MULTILINE)
+    if m:
+        result["commits"] = m.group(1).strip()
+    # Completed Tasks
+    m = re.search(r"## Completed Tasks \((\d+/\d+)\)", text)
+    if m:
+        result["completed"] = m.group(1)
+    return result if result else None
+
+
 def apply_reopen(item: BacklogItem, reason: str) -> None:
     """Apply reopen logic to a done item: add reason note, set status=doing, phase=build."""
     item.notes = f"{item.notes}\n\n[Reopened {date.today().isoformat()}] {reason}".strip()
@@ -239,3 +294,10 @@ def relative_time(dt: date) -> str:
     if days <= 28:
         return f"{days // 7}w"
     return dt.strftime("%b %-d")
+
+
+def backlog_dir_mtime(backlog_dir: str | Path) -> float:
+    path = Path(backlog_dir)
+    if not path.is_dir():
+        return 0.0
+    return max((f.stat().st_mtime for f in path.glob("*.yaml")), default=0.0)
