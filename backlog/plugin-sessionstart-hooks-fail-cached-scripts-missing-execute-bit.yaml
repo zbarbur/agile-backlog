@@ -1,0 +1,31 @@
+title: 'Plugin SessionStart hooks fail: cached scripts missing execute bit'
+status: backlog
+priority: P3
+category: bug
+sprint_target: 24
+created: 2026-03-25
+updated: 2026-03-25
+depends_on: []
+tags:
+- bug,plugins,hooks
+goal: ''
+complexity: null
+technical_specs: []
+description: "Steps to reproduce:\n1. Install explanatory-output-style and learning-output-style\
+  \ plugins\n2. Start a new Claude Code session\n3. Observe 'SessionStart:startup\
+  \ hook error' x2 at session startup\n\nExpected: Hooks run silently, no errors\n\
+  Actual: Two 'SessionStart:startup hook error' messages shown\n\nRoot cause: Plugin\
+  \ hooks.json references scripts via direct path (no bash prefix):\n  ${CLAUDE_PLUGIN_ROOT}/hooks-handlers/session-start.sh\n\
+  But the cached scripts at ~/.claude/plugins/cache/ have -rw-r--r-- permissions (no\
+  \ execute bit).\n\nWorkaround: chmod +x on both session-start.sh files in the plugin\
+  \ cache.\n\nFix options:\n1. Plugin hooks.json should use 'bash ${CLAUDE_PLUGIN_ROOT}/...'\
+  \ instead of direct execution\n2. Plugin cache mechanism should preserve/set execute\
+  \ bits on .sh files\n3. Both"
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

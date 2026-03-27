@@ -45,10 +45,10 @@ print(inp.get('offset', 0), inp.get('limit', 0))
 OFFSET="${OFFSET:-0}"
 LIMIT="${LIMIT:-0}"
 
-# Check for re-read BEFORE logging (use -F for fixed string, not regex)
-if [ -f "$LOG_FILE" ] && grep -Fq "\"file\":\"${FILE_PATH}\"" "$LOG_FILE"; then
+# Check for re-read BEFORE logging (use regex to handle optional space after colon)
+if [ -f "$LOG_FILE" ] && grep -q "\"file\":[ ]*\"${FILE_PATH}\"" "$LOG_FILE"; then
   # Count previous reads of this file
-  PREV_COUNT=$(grep -Fc "\"file\":\"${FILE_PATH}\"" "$LOG_FILE")
+  PREV_COUNT=$(grep -c "\"file\":[ ]*\"${FILE_PATH}\"" "$LOG_FILE")
   echo "⚠️ Re-read detected: ${FILE_PATH} (read #$((PREV_COUNT + 1))). Consider using cached context from earlier in this conversation."
 fi
 
