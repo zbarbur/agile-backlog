@@ -11,6 +11,7 @@ from agile_backlog.pure import (
     filter_items,
     group_done_by_sprint,
     group_items_by_section,
+    is_recent_sprint,
     is_recently_done,
     parse_sprint_handover,
     relative_time,
@@ -473,6 +474,36 @@ class TestArchiveDone:
     def test_non_done_items_always_visible(self):
         item = _item(status="doing", updated=date.today() - timedelta(days=30))
         assert is_recently_done(item, days=7)
+
+
+class TestArchiveBySprint:
+    def test_current_sprint_item_visible(self):
+        item = _item(status="done", sprint_target=26)
+        assert is_recent_sprint(item, current_sprint=26, archive_sprints=2)
+
+    def test_previous_sprint_item_visible(self):
+        item = _item(status="done", sprint_target=25)
+        assert is_recent_sprint(item, current_sprint=26, archive_sprints=2)
+
+    def test_old_sprint_item_hidden(self):
+        item = _item(status="done", sprint_target=24)
+        assert not is_recent_sprint(item, current_sprint=26, archive_sprints=2)
+
+    def test_no_sprint_target_hidden(self):
+        item = _item(status="done", sprint_target=None)
+        assert not is_recent_sprint(item, current_sprint=26, archive_sprints=2)
+
+    def test_non_done_always_visible(self):
+        item = _item(status="doing", sprint_target=20)
+        assert is_recent_sprint(item, current_sprint=26, archive_sprints=2)
+
+    def test_archive_sprints_3(self):
+        item = _item(status="done", sprint_target=24)
+        assert is_recent_sprint(item, current_sprint=26, archive_sprints=3)
+
+    def test_archive_sprints_1_only_current(self):
+        item = _item(status="done", sprint_target=25)
+        assert not is_recent_sprint(item, current_sprint=26, archive_sprints=1)
 
 
 class TestSafeHtml:

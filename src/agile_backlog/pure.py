@@ -284,6 +284,14 @@ def is_recently_done(item: BacklogItem, days: int = 7) -> bool:
     return item.updated >= cutoff
 
 
+def is_recent_sprint(item: BacklogItem, current_sprint: int, archive_sprints: int = 2) -> bool:
+    if item.status != "done":
+        return True
+    if item.sprint_target is None:
+        return False
+    return item.sprint_target >= current_sprint - archive_sprints + 1
+
+
 def relative_time(dt: date) -> str:
     """Format a date as a relative timestamp for card display."""
     days = (date.today() - dt).days

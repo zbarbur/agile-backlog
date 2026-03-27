@@ -1,10 +1,12 @@
 from agile_backlog.config import (
     get_archive_days,
+    get_archive_sprints,
     get_current_sprint,
     get_project_name,
     get_serve_port,
     get_version,
     set_archive_days,
+    set_archive_sprints,
     set_current_sprint,
 )
 
@@ -89,6 +91,30 @@ def test_get_project_name_from_config(tmp_path, monkeypatch):
     config.write_text("project_name: my-project\n")
     monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
     assert get_project_name() == "my-project"
+
+
+def test_get_archive_sprints_default(tmp_path, monkeypatch):
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: tmp_path / "nope.yaml")
+    assert get_archive_sprints() == 2
+
+
+def test_get_archive_sprints_from_config(tmp_path, monkeypatch):
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("archive_sprints: 3\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    assert get_archive_sprints() == 3
+
+
+def test_set_archive_sprints(tmp_path, monkeypatch):
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("current_sprint: 26\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    set_archive_sprints(5)
+    text = config.read_text()
+    assert "archive_sprints: 5" in text
+    assert "current_sprint: 26" in text
 
 
 def test_get_serve_port_default(tmp_path, monkeypatch):

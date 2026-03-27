@@ -48,8 +48,8 @@ branch_pattern: "sprint{N}/main"
 commit_style: conventional
 
 # Sprint settings
-# Archive — done items older than this are hidden on the board
-archive_days: 7
+# Archive — done items from older sprints are hidden on the board
+archive_sprints: 2
 
 default_sprint_capacity:
   small: 3-4
