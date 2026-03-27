@@ -1,10 +1,10 @@
 {
   "sprint": 25,
-  "total_reads": 144,
-  "unique_files": 49,
-  "reread_count": 95,
-  "reread_ratio": 0.66,
-  "estimated_tokens": 184432,
+  "total_reads": 147,
+  "unique_files": 51,
+  "reread_count": 96,
+  "reread_ratio": 0.65,
+  "estimated_tokens": 190432,
   "top_files": [
     {
       "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
@@ -51,6 +51,11 @@
     {
       "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
       "count": 15,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.github/workflows/release.yml",
+      "count": 2,
       "range": "0-0"
     },
     {
@@ -135,21 +140,22 @@
     }
   ],
   "tool_usage": {
-    "total_tool_calls": 208,
+    "total_tool_calls": 220,
     "by_tool": {
-      "Read": 144,
-      "Bash": 44,
+      "Read": 147,
+      "Bash": 52,
       "Grep": 19,
-      "Agent": 1
+      "Agent": 1,
+      "Glob": 1
     }
   },
   "sessions": [
     {
-      "total_reads": 34,
-      "unique_files": 9,
-      "reread_count": 25,
-      "reread_ratio": 0.74,
-      "estimated_tokens": 16708,
+      "total_reads": 37,
+      "unique_files": 11,
+      "reread_count": 26,
+      "reread_ratio": 0.7,
+      "estimated_tokens": 22708,
       "top_files": [
         {
           "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
@@ -162,6 +168,10 @@
         {
           "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
           "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.github/workflows/release.yml",
+          "count": 2
         },
         {
           "file": "/private/tmp/claude-501/-Users-guyguzner-Projects-agile-backlog/4a39cb7e-19db-4dbf-8c5b-78dd663b5104/tasks/bw1fvoq30.output",
@@ -193,16 +203,22 @@
           "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
           "count": 9,
           "range": "0-20"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.github/workflows/release.yml",
+          "count": 2,
+          "range": "0-0"
         }
       ],
       "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
       "tool_usage": {
-        "total_tool_calls": 98,
+        "total_tool_calls": 110,
         "by_tool": {
-          "Bash": 44,
-          "Read": 34,
+          "Bash": 52,
+          "Read": 37,
           "Grep": 19,
-          "Agent": 1
+          "Agent": 1,
+          "Glob": 1
         }
       }
     },

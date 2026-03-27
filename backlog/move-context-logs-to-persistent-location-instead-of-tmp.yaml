@@ -1,0 +1,21 @@
+title: Move context logs to persistent location instead of /tmp
+status: backlog
+priority: P2
+category: feature
+sprint_target: 26
+created: 2026-03-27
+updated: 2026-03-27
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
