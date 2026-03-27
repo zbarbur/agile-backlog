@@ -11,6 +11,9 @@ current_sprint: 26
 version_scheme: "sprint"
 current_version: "0.26.0"
 
+# Web UI
+serve_port: 8501
+
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
 lint_command: ".venv/bin/ruff check . && .venv/bin/ruff format --check ."

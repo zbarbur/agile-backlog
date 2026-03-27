@@ -67,6 +67,14 @@ def set_archive_days(days: int) -> None:
     path.write_text(text)
 
 
+def get_serve_port() -> int:
+    sprint_config = _sprint_config_path()
+    if sprint_config.exists():
+        data = yaml.safe_load(sprint_config.read_text()) or {}
+        return data.get("serve_port", 8501)
+    return 8501
+
+
 def get_version() -> str:
     from agile_backlog import __version__
 

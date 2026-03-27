@@ -9,7 +9,7 @@ import click
 import yaml
 
 import agile_backlog.yaml_store as _yaml_store
-from agile_backlog.config import get_current_sprint
+from agile_backlog.config import get_current_sprint, get_serve_port
 from agile_backlog.context_report import generate_sprint_report
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
@@ -563,11 +563,13 @@ def _kill_server() -> bool:
 
 
 @main.command()
-@click.option("--port", default=8501, type=int, help="Port number.")
+@click.option("--port", default=None, type=int, help="Port number (default: from sprint-config.yaml or 8501).")
 @click.option("--host", default="127.0.0.1", help="Host address.")
 @click.option("--reload", is_flag=True, help="Enable hot reload (dev mode).")
-def serve(port: int, host: str, reload: bool):
+def serve(port: int | None, host: str, reload: bool):
     """Open the Kanban board in the browser."""
+    if port is None:
+        port = get_serve_port()
     import atexit
 
     try:
@@ -591,11 +593,11 @@ def stop():
 
 
 @main.command()
-@click.option("--port", default=8501, type=int, help="Port number.")
+@click.option("--port", default=None, type=int, help="Port number (default: from sprint-config.yaml or 8501).")
 @click.option("--host", default="127.0.0.1", help="Host address.")
 @click.option("--reload", is_flag=True, help="Enable hot reload (dev mode).")
 @click.pass_context
-def restart(ctx: click.Context, port: int, host: str, reload: bool):
+def restart(ctx: click.Context, port: int | None, host: str, reload: bool):
     """Restart the agile-backlog server."""
     _kill_server()
     click.echo("Restarting server...")

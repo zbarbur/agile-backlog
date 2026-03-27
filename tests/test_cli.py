@@ -328,6 +328,22 @@ class TestServe:
         assert calls[0]["port"] == 8501
         assert calls[0]["reload"] is False
 
+    def test_serve_reads_port_from_config(self, runner: CliRunner, monkeypatch):
+        calls = []
+        monkeypatch.setattr("agile_backlog.app.run_app", lambda **kw: calls.append(kw))
+        monkeypatch.setattr("agile_backlog.cli.get_serve_port", lambda: 9999)
+        result = runner.invoke(main, ["serve"])
+        assert result.exit_code == 0
+        assert calls[0]["port"] == 9999
+
+    def test_serve_cli_flag_overrides_config(self, runner: CliRunner, monkeypatch):
+        calls = []
+        monkeypatch.setattr("agile_backlog.app.run_app", lambda **kw: calls.append(kw))
+        monkeypatch.setattr("agile_backlog.cli.get_serve_port", lambda: 9999)
+        result = runner.invoke(main, ["serve", "--port", "7777"])
+        assert result.exit_code == 0
+        assert calls[0]["port"] == 7777
+
     def test_serve_without_nicegui(self, runner: CliRunner):
         """Serve shows helpful error when NiceGUI not installed."""
         with patch.dict("sys.modules", {"agile_backlog.app": None}):
