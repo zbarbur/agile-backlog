@@ -14,9 +14,13 @@ if [ -z "$TOOL_NAME" ]; then
   exit 0
 fi
 
-# Log file location — persistent, project-local
-GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
-LOG_DIR="${GIT_ROOT}/.claude/context-logs"
+# Log file location — persistent, project-local (override with CONTEXT_LOG_DIR for testing)
+if [ -n "${CONTEXT_LOG_DIR:-}" ]; then
+  LOG_DIR="$CONTEXT_LOG_DIR"
+else
+  GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+  LOG_DIR="${GIT_ROOT}/.claude/context-logs"
+fi
 mkdir -p "$LOG_DIR"
 SESSION_ID="${CLAUDE_SESSION_ID:-${TERM_SESSION_ID:-$(date +%Y%m%d-%H%M)}}"
 # Sanitize colons from session IDs for safe filenames
