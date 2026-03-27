@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 25 Planning |
-| **Last Sync** | 2026-03-25 |
+| **Status** | Sprint 26 Planning |
+| **Last Sync** | 2026-03-27 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 244 |
+| **Tests** | 264 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -54,4 +54,5 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 21 | UI Polish + Quality Gates | 224 | #20 |
 | 22 | Polish + CI | 226 | #21 |
 | 23 | Context Analysis + Small Wins | 243 | #22 |
-| 24 | Publishing | 244 | — |
+| 24 | Publishing | 244 | #23 |
+| 25 | UI Polish + Observability | 264 | #24 |

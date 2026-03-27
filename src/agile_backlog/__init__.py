@@ -1,6 +1,6 @@
 """agile-backlog: Lightweight Kanban board tool for agentic development."""
 
-__version__ = "0.24.0"
+__version__ = "0.25.0"
 
 from agile_backlog.models import BacklogItem as BacklogItem
 from agile_backlog.yaml_store import load_all as load_all

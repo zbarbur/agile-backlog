@@ -1,0 +1,417 @@
+{
+  "sprint": 25,
+  "total_reads": 144,
+  "unique_files": 49,
+  "reread_count": 95,
+  "reread_ratio": 0.66,
+  "estimated_tokens": 184432,
+  "top_files": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+      "count": 33
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+      "count": 15
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+      "count": 10
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+      "count": 6
+    },
+    {
+      "file": "/tmp/test-hook-verify.txt",
+      "count": 5
+    },
+    {
+      "file": "/tmp/test.txt",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.local.json",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-read-logger.sh",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/.claude/settings.json",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks/hooks.json",
+      "count": 4
+    }
+  ],
+  "wasteful_reads": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+      "count": 15,
+      "range": "0-0"
+    },
+    {
+      "file": "/tmp/test.txt",
+      "count": 4,
+      "range": "0-100"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/settings.json",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+      "count": 6,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.local.json",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks-handlers/session-start.sh",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/learning-output-style/unknown/hooks-handlers/session-start.sh",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks/hooks.json",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/learning-output-style/unknown/hooks/hooks.json",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/backlog/plugin-sessionstart-hooks-fail-cached-scripts-missing-execute-bit.yaml",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-read-logger.sh",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/hooks/settings.json.template",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/hooks/hooks.json",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/tmp/test-hook-verify.txt",
+      "count": 5,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/hooks/capture-start.sh",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+      "count": 10,
+      "range": "0-0"
+    }
+  ],
+  "tool_usage": {
+    "total_tool_calls": 208,
+    "by_tool": {
+      "Read": 144,
+      "Bash": 44,
+      "Grep": 19,
+      "Agent": 1
+    }
+  },
+  "sessions": [
+    {
+      "total_reads": 34,
+      "unique_files": 9,
+      "reread_count": 25,
+      "reread_ratio": 0.74,
+      "estimated_tokens": 16708,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 14
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+          "count": 9
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 5
+        },
+        {
+          "file": "/private/tmp/claude-501/-Users-guyguzner-Projects-agile-backlog/4a39cb7e-19db-4dbf-8c5b-78dd663b5104/tasks/bw1fvoq30.output",
+          "count": 1
+        },
+        {
+          "file": "/private/tmp/claude-501/-Users-guyguzner-Projects-agile-backlog/4a39cb7e-19db-4dbf-8c5b-78dd663b5104/tasks/b9bj8yy3u.output",
+          "count": 1
+        },
+        {
+          "file": "/private/tmp/claude-501/-Users-guyguzner-Projects-agile-backlog/4a39cb7e-19db-4dbf-8c5b-78dd663b5104/tasks/bakp4rnl9.output",
+          "count": 1
+        },
+        {
+          "file": "/private/tmp/claude-501/-Users-guyguzner-Projects-agile-backlog/4a39cb7e-19db-4dbf-8c5b-78dd663b5104/tasks/bmrvjejp2.output",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/process/PROJECT_CONTEXT.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+          "count": 9,
+          "range": "0-20"
+        }
+      ],
+      "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
+      "tool_usage": {
+        "total_tool_calls": 98,
+        "by_tool": {
+          "Bash": 44,
+          "Read": 34,
+          "Grep": 19,
+          "Agent": 1
+        }
+      }
+    },
+    {
+      "total_reads": 1,
+      "unique_files": 1,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 400,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "42162",
+      "tool_usage": {
+        "total_tool_calls": 1,
+        "by_tool": {
+          "Read": 1
+        }
+      }
+    },
+    {
+      "total_reads": 1,
+      "unique_files": 1,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 400,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "42288",
+      "tool_usage": {
+        "total_tool_calls": 1,
+        "by_tool": {
+          "Read": 1
+        }
+      }
+    },
+    {
+      "total_reads": 2,
+      "unique_files": 1,
+      "reread_count": 1,
+      "reread_ratio": 0.5,
+      "estimated_tokens": 800,
+      "top_files": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 2
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/tmp/test.txt",
+          "count": 2,
+          "range": "0-100"
+        }
+      ],
+      "session_id": "smoketest",
+      "tool_usage": {
+        "total_tool_calls": 2,
+        "by_tool": {
+          "Read": 2
+        }
+      }
+    },
+    {
+      "total_reads": 106,
+      "unique_files": 42,
+      "reread_count": 64,
+      "reread_ratio": 0.6,
+      "estimated_tokens": 166124,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 19
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+          "count": 6
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+          "count": 6
+        },
+        {
+          "file": "/tmp/test-hook-verify.txt",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.local.json",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-read-logger.sh",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/.claude/settings.json",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks/hooks.json",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/learning-output-style/unknown/hooks/hooks.json",
+          "count": 4
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/.claude/settings.json",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+          "count": 6,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.local.json",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks-handlers/session-start.sh",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/learning-output-style/unknown/hooks-handlers/session-start.sh",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/unknown/hooks/hooks.json",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/learning-output-style/unknown/hooks/hooks.json",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/plugin-sessionstart-hooks-fail-cached-scripts-missing-execute-bit.yaml",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-read-logger.sh",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/hooks/settings.json.template",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/hooks/hooks.json",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/tmp/test-hook-verify.txt",
+          "count": 5,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/hooks/capture-start.sh",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 5,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_pure.py",
+          "count": 6,
+          "range": "0-0"
+        }
+      ],
+      "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
+      "tool_usage": {
+        "total_tool_calls": 106,
+        "by_tool": {
+          "Read": 106
+        }
+      }
+    }
+  ]
+}

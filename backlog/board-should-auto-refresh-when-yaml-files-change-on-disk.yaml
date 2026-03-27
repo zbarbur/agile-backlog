@@ -1,5 +1,5 @@
 title: Board should auto-refresh when YAML files change on disk
-status: doing
+status: done
 priority: P3
 category: feature
 sprint_target: 25
