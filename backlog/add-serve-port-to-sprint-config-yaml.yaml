@@ -2,9 +2,9 @@ title: Add serve port to sprint-config.yaml
 status: backlog
 priority: P3
 category: feature
-sprint_target: null
+sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-27
 depends_on: []
 tags: []
 goal: ''

@@ -1,21 +1,28 @@
 title: Board should auto-refresh when YAML files change on disk
-status: backlog
+status: doing
 priority: P3
 category: feature
-sprint_target: 24
+sprint_target: 25
 created: 2026-03-23
-updated: 2026-03-24
+updated: 2026-03-27
 depends_on: []
 tags:
 - ui
-goal: ''
-complexity: null
-technical_specs: []
+goal: Board auto-refreshes when backlog YAML files change on disk
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 add file watcher (watchfiles or NiceGUI timer)"
+- "File: tests/test_app.py \u2014 test refresh mechanism"
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- UI refreshes automatically when YAML files are modified externally
+- No manual browser reload needed
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_app.py: test that file change triggers data reload'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

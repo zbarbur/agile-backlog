@@ -2,9 +2,9 @@ title: "Specialist agent integration \u2014 VoltAgent agents for sprint-execute"
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 27
 created: 2026-03-23
-updated: 2026-03-25
+updated: 2026-03-27
 depends_on: []
 tags:
 - skills
