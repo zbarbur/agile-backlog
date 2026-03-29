@@ -1,10 +1,10 @@
 title: "Context analysis \u2014 add integration test for hook script"
-status: doing
+status: done
 priority: P3
 category: chore
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: Add automated tests for post-tool-logger.sh to verify JSONL output and re-read
@@ -31,7 +31,7 @@ test_plan:
 - 'tests/test_hook_script.py: test re-read detection outputs warning'
 - 'tests/test_hook_script.py: test malformed input exits cleanly'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

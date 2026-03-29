@@ -1,10 +1,10 @@
 title: "Context analysis v3 \u2014 full session analyzer with token economics"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: Expand hook coverage to Edit/Write/Skill and build a richer session analysis
@@ -37,7 +37,7 @@ test_plan:
 - 'tests/test_context_report.py: test read:write ratio calculation'
 - 'tests/test_context_report.py: test re-read waste metric'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

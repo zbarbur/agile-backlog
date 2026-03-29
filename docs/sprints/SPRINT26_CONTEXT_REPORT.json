@@ -1,0 +1,88 @@
+{
+  "sprint": 26,
+  "total_reads": 3,
+  "unique_files": 3,
+  "reread_count": 0,
+  "reread_ratio": 0.0,
+  "estimated_tokens": 6000,
+  "top_files": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.gitignore",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+      "count": 1
+    }
+  ],
+  "wasteful_reads": [],
+  "tool_usage": {
+    "total_tool_calls": 31,
+    "by_tool": {
+      "Bash": 21,
+      "Edit": 6,
+      "Read": 3,
+      "Write": 1
+    },
+    "reads": 3,
+    "writes": 7,
+    "read_write_ratio": 0.43
+  },
+  "efficiency": {
+    "total_reads": 3,
+    "reread_count": 0,
+    "exact_reread_count": 0,
+    "reread_waste_ratio": 0.0,
+    "unique_grep_patterns": 0,
+    "total_grep_calls": 0
+  },
+  "sessions": [
+    {
+      "total_reads": 3,
+      "unique_files": 3,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 6000,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.gitignore",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
+      "tool_usage": {
+        "total_tool_calls": 31,
+        "by_tool": {
+          "Bash": 21,
+          "Edit": 6,
+          "Read": 3,
+          "Write": 1
+        },
+        "reads": 3,
+        "writes": 7,
+        "read_write_ratio": 0.43
+      },
+      "efficiency": {
+        "total_reads": 3,
+        "reread_count": 0,
+        "exact_reread_count": 0,
+        "reread_waste_ratio": 0.0,
+        "unique_grep_patterns": 0,
+        "total_grep_calls": 0
+      }
+    }
+  ]
+}

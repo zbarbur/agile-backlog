@@ -4,7 +4,7 @@ priority: P1
 category: feature
 sprint_target: 27
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: ''
@@ -13,7 +13,8 @@ technical_specs: []
 description: "add in a UI a view of all the process tools (skill files, claude.md\
   \ , handover) , allow the user to add them , ofer review prompts for maintaining\
   \ these over time , make sure that they stay consistent and don't overload the context.\
-  \ \nIt'll be great to show the use of the skills based on session analytics collected"
+  \ \nIt'll be great to show the use of the skills based on session analytics collected\n\
+  add also review the command execution policy for the project\n"
 acceptance_criteria: []
 test_plan: []
 notes: ''

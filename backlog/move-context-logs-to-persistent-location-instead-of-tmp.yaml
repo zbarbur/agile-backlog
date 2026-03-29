@@ -1,10 +1,10 @@
 title: Move context logs to persistent location instead of /tmp
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 26
 created: 2026-03-27
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: Move tool usage logs from /tmp to a persistent project-local directory so data
@@ -28,7 +28,7 @@ test_plan:
 - 'tests/test_context_report.py: test log discovery from new path'
 - 'Manual: verify logs persist across terminal restarts'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

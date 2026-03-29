@@ -1,10 +1,10 @@
 title: Add serve port to sprint-config.yaml
-status: doing
+status: done
 priority: P3
 category: feature
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: Add serve_port to sprint-config.yaml so the board port is project-configurable
@@ -24,7 +24,7 @@ test_plan:
 - 'tests/test_cli.py: test serve reads port from config'
 - 'tests/test_cli.py: test CLI --port flag overrides config'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

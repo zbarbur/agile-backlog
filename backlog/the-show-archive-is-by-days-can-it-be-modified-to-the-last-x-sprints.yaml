@@ -1,10 +1,10 @@
 title: The show archive is by days, can it be modified to the last X.. sprints ?
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
 goal: 'Replace days-based archive threshold with sprint-based: show last N sprints
@@ -26,7 +26,7 @@ test_plan:
 - 'tests/test_pure.py: test items filtered by sprint threshold'
 - 'tests/test_pure.py: test edge cases (no sprint_target, current sprint)'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

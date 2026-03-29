@@ -1,10 +1,10 @@
 title: 'Plugin SessionStart hooks fail: cached scripts missing execute bit'
-status: doing
+status: done
 priority: P3
 category: bug
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags:
 - bug,plugins,hooks
@@ -33,8 +33,9 @@ acceptance_criteria:
 - Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
 test_plan:
 - 'Manual: start new Claude Code session, verify no hook errors'
-notes: ''
-phase: spec
+notes: 'Already fixed: all hooks.json use bash prefix, all scripts have +x. Verified
+  hooks run clean (exit 0).'
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
