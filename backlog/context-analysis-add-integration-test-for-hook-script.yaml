@@ -1,23 +1,37 @@
 title: "Context analysis \u2014 add integration test for hook script"
-status: backlog
+status: done
 priority: P3
 category: chore
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add automated tests for post-tool-logger.sh to verify JSONL output and re-read
+  warning in CI
+complexity: S
+technical_specs:
+- "File: tests/test_hook_script.py \u2014 subprocess-based tests calling post-tool-logger.sh\
+  \ with mock stdin"
+- "File: .claude/hooks/post-tool-logger.sh \u2014 may need LOG_DIR override via env\
+  \ var for testing"
 description: 'Add automated test for post-read-logger.sh: feed stdin, verify JSONL
   output, verify re-read detection warning. Currently only has manual smoke test.
   Unit + CLI tests cover the Python side but the hook script itself is untested in
   CI.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Test feeds mock JSON stdin to post-tool-logger.sh and verifies JSONL output
+- Test verifies re-read detection warning on duplicate Read calls
+- Test covers all tool types (Read, Grep, Glob, Bash, WebFetch, Agent, Edit, Write,
+  Skill)
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_hook_script.py: test each tool type produces correct JSONL fields'
+- 'tests/test_hook_script.py: test re-read detection outputs warning'
+- 'tests/test_hook_script.py: test malformed input exits cleanly'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

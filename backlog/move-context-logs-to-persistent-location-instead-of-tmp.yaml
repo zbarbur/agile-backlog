@@ -1,0 +1,35 @@
+title: Move context logs to persistent location instead of /tmp
+status: done
+priority: P2
+category: feature
+sprint_target: 26
+created: 2026-03-27
+updated: 2026-03-29
+depends_on: []
+tags: []
+goal: Move tool usage logs from /tmp to a persistent project-local directory so data
+  survives reboots
+complexity: S
+technical_specs:
+- "File: .claude/hooks/post-tool-logger.sh \u2014 change LOG_DIR to project-local\
+  \ path"
+- "File: .claude/sprint-config.yaml \u2014 add context_logs_dir setting"
+- "File: .gitignore \u2014 add .claude/context-logs/"
+- "File: src/agile_backlog/context_report.py \u2014 update log path resolution"
+description: ''
+acceptance_criteria:
+- Logs written to .claude/context-logs/ instead of /tmp/claude-context-logs/
+- Log directory path configurable in sprint-config.yaml
+- .gitignore updated to exclude .claude/context-logs/
+- context-report CLI reads from new location
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_context_report.py: test log discovery from new path'
+- 'Manual: verify logs persist across terminal restarts'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

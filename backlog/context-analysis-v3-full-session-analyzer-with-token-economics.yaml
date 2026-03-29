@@ -1,15 +1,21 @@
 title: "Context analysis v3 \u2014 full session analyzer with token economics"
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-03-29
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Expand hook coverage to Edit/Write/Skill and build a richer session analysis
+  report with tool-type breakdown and efficiency metrics
+complexity: L
+technical_specs:
+- "File: .claude/settings.json \u2014 add Edit, Write, Skill PostToolUse matchers"
+- "File: .claude/hooks/post-tool-logger.sh \u2014 add Edit/Write/Skill field extraction"
+- "File: src/agile_backlog/context_report.py \u2014 expand analyze_tool_usage() with\
+  \ write tracking and efficiency metrics"
+- "File: tests/test_context_report.py \u2014 tests for new tool types and metrics"
 description: "Analyze complete Claude Code session files (~/.claude/projects/) to\
   \ understand full token economics: prompt sizes, response sizes, tool call costs,\
   \ context window utilization over time, compaction events, wasted context. Research\
@@ -18,10 +24,20 @@ description: "Analyze complete Claude Code session files (~/.claude/projects/) t
   \ and suggest running directly), session replay/visualization, cost-per-task estimation.\
   \ Needs brainstorming and research before design \u2014 there may be open source\
   \ tools already solving parts of this."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Edit, Write, Skill tools logged via PostToolUse hooks
+- post-tool-logger.sh extracts file_path for Edit/Write, skill name for Skill
+- context_report.py produces tool-type breakdown (reads, writes, searches, commands)
+- Report includes read:write ratio and re-read waste metric
+- CLI context-report command outputs enriched report
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_context_report.py: test Edit/Write/Skill log parsing'
+- 'tests/test_context_report.py: test read:write ratio calculation'
+- 'tests/test_context_report.py: test re-read waste metric'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

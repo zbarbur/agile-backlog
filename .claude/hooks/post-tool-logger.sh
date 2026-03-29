@@ -14,8 +14,13 @@ if [ -z "$TOOL_NAME" ]; then
   exit 0
 fi
 
-# Log file location — one per session
-LOG_DIR="/tmp/claude-context-logs"
+# Log file location — persistent, project-local (override with CONTEXT_LOG_DIR for testing)
+if [ -n "${CONTEXT_LOG_DIR:-}" ]; then
+  LOG_DIR="$CONTEXT_LOG_DIR"
+else
+  GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+  LOG_DIR="${GIT_ROOT}/.claude/context-logs"
+fi
 mkdir -p "$LOG_DIR"
 SESSION_ID="${CLAUDE_SESSION_ID:-${TERM_SESSION_ID:-$(date +%Y%m%d-%H%M)}}"
 # Sanitize colons from session IDs for safe filenames
@@ -56,6 +61,14 @@ elif tool == 'WebFetch':
 elif tool == 'Agent':
     prompt = inp.get('prompt', inp.get('task', ''))
     entry['prompt'] = prompt[:200] if len(prompt) > 200 else prompt
+elif tool == 'Edit':
+    entry['file'] = inp.get('file_path', '')
+    entry['replace_all'] = inp.get('replace_all', False)
+elif tool == 'Write':
+    entry['file'] = inp.get('file_path', '')
+elif tool == 'Skill':
+    entry['skill'] = inp.get('skill', '')
+    entry['args'] = (inp.get('args', '') or '')[:200]
 else:
     # Generic fallback — log tool_input keys
     entry['input_keys'] = list(inp.keys())[:10]

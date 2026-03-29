@@ -1,22 +1,30 @@
 title: Add serve port to sprint-config.yaml
-status: backlog
+status: done
 priority: P3
 category: feature
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Add serve_port to sprint-config.yaml so the board port is project-configurable
+complexity: S
+technical_specs:
+- "File: .claude/sprint-config.yaml \u2014 add serve_port: 8501"
+- "File: src/agile_backlog/cli.py \u2014 read serve_port from config, use as default"
 description: The serve command accepts --port as CLI flag (default 8501) but it's
   not in sprint-config.yaml. Add it as a project-level setting so it's discoverable
   and consistent.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- sprint-config.yaml has serve_port field (default 8501)
+- serve command reads port from config, CLI flag overrides
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: test serve reads port from config'
+- 'tests/test_cli.py: test CLI --port flag overrides config'
 notes: ''
-phase: null
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

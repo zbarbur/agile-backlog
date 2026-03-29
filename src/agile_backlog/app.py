@@ -14,7 +14,7 @@ from agile_backlog.pure import (
     detect_current_sprint,
     filter_items,
     group_done_by_sprint,
-    is_recently_done,
+    is_recent_sprint,
     safe_html,
 )
 from agile_backlog.styles import (
@@ -333,16 +333,16 @@ if (!window._mcAddPasteListenerAdded) {
                 "border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:4px 14px;min-height:0;"
             )
 
-            # Archive toggle + days config — only visible in Board view
-            from agile_backlog.config import get_archive_days as _get_ad
-            from agile_backlog.config import set_archive_days as _set_ad
+            # Archive toggle + sprints config — only visible in Board view
+            from agile_backlog.config import get_archive_sprints as _get_as
+            from agile_backlog.config import set_archive_sprints as _set_as
 
-            archive_days_options = {7: "7d", 14: "14d", 30: "30d", 90: "90d"}
-            current_ad = _get_ad()
+            archive_sprints_options = {1: "1 sprint", 2: "2 sprints", 3: "3 sprints", 5: "5 sprints"}
+            current_as = _get_as()
 
-            def _on_archive_days_change(e):
+            def _on_archive_sprints_change(e):
                 if e.value is not None:
-                    _set_ad(int(e.value))
+                    _set_as(int(e.value))
                     render_board.refresh()
 
             with ui.element("div").style("display:flex;align-items:center;gap:6px;"):
@@ -352,10 +352,10 @@ if (!window._mcAddPasteListenerAdded) {
                     .style("font-size:12px;color:#a1a1aa;")
                 )
                 (
-                    ui.select(options=archive_days_options, value=current_ad, on_change=_on_archive_days_change)
+                    ui.select(options=archive_sprints_options, value=current_as, on_change=_on_archive_sprints_change)
                     .props("dense borderless dark")
                     .style(
-                        "min-width:55px;max-width:65px;font-size:11px;color:#a1a1aa;"
+                        "min-width:80px;max-width:95px;font-size:11px;color:#a1a1aa;"
                         "font-family:'IBM Plex Mono',monospace;"
                     )
                 )
@@ -533,11 +533,17 @@ if (!window._mcAddPasteListenerAdded) {
 
             backlog_items = [i for i in items if i.status == "backlog"]
             doing_items = [i for i in items if i.status == "doing"]
-            from agile_backlog.config import get_archive_days
+            from agile_backlog.config import get_archive_sprints
 
-            archive_days = get_archive_days()
+            archive_sprints = get_archive_sprints()
             done_items = [
-                i for i in items if i.status == "done" and (show_archived or is_recently_done(i, days=archive_days))
+                i
+                for i in items
+                if i.status == "done"
+                and (
+                    show_archived
+                    or is_recent_sprint(i, current_sprint=current_sprint or 0, archive_sprints=archive_sprints)
+                )
             ]
 
             # Apply search filter to all columns

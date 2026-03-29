@@ -6,10 +6,13 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 25
+current_sprint: 26
 # Versioning — sprint-based: v0.{sprint}.{patch}
 version_scheme: "sprint"
-current_version: "0.25.0"
+current_version: "0.26.0"
+
+# Web UI
+serve_port: 8501
 
 # Commands
 test_command: ".venv/bin/pytest tests/ -v"
@@ -32,6 +35,9 @@ backlog_commands:
   flagged: ".venv/bin/agile-backlog flagged"
   context_report: ".venv/bin/agile-backlog context-report"
 
+# Context analysis
+context_logs_dir: ".claude/context-logs"
+
 # Documentation paths
 docs:
   handover_dir: "docs/sprints/"
@@ -45,8 +51,8 @@ branch_pattern: "sprint{N}/main"
 commit_style: conventional
 
 # Sprint settings
-# Archive — done items older than this are hidden on the board
-archive_days: 7
+# Archive — done items from older sprints are hidden on the board
+archive_sprints: 2
 
 default_sprint_capacity:
   small: 3-4

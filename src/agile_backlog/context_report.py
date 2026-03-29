@@ -73,9 +73,49 @@ def analyze_reads(entries: list[dict]) -> dict:
 
 def analyze_tool_usage(entries: list[dict]) -> dict:
     tool_counts = Counter(e.get("tool", "Read") for e in entries)
+    read_tools = {"Read", "Grep", "Glob"}
+    write_tools = {"Edit", "Write"}
+    reads = sum(tool_counts.get(t, 0) for t in read_tools)
+    writes = sum(tool_counts.get(t, 0) for t in write_tools)
     return {
         "total_tool_calls": len(entries),
         "by_tool": dict(tool_counts.most_common()),
+        "reads": reads,
+        "writes": writes,
+        "read_write_ratio": round(reads / writes, 2) if writes > 0 else None,
+    }
+
+
+def analyze_efficiency(entries: list[dict]) -> dict:
+    read_entries = [e for e in entries if e.get("tool") == "Read"]
+    seen_files: dict[str, int] = {}
+    reread_count = 0
+    exact_reread_count = 0
+    for e in read_entries:
+        key = e.get("file", "")
+        if not key:
+            continue
+        if key in seen_files:
+            reread_count += 1
+            prev_offset = seen_files.get(f"{key}_offset")
+            prev_limit = seen_files.get(f"{key}_limit")
+            if e.get("offset", 0) == prev_offset and e.get("limit", 0) == prev_limit:
+                exact_reread_count += 1
+        seen_files[key] = seen_files.get(key, 0) + 1
+        seen_files[f"{key}_offset"] = e.get("offset", 0) or 0
+        seen_files[f"{key}_limit"] = e.get("limit", 0) or 0
+
+    grep_entries = [e for e in entries if e.get("tool") == "Grep"]
+    grep_patterns = [e.get("pattern", "") for e in grep_entries]
+    unique_patterns = len(set(grep_patterns))
+
+    return {
+        "total_reads": len(read_entries),
+        "reread_count": reread_count,
+        "exact_reread_count": exact_reread_count,
+        "reread_waste_ratio": round(exact_reread_count / len(read_entries), 2) if read_entries else 0.0,
+        "unique_grep_patterns": unique_patterns,
+        "total_grep_calls": len(grep_entries),
     }
 
 
@@ -89,6 +129,7 @@ def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path
             session_metrics = analyze_reads(entries)
             session_metrics["session_id"] = log_file.stem.replace("tools-", "")
             session_metrics["tool_usage"] = analyze_tool_usage(entries)
+            session_metrics["efficiency"] = analyze_efficiency(entries)
             sessions.append(session_metrics)
             all_entries.extend(entries)
 
@@ -99,11 +140,13 @@ def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path
             session_metrics = analyze_reads(entries)
             session_metrics["session_id"] = log_file.stem.replace("reads-", "")
             session_metrics["tool_usage"] = analyze_tool_usage(entries)
+            session_metrics["efficiency"] = analyze_efficiency(entries)
             sessions.append(session_metrics)
             all_entries.extend(entries)
 
     aggregate = analyze_reads(all_entries)
     aggregate["tool_usage"] = analyze_tool_usage(all_entries)
+    aggregate["efficiency"] = analyze_efficiency(all_entries)
     report = {
         "sprint": sprint,
         **aggregate,

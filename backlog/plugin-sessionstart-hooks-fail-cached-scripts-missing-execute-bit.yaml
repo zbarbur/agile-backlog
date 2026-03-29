@@ -1,16 +1,20 @@
 title: 'Plugin SessionStart hooks fail: cached scripts missing execute bit'
-status: backlog
+status: done
 priority: P3
 category: bug
 sprint_target: 26
 created: 2026-03-25
-updated: 2026-03-27
+updated: 2026-03-29
 depends_on: []
 tags:
 - bug,plugins,hooks
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix plugin SessionStart hook errors by prefixing script paths with bash in hooks.json
+complexity: S
+technical_specs:
+- "File: .claude/plugins/explanatory-output-style/hooks.json \u2014 prefix commands\
+  \ with bash"
+- "File: .claude/plugins/learning-output-style/hooks.json \u2014 prefix commands with\
+  \ bash"
 description: "Steps to reproduce:\n1. Install explanatory-output-style and learning-output-style\
   \ plugins\n2. Start a new Claude Code session\n3. Observe 'SessionStart:startup\
   \ hook error' x2 at session startup\n\nExpected: Hooks run silently, no errors\n\
@@ -21,10 +25,17 @@ description: "Steps to reproduce:\n1. Install explanatory-output-style and learn
   \ cache.\n\nFix options:\n1. Plugin hooks.json should use 'bash ${CLAUDE_PLUGIN_ROOT}/...'\
   \ instead of direct execution\n2. Plugin cache mechanism should preserve/set execute\
   \ bits on .sh files\n3. Both"
-acceptance_criteria: []
-test_plan: []
-notes: ''
-phase: null
+acceptance_criteria:
+- Plugin hooks.json uses 'bash ${CLAUDE_PLUGIN_ROOT}/...' instead of direct script
+  execution
+- No SessionStart hook errors on fresh session start
+- Both explanatory-output-style and learning-output-style plugins fixed
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'Manual: start new Claude Code session, verify no hook errors'
+notes: 'Already fixed: all hooks.json use bash prefix, all scripts have +x. Verified
+  hooks run clean (exit 0).'
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
