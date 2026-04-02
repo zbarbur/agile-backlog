@@ -1,0 +1,35 @@
+title: "Optimization guidelines dashboard \u2014 display Claude Code best practices\
+  \ with compliance checks and improvement prompts"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs:
+- 'Guidelines source: docs/optimization/docs/claude-code-agent-optimization-guide.md'
+- "File: src/agile_backlog/app.py \u2014 add Guidelines tab to Process view"
+- Prompts should be copyable text the user can paste into Claude Code session
+description: ''
+acceptance_criteria:
+- Guidelines section in Process view showing 6 core optimization rules
+- 'CLAUDE.md budget check: measure token count, warn if over 2K, show what to trim'
+- 'Skill description audit: flag descriptions over 200 chars, missing USE THIS/DO
+  NOT pattern'
+- 'Memory tier compliance: verify L1-L4 structure, flag files in wrong tier'
+- 'Command guessing detection: ratio of direct Bash commands vs skill-backed commands
+  from logs'
+- 'Re-read waste score: highlight sessions with high re-read ratios, suggest DO NOT
+  RE-READ rule'
+- Each guideline has a one-click prompt to run analysis and get improvement suggestions
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
