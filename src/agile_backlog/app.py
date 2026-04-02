@@ -161,6 +161,8 @@ def kanban_page():
                         "background:transparent;color:#71717a;min-height:0;"
                     )
                 )
+                # --- Divider between Sprint views and Observability views ---
+                ui.element("div").style("width:1px;height:20px;background:#3f3f46;margin:0 8px;")
                 context_btn_el = (
                     ui.button("Context", on_click=lambda: _set_view("context"))
                     .props("flat dense no-caps unelevated")
@@ -737,6 +739,38 @@ if (!window._mcAddPasteListenerAdded) {
                                             f"font-family:'IBM Plex Mono',monospace;\">"
                                             f"{safe_html(subtitle)}</div>"
                                         )
+                                    # Context report summary for this sprint
+                                    if sprint_num is not None:
+                                        import json as _json
+                                        from pathlib import Path as _Path
+
+                                        _rpt_path = _Path(handover_dir) / f"SPRINT{sprint_num}_CONTEXT_REPORT.json"
+                                        if _rpt_path.exists():
+                                            try:
+                                                _rpt = _json.loads(_rpt_path.read_text())
+                                                _tc = _rpt.get("tool_usage", {}).get("total_tool_calls", 0)
+                                                _rr = round(_rpt.get("reread_ratio", 0) * 100, 1)
+                                                _tk = _rpt.get("estimated_tokens", 0)
+                                                _tk_d = f"{_tk // 1000}k" if _tk >= 1000 else str(_tk)
+                                                _sess = len(_rpt.get("sessions", []))
+                                                _rr_c = "#22c55e" if _rr < 15 else "#ca8a04" if _rr < 30 else "#f87171"
+                                                ui.html(
+                                                    f"<div style='display:flex;gap:16px;padding:6px 8px;"
+                                                    f"margin:2px 0 8px;background:#1e1e23;border-radius:6px;"
+                                                    f"border:1px solid #27272a;font-size:10px;"
+                                                    f'font-family:"IBM Plex Mono",monospace;\'>'
+                                                    f"<span style='color:#71717a;'>Sessions: "
+                                                    f"<b style='color:#d4d4d8;'>{_sess}</b></span>"
+                                                    f"<span style='color:#71717a;'>Tool calls: "
+                                                    f"<b style='color:#d4d4d8;'>{_tc}</b></span>"
+                                                    f"<span style='color:#71717a;'>Re-read: "
+                                                    f"<b style='color:{_rr_c};'>{_rr}%</b></span>"
+                                                    f"<span style='color:#71717a;'>Tokens: "
+                                                    f"<b style='color:#d4d4d8;'>{safe_html(_tk_d)}</b></span>"
+                                                    f"</div>"
+                                                )
+                                            except Exception:
+                                                pass
                                     for card_item in sprint_items:
                                         _render_card(
                                             card_item,
@@ -751,6 +785,9 @@ if (!window._mcAddPasteListenerAdded) {
                     done_panel_ref["el"] = done_panel
             elif view_mode["current"] == "context":
                 # --- Context analysis dashboard ---
+                import json
+                from pathlib import Path
+
                 from agile_backlog.config import (
                     get_context_logs_dir,
                 )
@@ -766,25 +803,87 @@ if (!window._mcAddPasteListenerAdded) {
 
                 sprint_num = _get_sprint() or current_sprint or "?"
                 log_dir = get_context_logs_dir()
-                all_entries: list[dict] = []
-                session_data: list[tuple[str, list[dict]]] = []
-                if log_dir.exists():
-                    for log_file in sorted(log_dir.glob("tools-*.jsonl")):
-                        entries = parse_read_log(log_file)
-                        if entries:
-                            session_data.append((log_file.stem.replace("tools-", ""), entries))
-                            all_entries.extend(entries)
-                    for log_file in sorted(log_dir.glob("reads-*.jsonl")):
-                        entries = parse_read_log(log_file)
-                        if entries:
-                            session_data.append((log_file.stem.replace("reads-", ""), entries))
-                            all_entries.extend(entries)
 
-                ui.html(
-                    f'<div style="font-size:16px;font-weight:700;color:#fafafa;padding:8px 0 16px;'
-                    f"font-family:'DM Sans',sans-serif;\">"
-                    f"Context Analysis &mdash; Sprint {safe_html(str(sprint_num))}</div>"
-                )
+                # Discover available sprint reports
+                from agile_backlog.yaml_store import _git_root
+
+                reports_dir = _git_root() / "docs" / "sprints"
+                available_sprints: dict[str, str] = {}  # label -> value
+                available_sprints[f"Sprint {sprint_num} (live)"] = "live"
+                if reports_dir.exists():
+                    for rpt in sorted(reports_dir.glob("SPRINT*_CONTEXT_REPORT.json"), reverse=True):
+                        snum = rpt.stem.replace("SPRINT", "").replace("_CONTEXT_REPORT", "")
+                        available_sprints[f"Sprint {snum}"] = str(rpt)
+
+                context_view_state = {"selected": "live"}
+
+                def _load_context_data(source: str) -> tuple[list[dict], list[tuple[str, list[dict]]], str]:
+                    """Load context data from live logs or a historical sprint report."""
+                    if source == "live":
+                        entries: list[dict] = []
+                        sessions: list[tuple[str, list[dict]]] = []
+                        if log_dir.exists():
+                            for lf in sorted(log_dir.glob("tools-*.jsonl")):
+                                parsed = parse_read_log(lf)
+                                if parsed:
+                                    sessions.append((lf.stem.replace("tools-", ""), parsed))
+                                    entries.extend(parsed)
+                            for lf in sorted(log_dir.glob("reads-*.jsonl")):
+                                parsed = parse_read_log(lf)
+                                if parsed:
+                                    sessions.append((lf.stem.replace("reads-", ""), parsed))
+                                    entries.extend(parsed)
+                        return entries, sessions, str(sprint_num)
+                    # Historical report — reconstruct entries from the JSON report
+                    report_path = Path(source)
+                    if not report_path.exists():
+                        return [], [], "?"
+                    report = json.loads(report_path.read_text())
+                    snum = str(report.get("sprint", "?"))
+                    # Build flat entries from session data in the report
+                    entries = []
+                    sessions = []
+                    for sess in report.get("sessions", []):
+                        # Reconstruct minimal entries from session metrics for display
+                        sess_entries: list[dict] = []
+                        tool_usage = sess.get("tool_usage", {})
+                        for tool_name, count in tool_usage.get("by_tool", {}).items():
+                            for _ in range(count):
+                                entry: dict = {"tool": tool_name}
+                                sess_entries.append(entry)
+                        # Add file info from top_files for read analysis
+                        for tf in sess.get("top_files", []):
+                            for _ in range(tf["count"]):
+                                sess_entries.append({"tool": "Read", "file": tf["file"], "offset": 0, "limit": 0})
+                        if sess_entries:
+                            sessions.append((sess.get("session_id", "unknown"), sess_entries))
+                            entries.extend(sess_entries)
+                    return entries, sessions, snum
+
+                all_entries, session_data, display_sprint = _load_context_data("live")
+
+                # Header with sprint selector
+                with ui.element("div").style("display:flex;align-items:center;gap:16px;padding:8px 0 16px;"):
+                    ui.html(
+                        '<div style="font-size:16px;font-weight:700;color:#fafafa;'
+                        "font-family:'DM Sans',sans-serif;\">"
+                        "Context Analysis</div>"
+                    )
+                    if len(available_sprints) > 1:
+
+                        def _on_sprint_change(e):
+                            context_view_state["selected"] = e.value
+                            nonlocal all_entries, session_data, display_sprint
+                            all_entries, session_data, display_sprint = _load_context_data(e.value)
+                            render_board.refresh()
+
+                        ui.select(
+                            options=available_sprints,
+                            value="live",
+                            on_change=_on_sprint_change,
+                        ).props("dense outlined").style(
+                            "min-width:180px;font-size:12px;color:#fafafa;font-family:'IBM Plex Mono',monospace;"
+                        )
 
                 if not all_entries:
                     ui.html(
@@ -825,40 +924,72 @@ if (!window._mcAddPasteListenerAdded) {
                             ui.html(f'<div style="{label_style}">Est. Tokens</div>')
                             ui.html(f'<div style="{value_style}">{safe_html(token_display)}</div>')
 
-                    # Tool usage breakdown
+                    # Tool usage breakdown with drilldown
                     ui.html(
                         '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:16px 0 8px;'
                         "font-family:'DM Sans',sans-serif;\">Tool Usage Breakdown</div>"
                     )
                     by_tool = tools.get("by_tool", {})
                     if by_tool:
-                        rows_html = ""
                         max_count = max(by_tool.values()) if by_tool else 1
-                        for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
-                            bar_width = int((count / max_count) * 100)
-                            rows_html += (
-                                f"<tr><td style='padding:4px 10px;color:#d4d4d8;font-size:12px;"
-                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                                f"{safe_html(tool_name)}</td>"
-                                f"<td style='padding:4px 10px;color:#a1a1aa;font-size:12px;text-align:right;"
-                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
-                                f"white-space:nowrap;'>{safe_html(str(count))}</td>"
-                                f"<td style='padding:4px 10px;border-bottom:1px solid #27272a;width:50%;'>"
-                                f"<div style='background:rgba(59,130,246,0.25);height:14px;"
-                                f"border-radius:3px;width:{bar_width}%;'></div></td></tr>"
-                            )
-                        ui.html(
-                            f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
-                            f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
-                            f"<thead><tr><th style='padding:6px 10px;text-align:left;color:#71717a;"
-                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
-                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                            f"Tool</th><th style='padding:6px 10px;text-align:right;color:#71717a;"
-                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
-                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                            f"Count</th><th style='padding:6px 10px;border-bottom:1px solid #27272a;'>"
-                            f"</th></tr></thead><tbody>{rows_html}</tbody></table>"
-                        )
+                        # Group entries by tool for drilldown
+                        from collections import Counter as _Counter
+
+                        tool_details: dict[str, list[str]] = {}
+                        for _e in all_entries:
+                            _t = _e.get("tool", "")
+                            if _t == "Bash":
+                                tool_details.setdefault(_t, []).append(_e.get("command", "?")[:80])
+                            elif _t == "Read":
+                                _f = _e.get("file", "?")
+                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+                            elif _t == "Grep":
+                                tool_details.setdefault(_t, []).append(_e.get("pattern", "?"))
+                            elif _t == "Edit":
+                                _f = _e.get("file", "?")
+                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+                            elif _t == "Write":
+                                _f = _e.get("file", "?")
+                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+                            elif _t == "Skill":
+                                tool_details.setdefault(_t, []).append(_e.get("skill", "?"))
+                            elif _t == "Agent":
+                                tool_details.setdefault(_t, []).append(_e.get("prompt", "?")[:60])
+
+                        with ui.element("div").style(
+                            "background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"
+                        ):
+                            for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
+                                bar_width = int((count / max_count) * 100)
+                                bar_html = (
+                                    f"<div style='display:flex;align-items:center;gap:10px;width:100%;'>"
+                                    f"<span style='color:#d4d4d8;font-size:12px;min-width:60px;"
+                                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(tool_name)}</span>'
+                                    f"<span style='color:#a1a1aa;font-size:12px;min-width:40px;text-align:right;"
+                                    f'font-family:"IBM Plex Mono",monospace;\'>{count}</span>'
+                                    f"<div style='flex:1;'>"
+                                    f"<div style='background:rgba(59,130,246,0.25);height:14px;"
+                                    f"border-radius:3px;width:{bar_width}%;'></div></div></div>"
+                                )
+                                details = tool_details.get(tool_name, [])
+                                if details:
+                                    top_items = _Counter(details).most_common(10)
+                                    with ui.expansion("").style("width:100%;border-bottom:1px solid #27272a;margin:0;"):
+                                        ui.html(bar_html).style("padding:0;")
+                                        for val, cnt in top_items:
+                                            pct = round(cnt / count * 100)
+                                            ui.html(
+                                                f"<div style='display:flex;gap:8px;padding:2px 8px 2px 70px;"
+                                                f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
+                                                f"<span style='color:#71717a;min-width:30px;text-align:right;'>"
+                                                f"{cnt}x</span>"
+                                                f"<span style='color:#71717a;min-width:30px;'>({pct}%)</span>"
+                                                f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
+                                                f"white-space:nowrap;'>{safe_html(val)}</span></div>"
+                                            )
+                                else:
+                                    with ui.element("div").style("padding:8px 10px;border-bottom:1px solid #27272a;"):
+                                        ui.html(bar_html)
 
                     # Top files heatmap
                     ui.html(
