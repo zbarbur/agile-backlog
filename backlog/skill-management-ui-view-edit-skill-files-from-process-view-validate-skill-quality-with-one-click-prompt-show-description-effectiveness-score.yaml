@@ -1,0 +1,29 @@
+title: "Skill management UI \u2014 view/edit skill files from Process view, validate\
+  \ skill quality with one-click prompt, show description effectiveness score"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria:
+- Skills tab shows full SKILL.md content when clicking a skill row
+- Edit button opens inline editor for skill frontmatter and content
+- 'Validate button runs quality check: description length, USE THIS/DO NOT pattern,
+  trigger keywords'
+- 'Quality score per skill: description clarity, token cost, keyword coverage'
+- 'Copyable prompt for each skill: ''Review this skill description and suggest improvements'''
+- Save edits back to SKILL.md file
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
