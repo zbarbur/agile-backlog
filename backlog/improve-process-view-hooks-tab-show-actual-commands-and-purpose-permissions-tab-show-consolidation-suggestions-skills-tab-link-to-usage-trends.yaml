@@ -12,7 +12,13 @@ goal: ''
 complexity: null
 technical_specs: []
 description: ''
-acceptance_criteria: []
+acceptance_criteria:
+- Skills tab shows description token cost per skill
+- Skills tab shows actual invocation count from context logs
+- 'Unused skills highlighted with analysis prompt: why unused, description quality'
+- Plugins tab shows installed plugins with their skills, hooks, and agents
+- Hooks tab shows actual command being run, not just matcher
+- Permissions tab shows consolidation suggestions for redundant patterns
 test_plan: []
 notes: ''
 phase: null
