@@ -120,6 +120,16 @@ def kanban_page():
                 done_btn_el.style(
                     "background:#fafafa;color:#09090b;" if mode == "done" else "background:transparent;color:#71717a;"
                 )
+                context_btn_el.style(
+                    "background:#fafafa;color:#09090b;"
+                    if mode == "context"
+                    else "background:transparent;color:#71717a;"
+                )
+                process_btn_el.style(
+                    "background:#fafafa;color:#09090b;"
+                    if mode == "process"
+                    else "background:transparent;color:#71717a;"
+                )
                 sprint_badge_el.style("display:block;" if mode == "board" else "display:none;")
                 archive_toggle.style(
                     "display:block;font-size:11px;color:#71717a;" if mode == "board" else "display:none;"
@@ -145,6 +155,22 @@ def kanban_page():
                 )
                 done_btn_el = (
                     ui.button("Done", on_click=lambda: _set_view("done"))
+                    .props("flat dense no-caps unelevated")
+                    .style(
+                        "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
+                        "background:transparent;color:#71717a;min-height:0;"
+                    )
+                )
+                context_btn_el = (
+                    ui.button("Context", on_click=lambda: _set_view("context"))
+                    .props("flat dense no-caps unelevated")
+                    .style(
+                        "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
+                        "background:transparent;color:#71717a;min-height:0;"
+                    )
+                )
+                process_btn_el = (
+                    ui.button("Process", on_click=lambda: _set_view("process"))
                     .props("flat dense no-caps unelevated")
                     .style(
                         "font-size:11px;font-weight:600;padding:4px 14px;border-radius:0;"
@@ -723,6 +749,510 @@ if (!window._mcAddPasteListenerAdded) {
 
                     done_panel = ui.element("div").style("display:none;")
                     done_panel_ref["el"] = done_panel
+            elif view_mode["current"] == "context":
+                # --- Context analysis dashboard ---
+                from agile_backlog.config import (
+                    get_context_logs_dir,
+                )
+                from agile_backlog.config import (
+                    get_current_sprint as _get_sprint,
+                )
+                from agile_backlog.context_report import (
+                    analyze_efficiency,
+                    analyze_reads,
+                    analyze_tool_usage,
+                    parse_read_log,
+                )
+
+                sprint_num = _get_sprint() or current_sprint or "?"
+                log_dir = get_context_logs_dir()
+                all_entries: list[dict] = []
+                session_data: list[tuple[str, list[dict]]] = []
+                if log_dir.exists():
+                    for log_file in sorted(log_dir.glob("tools-*.jsonl")):
+                        entries = parse_read_log(log_file)
+                        if entries:
+                            session_data.append((log_file.stem.replace("tools-", ""), entries))
+                            all_entries.extend(entries)
+                    for log_file in sorted(log_dir.glob("reads-*.jsonl")):
+                        entries = parse_read_log(log_file)
+                        if entries:
+                            session_data.append((log_file.stem.replace("reads-", ""), entries))
+                            all_entries.extend(entries)
+
+                ui.html(
+                    f'<div style="font-size:16px;font-weight:700;color:#fafafa;padding:8px 0 16px;'
+                    f"font-family:'DM Sans',sans-serif;\">"
+                    f"Context Analysis &mdash; Sprint {safe_html(str(sprint_num))}</div>"
+                )
+
+                if not all_entries:
+                    ui.html(
+                        '<div style="font-size:12px;color:#a1a1aa;padding:24px 10px;'
+                        "font-style:italic;font-family:'DM Sans',sans-serif;"
+                        'text-align:center;">No context logs found. '
+                        "Run Claude Code sessions with context hooks enabled to generate data.</div>"
+                    )
+                else:
+                    reads = analyze_reads(all_entries)
+                    tools = analyze_tool_usage(all_entries)
+
+                    # Summary cards row
+                    card_style = (
+                        "background:#1e1e23;border:1px solid #27272a;border-radius:8px;"
+                        "padding:16px 20px;flex:1;min-width:140px;"
+                    )
+                    label_style = (
+                        "font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;"
+                        "color:#71717a;text-transform:uppercase;letter-spacing:0.05em;"
+                    )
+                    value_style = "font-size:24px;font-weight:700;color:#fafafa;margin-top:4px;"
+                    with ui.element("div").style("display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"):
+                        with ui.element("div").style(card_style):
+                            ui.html(f'<div style="{label_style}">Total Tool Calls</div>')
+                            ui.html(f'<div style="{value_style}">{safe_html(str(tools["total_tool_calls"]))}</div>')
+                        with ui.element("div").style(card_style):
+                            ui.html(f'<div style="{label_style}">Read Calls</div>')
+                            ui.html(f'<div style="{value_style}">{safe_html(str(reads["total_reads"]))}</div>')
+                        with ui.element("div").style(card_style):
+                            reread_pct = round(reads["reread_ratio"] * 100, 1)
+                            color = "#22c55e" if reread_pct < 15 else "#ca8a04" if reread_pct < 30 else "#f87171"
+                            ui.html(f'<div style="{label_style}">Re-read Ratio</div>')
+                            ui.html(f'<div style="{value_style}color:{color};">{safe_html(str(reread_pct))}%</div>')
+                        with ui.element("div").style(card_style):
+                            tokens = reads["estimated_tokens"]
+                            token_display = f"{tokens // 1000}k" if tokens >= 1000 else str(tokens)
+                            ui.html(f'<div style="{label_style}">Est. Tokens</div>')
+                            ui.html(f'<div style="{value_style}">{safe_html(token_display)}</div>')
+
+                    # Tool usage breakdown
+                    ui.html(
+                        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:16px 0 8px;'
+                        "font-family:'DM Sans',sans-serif;\">Tool Usage Breakdown</div>"
+                    )
+                    by_tool = tools.get("by_tool", {})
+                    if by_tool:
+                        rows_html = ""
+                        max_count = max(by_tool.values()) if by_tool else 1
+                        for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
+                            bar_width = int((count / max_count) * 100)
+                            rows_html += (
+                                f"<tr><td style='padding:4px 10px;color:#d4d4d8;font-size:12px;"
+                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                                f"{safe_html(tool_name)}</td>"
+                                f"<td style='padding:4px 10px;color:#a1a1aa;font-size:12px;text-align:right;"
+                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+                                f"white-space:nowrap;'>{safe_html(str(count))}</td>"
+                                f"<td style='padding:4px 10px;border-bottom:1px solid #27272a;width:50%;'>"
+                                f"<div style='background:rgba(59,130,246,0.25);height:14px;"
+                                f"border-radius:3px;width:{bar_width}%;'></div></td></tr>"
+                            )
+                        ui.html(
+                            f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
+                            f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
+                            f"<thead><tr><th style='padding:6px 10px;text-align:left;color:#71717a;"
+                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                            f"Tool</th><th style='padding:6px 10px;text-align:right;color:#71717a;"
+                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                            f"Count</th><th style='padding:6px 10px;border-bottom:1px solid #27272a;'>"
+                            f"</th></tr></thead><tbody>{rows_html}</tbody></table>"
+                        )
+
+                    # Top files heatmap
+                    ui.html(
+                        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
+                        "font-family:'DM Sans',sans-serif;\">Top Files (by read count)</div>"
+                    )
+                    top_files = reads.get("top_files", [])
+                    if top_files:
+                        file_rows = ""
+                        max_file_count = top_files[0]["count"] if top_files else 1
+                        for tf in top_files:
+                            intensity = min(tf["count"] / max_file_count, 1.0)
+                            r = int(59 + intensity * (248 - 59))
+                            g = int(130 + intensity * (113 - 130))
+                            b = int(246 + intensity * (113 - 246))
+                            bg = f"rgba({r},{g},{b},0.12)"
+                            fname = tf["file"]
+                            short = fname.split("/")[-1] if "/" in fname else fname
+                            file_rows += (
+                                f"<tr><td style='padding:5px 10px;color:#93c5fd;font-size:11px;"
+                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+                                f"background:{bg};' title='{safe_html(fname)}'>"
+                                f"{safe_html(short)}</td>"
+                                f"<td style='padding:5px 10px;color:#d4d4d8;font-size:11px;text-align:center;"
+                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+                                f"background:{bg};white-space:nowrap;'>"
+                                f"{safe_html(str(tf['count']))}</td>"
+                                f"<td style='padding:5px 10px;color:#71717a;font-size:10px;"
+                                f"border-bottom:1px solid #27272a;background:{bg};max-width:300px;"
+                                f"overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"
+                                f"{safe_html(fname)}</td></tr>"
+                            )
+                        ui.html(
+                            f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
+                            f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
+                            f"<thead><tr><th style='padding:6px 10px;text-align:left;color:#71717a;"
+                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                            f"File</th><th style='padding:6px 10px;text-align:center;color:#71717a;"
+                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                            f"Reads</th><th style='padding:6px 10px;text-align:left;color:#71717a;"
+                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+                            f"Path</th></tr></thead><tbody>{file_rows}</tbody></table>"
+                        )
+
+                    # Per-session breakdown
+                    if session_data:
+                        ui.html(
+                            '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
+                            "font-family:'DM Sans',sans-serif;\">Sessions</div>"
+                        )
+                        for sess_id, sess_entries in session_data:
+                            s_reads = analyze_reads(sess_entries)
+                            s_tools = analyze_tool_usage(sess_entries)
+                            s_eff = analyze_efficiency(sess_entries)
+                            s_reread = round(s_reads["reread_ratio"] * 100, 1)
+                            s_tokens = s_reads["estimated_tokens"]
+                            s_token_display = f"{s_tokens // 1000}k" if s_tokens >= 1000 else str(s_tokens)
+                            summary = (
+                                f"{safe_html(str(s_tools['total_tool_calls']))} calls &middot; "
+                                f"{safe_html(str(s_reads['total_reads']))} reads &middot; "
+                                f"{safe_html(str(s_reread))}% re-read &middot; "
+                                f"{safe_html(s_token_display)} tokens"
+                            )
+                            with ui.expansion(safe_html(sess_id)).style(
+                                "width:100%;margin-bottom:4px;background:#1e1e23;"
+                                "border:1px solid #27272a;border-radius:6px;"
+                            ):
+                                ui.html(
+                                    f"<div style='font-size:11px;color:#a1a1aa;"
+                                    f'font-family:"IBM Plex Mono",monospace;'
+                                    f"padding:4px 0;'>{summary}</div>"
+                                )
+                                if s_eff["exact_reread_count"] > 0:
+                                    ui.html(
+                                        f"<div style='font-size:10px;color:#f87171;padding:2px 0;'>"
+                                        f"Exact re-reads: "
+                                        f"{safe_html(str(s_eff['exact_reread_count']))}</div>"
+                                    )
+                                if s_reads.get("wasteful_reads"):
+                                    for w in s_reads["wasteful_reads"]:
+                                        ui.html(
+                                            f"<div style='font-size:10px;color:#ca8a04;padding:1px 0;'>"
+                                            f"Wasteful: {safe_html(w['file'])} "
+                                            f"({safe_html(str(w['count']))}x)</div>"
+                                        )
+
+            elif view_mode["current"] == "process":
+                # --- Process management tools review ---
+                import json as _json
+                import re as _re
+                from pathlib import Path as _Path
+
+                import yaml as _yaml
+
+                from agile_backlog.config import get_context_logs_dir as _get_ctx_dir
+                from agile_backlog.context_report import parse_read_log as _parse_log
+                from agile_backlog.context_report import skill_usage_stats as _skill_stats
+                from agile_backlog.yaml_store import _git_root
+
+                git_root = _git_root()
+
+                ui.html(
+                    '<div style="font-size:16px;font-weight:700;color:#fafafa;padding:8px 0 12px;'
+                    "font-family:'DM Sans',sans-serif;\">Process Management Tools</div>"
+                )
+
+                tab_bar_style = "background:#1e1e23;color:#8b8b9b;"
+                tab_panel_style = "background:#14141a;padding:16px;"
+
+                with ui.tabs().classes("w-full").style(tab_bar_style) as proc_tabs:
+                    skills_tab = ui.tab("Skills")
+                    claude_md_tab = ui.tab("CLAUDE.md")
+                    handovers_tab = ui.tab("Handovers")
+                    hooks_tab = ui.tab("Hooks")
+                    permissions_tab = ui.tab("Permissions")
+
+                with ui.tab_panels(proc_tabs, value=skills_tab).classes("w-full").style(tab_panel_style):
+                    # --- Skills Tab ---
+                    with ui.tab_panel(skills_tab):
+                        skills_dir = git_root / ".claude" / "skills"
+                        skills_found: list[dict] = []
+                        if skills_dir.is_dir():
+                            for skill_dir in sorted(skills_dir.iterdir()):
+                                skill_md = skill_dir / "SKILL.md"
+                                if skill_dir.is_dir() and skill_md.exists():
+                                    content = skill_md.read_text()
+                                    fm_match = _re.match(r"^---\s*\n(.*?)\n---", content, _re.DOTALL)
+                                    name = skill_dir.name
+                                    desc = ""
+                                    if fm_match:
+                                        try:
+                                            fm = _yaml.safe_load(fm_match.group(1)) or {}
+                                            name = fm.get("name", name)
+                                            desc = fm.get("description", "")
+                                        except Exception:
+                                            pass
+                                    skills_found.append({"name": name, "description": desc})
+
+                        # Load skill usage stats from context logs
+                        ctx_log_dir = _get_ctx_dir()
+                        all_ctx_entries: list[dict] = []
+                        if ctx_log_dir.exists():
+                            for lf in sorted(ctx_log_dir.glob("tools-*.jsonl")):
+                                all_ctx_entries.extend(_parse_log(lf))
+                        skill_counts = _skill_stats(all_ctx_entries)
+
+                        if not skills_found:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
+                                "No skills found in .claude/skills/</div>"
+                            )
+                        else:
+                            rows_html = ""
+                            for sk in skills_found:
+                                usage = skill_counts.get(sk["name"], 0)
+                                rows_html += (
+                                    f"<tr><td style='padding:8px 12px;color:#e4e4e7;font-size:12px;"
+                                    f"font-weight:600;border-bottom:1px solid #27272a;'>"
+                                    f"{safe_html(sk['name'])}</td>"
+                                    f"<td style='padding:8px 12px;color:#a1a1aa;font-size:11px;"
+                                    f"border-bottom:1px solid #27272a;'>"
+                                    f"{safe_html(sk['description'])}</td>"
+                                    f"<td style='padding:8px 12px;color:#71717a;font-size:11px;"
+                                    f"text-align:center;border-bottom:1px solid #27272a;"
+                                    f'font-family:"IBM Plex Mono",monospace;\'>'
+                                    f"{safe_html(str(usage))}</td></tr>"
+                                )
+                            ui.html(
+                                f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
+                                f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
+                                f"<thead><tr>"
+                                f"<th style='padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
+                                f"text-transform:uppercase;letter-spacing:0.05em;"
+                                f"border-bottom:1px solid #27272a;'>Skill</th>"
+                                f"<th style='padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
+                                f"text-transform:uppercase;letter-spacing:0.05em;"
+                                f"border-bottom:1px solid #27272a;'>Description</th>"
+                                f"<th style='padding:8px 12px;text-align:center;color:#71717a;font-size:10px;"
+                                f"text-transform:uppercase;letter-spacing:0.05em;"
+                                f"border-bottom:1px solid #27272a;'>Usage</th>"
+                                f"</tr></thead><tbody>{rows_html}</tbody></table>"
+                            )
+
+                    # --- CLAUDE.md Tab ---
+                    with ui.tab_panel(claude_md_tab):
+                        claude_md_path = git_root / "CLAUDE.md"
+                        if claude_md_path.exists():
+                            claude_content = claude_md_path.read_text()
+                            file_size = claude_md_path.stat().st_size
+                            approx_tokens = len(claude_content) // 4
+                            ui.html(
+                                f'<div style="display:flex;gap:16px;margin-bottom:12px;">'
+                                f'<span style="font-size:11px;color:#71717a;">'
+                                f"Size: {safe_html(str(file_size))} bytes</span>"
+                                f'<span style="font-size:11px;color:#71717a;">'
+                                f"~{safe_html(str(approx_tokens))} tokens</span>"
+                                f"</div>"
+                            )
+                            ui.html(
+                                '<div style="font-size:10px;color:#ca8a04;background:rgba(202,138,4,0.08);'
+                                'padding:8px 12px;border-radius:6px;margin-bottom:12px;">'
+                                "Guideline: Keep CLAUDE.md under ~2K tokens for optimal prompt budget.</div>"
+                            )
+                            ui.html(
+                                f'<pre style="background:#1e1e23;border:1px solid #27272a;border-radius:8px;'
+                                f"padding:16px;color:#d4d4d8;font-size:11px;overflow-x:auto;"
+                                f'font-family:&quot;IBM Plex Mono&quot;,monospace;white-space:pre-wrap;">'
+                                f"{safe_html(claude_content)}</pre>"
+                            )
+                        else:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
+                                "No CLAUDE.md found at project root.</div>"
+                            )
+
+                    # --- Handovers Tab ---
+                    with ui.tab_panel(handovers_tab):
+                        handover_dir = git_root / "docs" / "sprints"
+                        handover_files: list[tuple[int, _Path]] = []
+                        if handover_dir.is_dir():
+                            for hf in handover_dir.glob("SPRINT*_HANDOVER.md"):
+                                m = _re.search(r"SPRINT(\d+)_HANDOVER\.md$", hf.name)
+                                if m:
+                                    handover_files.append((int(m.group(1)), hf))
+                        handover_files.sort(key=lambda x: x[0], reverse=True)
+
+                        if not handover_files:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
+                                "No handover files found in docs/sprints/</div>"
+                            )
+                        else:
+                            for sprint_num, hf_path in handover_files:
+                                hf_content = hf_path.read_text()
+                                with ui.expansion(f"Sprint {sprint_num} Handover").style(
+                                    "width:100%;margin-bottom:4px;background:#1e1e23;"
+                                    "border:1px solid #27272a;border-radius:6px;"
+                                ):
+                                    ui.html(
+                                        f'<pre style="color:#d4d4d8;font-size:11px;overflow-x:auto;'
+                                        f'font-family:&quot;IBM Plex Mono&quot;,monospace;white-space:pre-wrap;">'
+                                        f"{safe_html(hf_content)}</pre>"
+                                    )
+
+                    # --- Hooks Tab ---
+                    with ui.tab_panel(hooks_tab):
+                        settings_path = git_root / ".claude" / "settings.json"
+                        if settings_path.exists():
+                            try:
+                                settings_data = _json.loads(settings_path.read_text())
+                                hooks = settings_data.get("hooks", {})
+                                if not hooks:
+                                    ui.html(
+                                        '<div style="font-size:12px;color:#a1a1aa;padding:16px;'
+                                        'font-style:italic;">No hooks configured in settings.json</div>'
+                                    )
+                                else:
+                                    total_hooks = 0
+                                    for event_type, hook_list in hooks.items():
+                                        if not isinstance(hook_list, list):
+                                            continue
+                                        total_hooks += len(hook_list)
+                                    ui.html(
+                                        f'<div style="font-size:12px;color:#a1a1aa;margin-bottom:12px;">'
+                                        f"Total hooks: <strong style='color:#fafafa;'>"
+                                        f"{safe_html(str(total_hooks))}</strong></div>"
+                                    )
+                                    for event_type, hook_list in hooks.items():
+                                        if not isinstance(hook_list, list):
+                                            continue
+                                        ui.html(
+                                            f'<div style="font-size:13px;font-weight:600;color:#e4e4e7;'
+                                            f"margin:12px 0 6px;font-family:'DM Sans',sans-serif;\">"
+                                            f"{safe_html(event_type)} "
+                                            f"<span style='color:#71717a;font-weight:400;font-size:11px;'>"
+                                            f"({safe_html(str(len(hook_list)))})</span></div>"
+                                        )
+                                        for hook in hook_list:
+                                            matcher = hook.get("matcher", "")
+                                            command = hook.get("command", "")
+                                            ui.html(
+                                                f'<div style="background:#1e1e23;border:1px solid #27272a;'
+                                                f'border-radius:6px;padding:10px 14px;margin-bottom:4px;">'
+                                                f'<div style="font-size:10px;color:#71717a;">matcher</div>'
+                                                f'<div style="font-size:12px;color:#d4d4d8;'
+                                                f'font-family:&quot;IBM Plex Mono&quot;,monospace;">'
+                                                f"{safe_html(str(matcher))}</div>"
+                                                f'<div style="font-size:10px;color:#71717a;margin-top:6px;">'
+                                                f"command</div>"
+                                                f'<div style="font-size:11px;color:#a1a1aa;'
+                                                f"font-family:&quot;IBM Plex Mono&quot;,monospace;"
+                                                f'word-break:break-all;">{safe_html(str(command))}</div>'
+                                                f"</div>"
+                                            )
+                            except (ValueError, KeyError):
+                                ui.html(
+                                    '<div style="font-size:12px;color:#f87171;padding:16px;">'
+                                    "Error reading settings.json</div>"
+                                )
+                        else:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
+                                "No .claude/settings.json found.</div>"
+                            )
+
+                    # --- Permissions Tab ---
+                    with ui.tab_panel(permissions_tab):
+                        local_settings_path = git_root / ".claude" / "settings.local.json"
+                        if local_settings_path.exists():
+                            try:
+                                local_data = _json.loads(local_settings_path.read_text())
+                                allow_list = local_data.get("permissions", {}).get("allow", [])
+                                if not allow_list:
+                                    ui.html(
+                                        '<div style="font-size:12px;color:#a1a1aa;padding:16px;'
+                                        'font-style:italic;">No permissions configured.</div>'
+                                    )
+                                else:
+                                    # Group by category
+                                    categories: dict[str, list[str]] = {}
+                                    for perm in allow_list:
+                                        p = str(perm)
+                                        if p.startswith("Bash(git"):
+                                            cat = "git"
+                                        elif "pytest" in p or "test" in p.lower():
+                                            cat = "test"
+                                        elif "ruff" in p or "lint" in p.lower():
+                                            cat = "lint"
+                                        elif "agile-backlog" in p:
+                                            cat = "CLI tool"
+                                        elif "python" in p or ".venv/bin/python" in p:
+                                            cat = "python"
+                                        elif "http" in p or "serve" in p or "browser" in p:
+                                            cat = "web"
+                                        else:
+                                            cat = "other"
+                                        categories.setdefault(cat, []).append(p)
+
+                                    ui.html(
+                                        f'<div style="font-size:12px;color:#a1a1aa;margin-bottom:12px;">'
+                                        f"Total permissions: <strong style='color:#fafafa;'>"
+                                        f"{safe_html(str(len(allow_list)))}</strong></div>"
+                                    )
+
+                                    cat_rows = ""
+                                    for cat_name in sorted(categories.keys()):
+                                        cat_items = categories[cat_name]
+                                        cat_rows += (
+                                            f"<tr><td style='padding:6px 12px;color:#e4e4e7;font-size:12px;"
+                                            f"font-weight:600;border-bottom:1px solid #27272a;'>"
+                                            f"{safe_html(cat_name)}</td>"
+                                            f"<td style='padding:6px 12px;color:#a1a1aa;font-size:12px;"
+                                            f"text-align:center;border-bottom:1px solid #27272a;"
+                                            f'font-family:"IBM Plex Mono",monospace;\'>'
+                                            f"{safe_html(str(len(cat_items)))}</td></tr>"
+                                        )
+                                    ui.html(
+                                        f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
+                                        f"border:1px solid #27272a;border-radius:8px;overflow:hidden;"
+                                        f"margin-bottom:12px;'>"
+                                        f"<thead><tr>"
+                                        f"<th style='padding:6px 12px;text-align:left;color:#71717a;"
+                                        f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                                        f"border-bottom:1px solid #27272a;'>Category</th>"
+                                        f"<th style='padding:6px 12px;text-align:center;color:#71717a;"
+                                        f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+                                        f"border-bottom:1px solid #27272a;'>Count</th>"
+                                        f"</tr></thead><tbody>{cat_rows}</tbody></table>"
+                                    )
+
+                                    with ui.expansion("Full Permission List").style(
+                                        "width:100%;background:#1e1e23;border:1px solid #27272a;border-radius:6px;"
+                                    ):
+                                        perm_items = "".join(
+                                            f'<div style="font-size:11px;color:#d4d4d8;padding:3px 0;'
+                                            f'font-family:&quot;IBM Plex Mono&quot;,monospace;">'
+                                            f"{safe_html(str(p))}</div>"
+                                            for p in allow_list
+                                        )
+                                        ui.html(perm_items)
+                            except (ValueError, KeyError):
+                                ui.html(
+                                    '<div style="font-size:12px;color:#f87171;padding:16px;">'
+                                    "Error reading settings.local.json</div>"
+                                )
+                        else:
+                            ui.html(
+                                '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
+                                "No .claude/settings.local.json found.</div>"
+                            )
+
             elif view_mode["current"] == "backlog":
                 # --- Backlog management view ---
                 _render_backlog_list(
@@ -916,7 +1446,7 @@ document.querySelectorAll('.mc-board-drop-zone').forEach(zone => {
             # Restore view mode from localStorage
             async def _restore_view():
                 saved = await ui.run_javascript("localStorage.getItem('ab_view_mode')")
-                if saved in ("board", "backlog", "done") and saved != view_mode["current"]:
+                if saved in ("board", "backlog", "done", "context", "process") and saved != view_mode["current"]:
                     _set_view(saved)
 
             ui.timer(0.1, _restore_view, once=True)

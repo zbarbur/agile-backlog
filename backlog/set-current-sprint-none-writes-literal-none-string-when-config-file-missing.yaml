@@ -30,7 +30,7 @@ test_plan:
 - 'tests/test_config.py: test set_current_sprint(None) does not write ''None'' string'
 - 'tests/test_config.py: test set_current_sprint with missing config file'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

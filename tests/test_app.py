@@ -110,3 +110,100 @@ class TestReopenItemLogic:
         self._apply_reopen(item, "Reason")
         assert not item.notes.startswith("\n")
         assert not item.notes.startswith(" ")
+
+
+class TestContextDashboardData:
+    """Verify context analysis data loading for the dashboard view."""
+
+    def test_analyze_reads_empty_entries(self):
+        from agile_backlog.context_report import analyze_reads
+
+        result = analyze_reads([])
+        assert result["total_reads"] == 0
+        assert result["unique_files"] == 0
+        assert result["reread_ratio"] == 0.0
+        assert result["estimated_tokens"] == 0
+        assert result["top_files"] == []
+
+    def test_analyze_reads_with_data(self):
+        from agile_backlog.context_report import analyze_reads
+
+        entries = [
+            {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},
+            {"tool": "Read", "file": "b.py", "offset": 0, "limit": 50},
+            {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},
+        ]
+        result = analyze_reads(entries)
+        assert result["total_reads"] == 3
+        assert result["unique_files"] == 2
+        assert result["reread_count"] == 1
+        assert result["reread_ratio"] == round(1 / 3, 2)
+        assert len(result["top_files"]) == 2
+        assert result["top_files"][0]["file"] == "a.py"
+        assert result["top_files"][0]["count"] == 2
+
+    def test_analyze_tool_usage_counts(self):
+        from agile_backlog.context_report import analyze_tool_usage
+
+        entries = [
+            {"tool": "Read", "file": "a.py"},
+            {"tool": "Grep", "pattern": "foo"},
+            {"tool": "Edit", "file": "a.py"},
+            {"tool": "Read", "file": "b.py"},
+        ]
+        result = analyze_tool_usage(entries)
+        assert result["total_tool_calls"] == 4
+        assert result["by_tool"]["Read"] == 2
+        assert result["by_tool"]["Grep"] == 1
+        assert result["by_tool"]["Edit"] == 1
+        assert result["reads"] == 3  # Read + Grep
+        assert result["writes"] == 1  # Edit
+
+    def test_analyze_efficiency_exact_rereads(self):
+        from agile_backlog.context_report import analyze_efficiency
+
+        entries = [
+            {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},
+            {"tool": "Read", "file": "a.py", "offset": 0, "limit": 100},
+        ]
+        result = analyze_efficiency(entries)
+        assert result["total_reads"] == 2
+        assert result["reread_count"] == 1
+        assert result["exact_reread_count"] == 1
+
+    def test_parse_read_log_missing_file(self, tmp_path):
+        from agile_backlog.context_report import parse_read_log
+
+        result = parse_read_log(tmp_path / "nonexistent.jsonl")
+        assert result == []
+
+    def test_context_view_mode_valid_values(self):
+        """Verify 'context' is a recognized view mode value."""
+        valid_modes = ("board", "backlog", "done", "context", "process")
+        assert "context" in valid_modes
+
+
+class TestProcessViewData:
+    """Verify process view data helpers."""
+
+    def test_skill_usage_stats_counts(self):
+        from agile_backlog.context_report import skill_usage_stats
+
+        entries = [
+            {"tool": "Skill", "skill": "commit"},
+            {"tool": "Skill", "skill": "review"},
+            {"tool": "Skill", "skill": "commit"},
+        ]
+        result = skill_usage_stats(entries)
+        assert result["commit"] == 2
+        assert result["review"] == 1
+
+    def test_skill_usage_stats_empty(self):
+        from agile_backlog.context_report import skill_usage_stats
+
+        assert skill_usage_stats([]) == {}
+
+    def test_process_view_mode_valid(self):
+        """Verify 'process' is a recognized view mode value."""
+        valid_modes = ("board", "backlog", "done", "context", "process")
+        assert "process" in valid_modes

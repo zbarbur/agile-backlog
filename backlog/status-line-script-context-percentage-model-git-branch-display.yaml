@@ -1,8 +1,8 @@
-title: add an easy ID for each item so it'll be easy to refer to it
+title: "Status line script \u2014 context percentage, model, git branch display"
 status: backlog
-priority: P2
+priority: P3
 category: feature
-sprint_target: 29
+sprint_target: null
 created: 2026-04-02
 updated: 2026-04-02
 depends_on: []
@@ -10,8 +10,7 @@ tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'when communicating, it''ll be easier sometime to use this ID , let''s
-  talk what should be the format '
+description: ''
 acceptance_criteria: []
 test_plan: []
 notes: ''

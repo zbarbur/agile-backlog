@@ -83,6 +83,11 @@ class TestFilterItems:
         assert len(result) == 1
         assert result[0].id == "a"
 
+    def test_filter_no_sprint_returns_all(self):
+        items = [_item(id="a", sprint_target=2), _item(id="b", sprint_target=None)]
+        result = filter_items(items)
+        assert len(result) == 2
+
     def test_filter_by_search_title(self):
         items = [_item(id="a", title="Fix auth leak"), _item(id="b", title="Add feature")]
         result = filter_items(items, search="auth")

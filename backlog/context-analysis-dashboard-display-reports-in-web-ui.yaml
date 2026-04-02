@@ -34,7 +34,7 @@ test_plan:
 - 'tests/test_context_report.py: test report loading and aggregation'
 - 'tests/test_app.py: test context dashboard route renders'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

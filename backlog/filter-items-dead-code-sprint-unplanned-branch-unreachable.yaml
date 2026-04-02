@@ -23,7 +23,7 @@ acceptance_criteria:
 test_plan:
 - 'tests/test_pure.py: confirm filter_items handles sprint param correctly'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

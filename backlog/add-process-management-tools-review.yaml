@@ -34,7 +34,7 @@ test_plan:
 - 'tests/test_app.py: test process tools page renders'
 - 'tests/test_context_report.py: test skill usage extraction'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

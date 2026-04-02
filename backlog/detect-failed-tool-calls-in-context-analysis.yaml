@@ -32,7 +32,7 @@ test_plan:
 - 'tests/test_hook_script.py: test hook captures exit codes'
 - 'tests/test_context_report.py: test error rate calculation'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

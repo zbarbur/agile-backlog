@@ -1,13 +1,15 @@
-"""Tests for context_report module — parse_read_log, analyze_reads, analyze_tool_usage, generate_sprint_report."""
+"""Tests for context_report module — parse, analyze reads/tools/errors, generate sprint report."""
 
 import json
 
 from agile_backlog.context_report import (
     analyze_efficiency,
+    analyze_errors,
     analyze_reads,
     analyze_tool_usage,
     generate_sprint_report,
     parse_read_log,
+    skill_usage_stats,
 )
 
 # ---------------------------------------------------------------------------
@@ -248,6 +250,75 @@ def test_analyze_efficiency_empty():
 
 
 # ---------------------------------------------------------------------------
+# analyze_errors
+# ---------------------------------------------------------------------------
+
+
+def test_analyze_errors_no_errors():
+    entries = [
+        {"tool": "Read", "file": "a.py"},
+        {"tool": "Bash", "command": "ls", "exit_code": 0},
+        {"tool": "Grep", "pattern": "foo"},
+    ]
+    result = analyze_errors(entries)
+    assert result["total_errors"] == 0
+    assert result["error_rate"] == 0.0
+    assert result["errors_by_tool"] == {}
+    assert result["top_error_commands"] == []
+
+
+def test_analyze_errors_mixed():
+    entries = [
+        {"tool": "Read", "file": "a.py"},
+        {"tool": "Bash", "command": "pytest", "error": True, "exit_code": 1},
+        {"tool": "Bash", "command": "ls"},
+        {"tool": "Grep", "pattern": "foo", "error": True, "error_message": "no matches"},
+        {"tool": "Bash", "command": "ruff check", "error": True, "exit_code": 1},
+    ]
+    result = analyze_errors(entries)
+    assert result["total_errors"] == 3
+    assert result["error_rate"] == round(3 / 5, 2)
+    assert result["errors_by_tool"]["Bash"] == 2
+    assert result["errors_by_tool"]["Grep"] == 1
+
+
+def test_analyze_errors_by_tool_grouping():
+    entries = [
+        {"tool": "Bash", "command": "cmd1", "error": True},
+        {"tool": "Bash", "command": "cmd2", "error": True},
+        {"tool": "Read", "file": "x.py", "error": True},
+        {"tool": "Edit", "file": "y.py", "error": True},
+    ]
+    result = analyze_errors(entries)
+    assert result["errors_by_tool"] == {"Bash": 2, "Read": 1, "Edit": 1}
+
+
+def test_analyze_errors_top_error_commands():
+    entries = [
+        {"tool": "Bash", "command": "pytest", "error": True},
+        {"tool": "Bash", "command": "pytest", "error": True},
+        {"tool": "Bash", "command": "pytest", "error": True},
+        {"tool": "Bash", "command": "ruff check", "error": True},
+        {"tool": "Bash", "command": "ruff check", "error": True},
+        {"tool": "Bash", "command": "npm install", "error": True},
+    ]
+    result = analyze_errors(entries)
+    assert len(result["top_error_commands"]) == 3
+    assert result["top_error_commands"][0]["command"] == "pytest"
+    assert result["top_error_commands"][0]["count"] == 3
+    assert result["top_error_commands"][1]["command"] == "ruff check"
+    assert result["top_error_commands"][1]["count"] == 2
+
+
+def test_analyze_errors_empty():
+    result = analyze_errors([])
+    assert result["total_errors"] == 0
+    assert result["error_rate"] == 0.0
+    assert result["errors_by_tool"] == {}
+    assert result["top_error_commands"] == []
+
+
+# ---------------------------------------------------------------------------
 # Task 4: generate_sprint_report
 # ---------------------------------------------------------------------------
 
@@ -332,3 +403,62 @@ def test_generate_sprint_report_legacy_reads_files(tmp_path):
     assert data["total_reads"] == 1
     assert len(data["sessions"]) == 1
     assert data["sessions"][0]["session_id"] == "legacy1"
+
+
+def test_generate_sprint_report_includes_errors(tmp_path):
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    output_dir = tmp_path / "reports"
+
+    session = log_dir / "tools-errtest.jsonl"
+    session.write_text(
+        json.dumps({"tool": "Bash", "command": "pytest", "error": True, "exit_code": 1})
+        + "\n"
+        + json.dumps({"tool": "Read", "file": "a.py"})
+        + "\n"
+        + json.dumps({"tool": "Bash", "command": "ls"})
+        + "\n"
+    )
+
+    report_path = generate_sprint_report(log_dir, output_dir, sprint=50)
+    data = json.loads(report_path.read_text())
+
+    assert "errors" in data
+    assert data["errors"]["total_errors"] == 1
+    assert data["errors"]["error_rate"] == round(1 / 3, 2)
+    assert data["errors"]["errors_by_tool"]["Bash"] == 1
+
+    assert "errors" in data["sessions"][0]
+    assert data["sessions"][0]["errors"]["total_errors"] == 1
+
+
+# ---------------------------------------------------------------------------
+# skill_usage_stats
+# ---------------------------------------------------------------------------
+
+
+def test_skill_usage_stats_counts_skills():
+    entries = [
+        {"tool": "Skill", "skill": "commit"},
+        {"tool": "Skill", "skill": "review"},
+        {"tool": "Skill", "skill": "commit"},
+        {"tool": "Read", "file": "a.py"},
+        {"tool": "Skill", "skill": "commit"},
+    ]
+    result = skill_usage_stats(entries)
+    assert result == {"commit": 3, "review": 1}
+
+
+def test_skill_usage_stats_ignores_other_tools():
+    entries = [
+        {"tool": "Read", "file": "a.py"},
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Bash", "command": "ls"},
+    ]
+    result = skill_usage_stats(entries)
+    assert result == {}
+
+
+def test_skill_usage_stats_empty():
+    result = skill_usage_stats([])
+    assert result == {}

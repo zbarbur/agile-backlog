@@ -27,7 +27,7 @@ acceptance_criteria:
 test_plan:
 - 'Manual: verify each new backlog item has required fields'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments:

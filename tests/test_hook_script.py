@@ -124,6 +124,79 @@ class TestToolLogging:
         assert set(entry["input_keys"]) == {"alpha", "beta"}
 
 
+class TestErrorCapture:
+    def test_bash_nonzero_exit_code(self, tmp_path):
+        inp = {
+            "tool_name": "Bash",
+            "tool_input": {"command": "false"},
+            "tool_result": {"stdout": "", "stderr": "command failed", "exit_code": 1},
+        }
+        result = _run_hook(inp, tmp_path)
+        assert result.returncode == 0
+        entry = _last_log_entry(tmp_path)
+        assert entry["tool"] == "Bash"
+        assert entry["error"] is True
+        assert entry["exit_code"] == 1
+        assert entry["error_message"] == "command failed"
+
+    def test_bash_zero_exit_no_error(self, tmp_path):
+        inp = {
+            "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "tool_result": {"stdout": "file.txt", "stderr": "", "exit_code": 0},
+        }
+        result = _run_hook(inp, tmp_path)
+        assert result.returncode == 0
+        entry = _last_log_entry(tmp_path)
+        assert entry["tool"] == "Bash"
+        assert entry.get("error") is None
+        assert entry["exit_code"] == 0
+
+    def test_is_error_flag(self, tmp_path):
+        inp = {
+            "tool_name": "Read",
+            "tool_input": {"file_path": "/nonexistent.py"},
+            "tool_result": {"is_error": True, "stderr": "file not found"},
+        }
+        result = _run_hook(inp, tmp_path)
+        assert result.returncode == 0
+        entry = _last_log_entry(tmp_path)
+        assert entry["error"] is True
+        assert "file not found" in entry["error_message"]
+
+    def test_string_tool_result_with_error(self, tmp_path):
+        inp = {
+            "tool_name": "Grep",
+            "tool_input": {"pattern": "foo"},
+            "tool_result": "Error: permission denied for /root/secret",
+        }
+        result = _run_hook(inp, tmp_path)
+        assert result.returncode == 0
+        entry = _last_log_entry(tmp_path)
+        assert entry["error"] is True
+        assert "permission denied" in entry["error_message"]
+
+    def test_no_tool_result_no_error(self, tmp_path):
+        inp = {"tool_name": "Bash", "tool_input": {"command": "echo hi"}}
+        result = _run_hook(inp, tmp_path)
+        assert result.returncode == 0
+        entry = _last_log_entry(tmp_path)
+        assert entry.get("error") is None
+        assert entry.get("exit_code") is None
+
+    def test_error_message_truncated(self, tmp_path):
+        long_err = "E" * 500
+        inp = {
+            "tool_name": "Bash",
+            "tool_input": {"command": "bad"},
+            "tool_result": {"stdout": "", "stderr": long_err, "exit_code": 1},
+        }
+        _run_hook(inp, tmp_path)
+        entry = _last_log_entry(tmp_path)
+        assert entry["error"] is True
+        assert len(entry["error_message"]) == 200
+
+
 class TestRereadDetection:
     def test_reread_warning(self, tmp_path):
         inp = {"tool_name": "Read", "tool_input": {"file_path": "/src/main.py", "offset": 0, "limit": 100}}
