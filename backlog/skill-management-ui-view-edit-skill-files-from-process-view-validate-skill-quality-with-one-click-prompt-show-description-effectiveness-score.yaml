@@ -1,28 +1,38 @@
 title: "Skill management UI \u2014 view/edit skill files from Process view, validate\
   \ skill quality with one-click prompt, show description effectiveness score"
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 29
 created: 2026-04-02
 updated: 2026-04-02
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: View, edit, and validate skill files directly from Process view Skills tab with
+  quality scoring
+complexity: L
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 Process view Skills tab: expandable rows\
+  \ with edit/validate/save actions"
+- "File: src/agile_backlog/pure.py \u2014 add score_skill_quality(name, description,\
+  \ content) -> dict with scoring rubric"
+- "File: tests/test_pure.py \u2014 test skill quality scoring function"
 description: ''
 acceptance_criteria:
-- Skills tab shows full SKILL.md content when clicking a skill row
-- Edit button opens inline editor for skill frontmatter and content
-- 'Validate button runs quality check: description length, USE THIS/DO NOT pattern,
-  trigger keywords'
-- 'Quality score per skill: description clarity, token cost, keyword coverage'
-- 'Copyable prompt for each skill: ''Review this skill description and suggest improvements'''
-- Save edits back to SKILL.md file
-test_plan: []
+- Clicking a skill row expands to show full SKILL.md content
+- Edit button opens inline editor for skill frontmatter and body
+- Validate button runs quality check (description length, trigger keywords, USE THIS/DO
+  NOT patterns)
+- Quality score displayed per skill (description clarity, token cost, keyword coverage)
+- Save edits write back to the SKILL.md file
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "test_score_skill_quality_good \u2014 well-structured skill scores high"
+- "test_score_skill_quality_poor \u2014 missing description/keywords scores low"
+- "test_score_skill_quality_edge_cases \u2014 empty content, very long descriptions"
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

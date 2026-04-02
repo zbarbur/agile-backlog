@@ -1,22 +1,41 @@
 title: "Sprint retrospective dashboard \u2014 full per-sprint analysis in Done view\
   \ with tool breakdown, efficiency trends, error patterns, and comparison across\
   \ sprints"
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 29
 created: 2026-04-02
 updated: 2026-04-02
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Full per-sprint analysis in Done view with tool breakdown, efficiency trends,
+  error patterns, and cross-sprint comparison
+complexity: L
+technical_specs:
+- "File: src/agile_backlog/context_report.py \u2014 add load_all_sprint_reports(output_dir)\
+  \ and compare_sprints(reports) for trend analysis"
+- "File: src/agile_backlog/app.py \u2014 Done view: retro dashboard section with comparison\
+  \ table and per-sprint expandable analysis"
+- "File: src/agile_backlog/pure.py \u2014 add format_trend_indicator(current, previous)\
+  \ for arrow/color logic"
+- "File: tests/test_context_report.py \u2014 test comparison and trend functions"
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Done view shows expandable retro section per sprint with tool breakdown, efficiency
+  metrics, error patterns
+- Cross-sprint comparison table showing trends (re-read ratio, test count, items completed)
+- Efficiency trend indicators (improving/declining arrows based on last 3 sprints)
+- Color-coded metrics (green/yellow/red thresholds)
+- Works with existing SPRINT{N}_CONTEXT_REPORT.json and handover data
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "test_load_all_sprint_reports \u2014 loads multiple JSON files, returns sorted list"
+- "test_compare_sprints \u2014 correct trend detection across 3+ sprints"
+- "test_format_trend_indicator \u2014 arrow directions and color thresholds"
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

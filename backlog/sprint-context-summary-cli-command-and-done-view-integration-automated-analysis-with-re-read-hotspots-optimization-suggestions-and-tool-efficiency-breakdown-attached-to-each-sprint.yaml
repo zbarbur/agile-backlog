@@ -1,35 +1,44 @@
 title: "Sprint context summary CLI command and Done view integration \u2014 automated\
   \ analysis with re-read hotspots, optimization suggestions, and tool efficiency\
   \ breakdown attached to each sprint"
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 29
 created: 2026-04-02
 updated: 2026-04-02
 depends_on: []
 tags: []
-goal: ''
-complexity: null
+goal: agile-backlog context-summary command generates markdown summary from context
+  report JSON, integrated into Done view
+complexity: M
 technical_specs:
-- "File: src/agile_backlog/context_report.py \u2014 add generate_sprint_summary()\
-  \ function"
-- "File: src/agile_backlog/cli.py \u2014 add context-summary subcommand"
-- "File: src/agile_backlog/app.py \u2014 render summary markdown in Done view per\
-  \ sprint"
-- Integrate into sprint-end skill so it runs automatically at close
+- "File: src/agile_backlog/context_report.py \u2014 add generate_sprint_summary(report:\
+  \ dict) -> str rendering markdown from JSON report"
+- "File: src/agile_backlog/cli.py \u2014 add context-summary subcommand (reads JSON,\
+  \ calls generator, writes .md)"
+- "File: src/agile_backlog/app.py \u2014 Done view: load and render SPRINT{N}_CONTEXT_SUMMARY.md\
+  \ if exists"
+- "File: tests/test_context_report.py \u2014 test summary generation with fixture\
+  \ data"
 description: ''
 acceptance_criteria:
-- agile-backlog context-summary CLI command generates full sprint analysis
+- agile-backlog context-summary --sprint N generates markdown summary
 - 'Output includes: tool breakdown, re-read ratio, top re-read files, top commands,
   error rate'
-- Output includes optimization suggestions based on thresholds (re-read > 30%, etc.)
-- Summary saved as SPRINT{N}_CONTEXT_SUMMARY.md alongside CONTEXT_REPORT.json
-- sprint-end skill automatically runs context-summary and attaches to handover
-- Done view shows the summary inline per sprint (not just the raw numbers)
-test_plan: []
+- Output includes optimization suggestions based on thresholds (re-read >30%, etc.)
+- Summary saved as SPRINT{N}_CONTEXT_SUMMARY.md alongside the JSON report
+- Done view shows the summary inline per sprint
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- "test_generate_sprint_summary_basic \u2014 valid report dict produces expected markdown\
+  \ sections"
+- "test_generate_sprint_summary_thresholds \u2014 high re-read ratio triggers optimization\
+  \ suggestion"
+- "test_context_summary_cli \u2014 CLI command writes file to expected path"
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

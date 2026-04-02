@@ -6,10 +6,10 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 28
+current_sprint: 29
 # Versioning — sprint-based: v0.{sprint}.{patch}
 version_scheme: "sprint"
-current_version: "0.28.0"
+current_version: "0.29.0"
 
 # Web UI
 serve_port: 8501

@@ -4,7 +4,7 @@ priority: P2
 category: feature
 sprint_target: null
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-04-02
 depends_on: []
 tags:
 - plugin
@@ -53,6 +53,7 @@ comments:
 - text: would the terminal option can support getting the user attention when action
     needed from clauede
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-23'
   author: user
+images: []
