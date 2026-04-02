@@ -1,5 +1,5 @@
 title: set_current_sprint(None) writes literal None string when config file missing
-status: doing
+status: done
 priority: P3
 category: bug
 sprint_target: 27

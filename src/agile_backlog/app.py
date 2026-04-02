@@ -1045,11 +1045,9 @@ if (!window._mcAddPasteListenerAdded) {
                 with ui.tab_panels(proc_tabs, value=skills_tab).classes("w-full").style(tab_panel_style):
                     # --- Skills Tab ---
                     with ui.tab_panel(skills_tab):
-                        from pathlib import Path as _SkPath
-
                         skills_found: list[dict] = []
 
-                        def _scan_skills(base_dir: _SkPath, source: str):
+                        def _scan_skills(base_dir: _Path, source: str):
                             if not base_dir.is_dir():
                                 return
                             for skill_dir in sorted(base_dir.iterdir()):
@@ -1079,9 +1077,9 @@ if (!window._mcAddPasteListenerAdded) {
                         # Project skills
                         _scan_skills(git_root / ".claude" / "skills", "project")
                         # Personal skills
-                        _scan_skills(_SkPath.home() / ".claude" / "skills", "personal")
+                        _scan_skills(_Path.home() / ".claude" / "skills", "personal")
                         # Plugin skills
-                        plugins_cache = _SkPath.home() / ".claude" / "plugins" / "cache"
+                        plugins_cache = _Path.home() / ".claude" / "plugins" / "cache"
                         if plugins_cache.is_dir():
                             # Structure: cache/vendor/plugin/version/skills/
                             for vendor_dir in sorted(plugins_cache.iterdir()):

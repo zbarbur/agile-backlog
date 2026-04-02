@@ -1,5 +1,5 @@
 title: Detect failed tool calls in context analysis
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 27
