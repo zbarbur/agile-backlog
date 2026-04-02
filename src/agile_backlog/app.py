@@ -785,9 +785,6 @@ if (!window._mcAddPasteListenerAdded) {
                     done_panel_ref["el"] = done_panel
             elif view_mode["current"] == "context":
                 # --- Context analysis dashboard ---
-                import json
-                from pathlib import Path
-
                 from agile_backlog.config import (
                     get_context_logs_dir,
                 )
@@ -803,87 +800,25 @@ if (!window._mcAddPasteListenerAdded) {
 
                 sprint_num = _get_sprint() or current_sprint or "?"
                 log_dir = get_context_logs_dir()
+                all_entries: list[dict] = []
+                session_data: list[tuple[str, list[dict]]] = []
+                if log_dir.exists():
+                    for log_file in sorted(log_dir.glob("tools-*.jsonl")):
+                        entries = parse_read_log(log_file)
+                        if entries:
+                            session_data.append((log_file.stem.replace("tools-", ""), entries))
+                            all_entries.extend(entries)
+                    for log_file in sorted(log_dir.glob("reads-*.jsonl")):
+                        entries = parse_read_log(log_file)
+                        if entries:
+                            session_data.append((log_file.stem.replace("reads-", ""), entries))
+                            all_entries.extend(entries)
 
-                # Discover available sprint reports
-                from agile_backlog.yaml_store import _git_root
-
-                reports_dir = _git_root() / "docs" / "sprints"
-                available_sprints: dict[str, str] = {}  # label -> value
-                available_sprints[f"Sprint {sprint_num} (live)"] = "live"
-                if reports_dir.exists():
-                    for rpt in sorted(reports_dir.glob("SPRINT*_CONTEXT_REPORT.json"), reverse=True):
-                        snum = rpt.stem.replace("SPRINT", "").replace("_CONTEXT_REPORT", "")
-                        available_sprints[f"Sprint {snum}"] = str(rpt)
-
-                context_view_state = {"selected": "live"}
-
-                def _load_context_data(source: str) -> tuple[list[dict], list[tuple[str, list[dict]]], str]:
-                    """Load context data from live logs or a historical sprint report."""
-                    if source == "live":
-                        entries: list[dict] = []
-                        sessions: list[tuple[str, list[dict]]] = []
-                        if log_dir.exists():
-                            for lf in sorted(log_dir.glob("tools-*.jsonl")):
-                                parsed = parse_read_log(lf)
-                                if parsed:
-                                    sessions.append((lf.stem.replace("tools-", ""), parsed))
-                                    entries.extend(parsed)
-                            for lf in sorted(log_dir.glob("reads-*.jsonl")):
-                                parsed = parse_read_log(lf)
-                                if parsed:
-                                    sessions.append((lf.stem.replace("reads-", ""), parsed))
-                                    entries.extend(parsed)
-                        return entries, sessions, str(sprint_num)
-                    # Historical report — reconstruct entries from the JSON report
-                    report_path = Path(source)
-                    if not report_path.exists():
-                        return [], [], "?"
-                    report = json.loads(report_path.read_text())
-                    snum = str(report.get("sprint", "?"))
-                    # Build flat entries from session data in the report
-                    entries = []
-                    sessions = []
-                    for sess in report.get("sessions", []):
-                        # Reconstruct minimal entries from session metrics for display
-                        sess_entries: list[dict] = []
-                        tool_usage = sess.get("tool_usage", {})
-                        for tool_name, count in tool_usage.get("by_tool", {}).items():
-                            for _ in range(count):
-                                entry: dict = {"tool": tool_name}
-                                sess_entries.append(entry)
-                        # Add file info from top_files for read analysis
-                        for tf in sess.get("top_files", []):
-                            for _ in range(tf["count"]):
-                                sess_entries.append({"tool": "Read", "file": tf["file"], "offset": 0, "limit": 0})
-                        if sess_entries:
-                            sessions.append((sess.get("session_id", "unknown"), sess_entries))
-                            entries.extend(sess_entries)
-                    return entries, sessions, snum
-
-                all_entries, session_data, display_sprint = _load_context_data("live")
-
-                # Header with sprint selector
-                with ui.element("div").style("display:flex;align-items:center;gap:16px;padding:8px 0 16px;"):
-                    ui.html(
-                        '<div style="font-size:16px;font-weight:700;color:#fafafa;'
-                        "font-family:'DM Sans',sans-serif;\">"
-                        "Context Analysis</div>"
-                    )
-                    if len(available_sprints) > 1:
-
-                        def _on_sprint_change(e):
-                            context_view_state["selected"] = e.value
-                            nonlocal all_entries, session_data, display_sprint
-                            all_entries, session_data, display_sprint = _load_context_data(e.value)
-                            render_board.refresh()
-
-                        ui.select(
-                            options=available_sprints,
-                            value="live",
-                            on_change=_on_sprint_change,
-                        ).props("dense outlined").style(
-                            "min-width:180px;font-size:12px;color:#fafafa;font-family:'IBM Plex Mono',monospace;"
-                        )
+                ui.html(
+                    f'<div style="font-size:16px;font-weight:700;color:#fafafa;padding:8px 0 16px;'
+                    f"font-family:'DM Sans',sans-serif;\">"
+                    f"Context Analysis &mdash; Sprint {safe_html(str(sprint_num))}</div>"
+                )
 
                 if not all_entries:
                     ui.html(
@@ -1112,10 +1047,14 @@ if (!window._mcAddPasteListenerAdded) {
                 with ui.tab_panels(proc_tabs, value=skills_tab).classes("w-full").style(tab_panel_style):
                     # --- Skills Tab ---
                     with ui.tab_panel(skills_tab):
-                        skills_dir = git_root / ".claude" / "skills"
+                        from pathlib import Path as _SkPath
+
                         skills_found: list[dict] = []
-                        if skills_dir.is_dir():
-                            for skill_dir in sorted(skills_dir.iterdir()):
+
+                        def _scan_skills(base_dir: _SkPath, source: str):
+                            if not base_dir.is_dir():
+                                return
+                            for skill_dir in sorted(base_dir.iterdir()):
                                 skill_md = skill_dir / "SKILL.md"
                                 if skill_dir.is_dir() and skill_md.exists():
                                     content = skill_md.read_text()
@@ -1129,7 +1068,25 @@ if (!window._mcAddPasteListenerAdded) {
                                             desc = fm.get("description", "")
                                         except Exception:
                                             pass
-                                    skills_found.append({"name": name, "description": desc})
+                                    skills_found.append({"name": name, "description": desc, "source": source})
+
+                        # Project skills
+                        _scan_skills(git_root / ".claude" / "skills", "project")
+                        # Personal skills
+                        _scan_skills(_SkPath.home() / ".claude" / "skills", "personal")
+                        # Plugin skills
+                        plugins_cache = _SkPath.home() / ".claude" / "plugins" / "cache"
+                        if plugins_cache.is_dir():
+                            for plugin_dir in sorted(plugins_cache.iterdir()):
+                                if not plugin_dir.is_dir():
+                                    continue
+                                # Plugins have versioned dirs: plugin-name/version/skills/
+                                for version_dir in plugin_dir.iterdir():
+                                    if version_dir.is_dir():
+                                        _scan_skills(
+                                            version_dir / "skills",
+                                            f"plugin:{plugin_dir.name}",
+                                        )
 
                         # Load skill usage stats from context logs
                         ctx_log_dir = _get_ctx_dir()
@@ -1139,23 +1096,44 @@ if (!window._mcAddPasteListenerAdded) {
                                 all_ctx_entries.extend(_parse_log(lf))
                         skill_counts = _skill_stats(all_ctx_entries)
 
+                        ui.html(
+                            f'<div style="font-size:11px;color:#71717a;padding:4px 0 8px;">'
+                            f"Found {len(skills_found)} skills "
+                            f"(project, personal, plugins)</div>"
+                        )
                         if not skills_found:
                             ui.html(
                                 '<div style="font-size:12px;color:#a1a1aa;padding:16px;font-style:italic;">'
-                                "No skills found in .claude/skills/</div>"
+                                "No skills found</div>"
                             )
                         else:
+                            _th = (
+                                "padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
+                                "text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #27272a;"
+                            )
                             rows_html = ""
                             for sk in skills_found:
                                 usage = skill_counts.get(sk["name"], 0)
+                                src = sk.get("source", "")
+                                src_color = (
+                                    "#3b82f6" if src == "project" else "#a78bfa" if src == "personal" else "#71717a"
+                                )
+                                # Truncate long descriptions
+                                desc = sk["description"]
+                                if len(desc) > 120:
+                                    desc = desc[:117] + "..."
                                 rows_html += (
-                                    f"<tr><td style='padding:8px 12px;color:#e4e4e7;font-size:12px;"
-                                    f"font-weight:600;border-bottom:1px solid #27272a;'>"
+                                    f"<tr><td style='padding:6px 12px;color:#e4e4e7;font-size:12px;"
+                                    f"font-weight:600;border-bottom:1px solid #27272a;white-space:nowrap;'>"
                                     f"{safe_html(sk['name'])}</td>"
-                                    f"<td style='padding:8px 12px;color:#a1a1aa;font-size:11px;"
+                                    f"<td style='padding:6px 8px;color:{src_color};font-size:10px;"
+                                    f"border-bottom:1px solid #27272a;white-space:nowrap;"
+                                    f'font-family:"IBM Plex Mono",monospace;\'>'
+                                    f"{safe_html(src)}</td>"
+                                    f"<td style='padding:6px 12px;color:#a1a1aa;font-size:11px;"
                                     f"border-bottom:1px solid #27272a;'>"
-                                    f"{safe_html(sk['description'])}</td>"
-                                    f"<td style='padding:8px 12px;color:#71717a;font-size:11px;"
+                                    f"{safe_html(desc)}</td>"
+                                    f"<td style='padding:6px 12px;color:#71717a;font-size:11px;"
                                     f"text-align:center;border-bottom:1px solid #27272a;"
                                     f'font-family:"IBM Plex Mono",monospace;\'>'
                                     f"{safe_html(str(usage))}</td></tr>"
@@ -1164,15 +1142,10 @@ if (!window._mcAddPasteListenerAdded) {
                                 f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
                                 f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
                                 f"<thead><tr>"
-                                f"<th style='padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
-                                f"text-transform:uppercase;letter-spacing:0.05em;"
-                                f"border-bottom:1px solid #27272a;'>Skill</th>"
-                                f"<th style='padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
-                                f"text-transform:uppercase;letter-spacing:0.05em;"
-                                f"border-bottom:1px solid #27272a;'>Description</th>"
-                                f"<th style='padding:8px 12px;text-align:center;color:#71717a;font-size:10px;"
-                                f"text-transform:uppercase;letter-spacing:0.05em;"
-                                f"border-bottom:1px solid #27272a;'>Usage</th>"
+                                f"<th style='{_th}'>Skill</th>"
+                                f"<th style='{_th}'>Source</th>"
+                                f"<th style='{_th}'>Description</th>"
+                                f"<th style='{_th}text-align:center;'>Usage</th>"
                                 f"</tr></thead><tbody>{rows_html}</tbody></table>"
                             )
 
