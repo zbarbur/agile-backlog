@@ -1077,16 +1077,19 @@ if (!window._mcAddPasteListenerAdded) {
                         # Plugin skills
                         plugins_cache = _SkPath.home() / ".claude" / "plugins" / "cache"
                         if plugins_cache.is_dir():
-                            for plugin_dir in sorted(plugins_cache.iterdir()):
-                                if not plugin_dir.is_dir():
+                            # Structure: cache/vendor/plugin/version/skills/
+                            for vendor_dir in sorted(plugins_cache.iterdir()):
+                                if not vendor_dir.is_dir():
                                     continue
-                                # Plugins have versioned dirs: plugin-name/version/skills/
-                                for version_dir in plugin_dir.iterdir():
-                                    if version_dir.is_dir():
-                                        _scan_skills(
-                                            version_dir / "skills",
-                                            f"plugin:{plugin_dir.name}",
-                                        )
+                                for plugin_dir in sorted(vendor_dir.iterdir()):
+                                    if not plugin_dir.is_dir():
+                                        continue
+                                    for version_dir in plugin_dir.iterdir():
+                                        if version_dir.is_dir():
+                                            _scan_skills(
+                                                version_dir / "skills",
+                                                f"plugin:{plugin_dir.name}",
+                                            )
 
                         # Load skill usage stats from context logs
                         ctx_log_dir = _get_ctx_dir()
