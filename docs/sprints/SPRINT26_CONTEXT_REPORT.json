@@ -1,11 +1,27 @@
 {
   "sprint": 26,
-  "total_reads": 3,
-  "unique_files": 3,
-  "reread_count": 0,
-  "reread_ratio": 0.0,
-  "estimated_tokens": 6000,
+  "total_reads": 11,
+  "unique_files": 9,
+  "reread_count": 2,
+  "reread_ratio": 0.18,
+  "estimated_tokens": 19360,
   "top_files": [
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+      "count": 2
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/2a5643c6-c180-4277-95a7-8e0fcf0bab84/tool-results/bukmw1k0o.txt",
+      "count": 2
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/process/PROJECT_CONTEXT.md",
+      "count": 1
+    },
     {
       "file": "/Users/guyguzner/Projects/agile-backlog/.gitignore",
       "count": 1
@@ -17,36 +33,97 @@
     {
       "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
       "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT26_CONTEXT_REPORT.json",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+      "count": 1
     }
   ],
-  "wasteful_reads": [],
+  "wasteful_reads": [
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+      "count": 2,
+      "range": "0-0"
+    }
+  ],
   "tool_usage": {
-    "total_tool_calls": 31,
+    "total_tool_calls": 81,
     "by_tool": {
-      "Bash": 21,
-      "Edit": 6,
-      "Read": 3,
-      "Write": 1
+      "Bash": 59,
+      "Read": 11,
+      "Edit": 7,
+      "Skill": 2,
+      "Write": 2
     },
-    "reads": 3,
-    "writes": 7,
-    "read_write_ratio": 0.43
+    "reads": 11,
+    "writes": 9,
+    "read_write_ratio": 1.22
   },
   "efficiency": {
-    "total_reads": 3,
-    "reread_count": 0,
-    "exact_reread_count": 0,
-    "reread_waste_ratio": 0.0,
+    "total_reads": 11,
+    "reread_count": 2,
+    "exact_reread_count": 1,
+    "reread_waste_ratio": 0.09,
     "unique_grep_patterns": 0,
     "total_grep_calls": 0
   },
   "sessions": [
     {
-      "total_reads": 3,
-      "unique_files": 3,
+      "total_reads": 5,
+      "unique_files": 4,
+      "reread_count": 1,
+      "reread_ratio": 0.2,
+      "estimated_tokens": 9200,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/2a5643c6-c180-4277-95a7-8e0fcf0bab84/tool-results/bukmw1k0o.txt",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/process/PROJECT_CONTEXT.md",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "w1t0p0D506B919-A7CB-43E8-BD82-0A9306E1E030",
+      "tool_usage": {
+        "total_tool_calls": 36,
+        "by_tool": {
+          "Bash": 30,
+          "Read": 5,
+          "Skill": 1
+        },
+        "reads": 5,
+        "writes": 0,
+        "read_write_ratio": null
+      },
+      "efficiency": {
+        "total_reads": 5,
+        "reread_count": 1,
+        "exact_reread_count": 0,
+        "reread_waste_ratio": 0.0,
+        "unique_grep_patterns": 0,
+        "total_grep_calls": 0
+      }
+    },
+    {
+      "total_reads": 6,
+      "unique_files": 6,
       "reread_count": 0,
       "reread_ratio": 0.0,
-      "estimated_tokens": 6000,
+      "estimated_tokens": 10160,
       "top_files": [
         {
           "file": "/Users/guyguzner/Projects/agile-backlog/.gitignore",
@@ -59,24 +136,37 @@
         {
           "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
           "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT26_CONTEXT_REPORT.json",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 1
         }
       ],
       "wasteful_reads": [],
       "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
       "tool_usage": {
-        "total_tool_calls": 31,
+        "total_tool_calls": 45,
         "by_tool": {
-          "Bash": 21,
-          "Edit": 6,
-          "Read": 3,
-          "Write": 1
+          "Bash": 29,
+          "Edit": 7,
+          "Read": 6,
+          "Write": 2,
+          "Skill": 1
         },
-        "reads": 3,
-        "writes": 7,
-        "read_write_ratio": 0.43
+        "reads": 6,
+        "writes": 9,
+        "read_write_ratio": 0.67
       },
       "efficiency": {
-        "total_reads": 3,
+        "total_reads": 6,
         "reread_count": 0,
         "exact_reread_count": 0,
         "reread_waste_ratio": 0.0,
