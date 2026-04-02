@@ -142,6 +142,23 @@ Add the report JSON to the commit:
 git add docs/sprints/SPRINT{N}_CONTEXT_REPORT.json
 ```
 
+## Phase 3a: Backlog Update from Handover
+
+**Every recommendation in the handover MUST become a backlog item.** Prose recommendations in docs get ignored — only YAML items get tracked.
+
+After writing the handover:
+
+1. Re-read the "Recommendations for Next Sprint" section
+2. For each recommendation, create a backlog item:
+
+```bash
+{backlog_commands.add} "<recommendation title>" --category <category> --priority <priority>
+```
+
+3. Verify: count recommendations vs. created items — they must match
+
+Also check: were any lessons learned actionable? If so, create items for those too.
+
 ## Phase 3b: Code Review (MANDATORY before merge)
 
 **This phase is mandatory — never skip it.** Run a code review on the full sprint diff before creating the PR.
