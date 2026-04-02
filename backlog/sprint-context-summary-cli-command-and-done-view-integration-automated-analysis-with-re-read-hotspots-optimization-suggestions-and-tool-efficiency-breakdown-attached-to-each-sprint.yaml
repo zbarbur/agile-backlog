@@ -1,0 +1,36 @@
+title: "Sprint context summary CLI command and Done view integration \u2014 automated\
+  \ analysis with re-read hotspots, optimization suggestions, and tool efficiency\
+  \ breakdown attached to each sprint"
+status: backlog
+priority: P1
+category: feature
+sprint_target: null
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs:
+- "File: src/agile_backlog/context_report.py \u2014 add generate_sprint_summary()\
+  \ function"
+- "File: src/agile_backlog/cli.py \u2014 add context-summary subcommand"
+- "File: src/agile_backlog/app.py \u2014 render summary markdown in Done view per\
+  \ sprint"
+- Integrate into sprint-end skill so it runs automatically at close
+description: ''
+acceptance_criteria:
+- agile-backlog context-summary CLI command generates full sprint analysis
+- 'Output includes: tool breakdown, re-read ratio, top re-read files, top commands,
+  error rate'
+- Output includes optimization suggestions based on thresholds (re-read > 30%, etc.)
+- Summary saved as SPRINT{N}_CONTEXT_SUMMARY.md alongside CONTEXT_REPORT.json
+- sprint-end skill automatically runs context-summary and attaches to handover
+- Done view shows the summary inline per sprint (not just the raw numbers)
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
