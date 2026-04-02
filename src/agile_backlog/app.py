@@ -909,8 +909,9 @@ if (!window._mcAddPasteListenerAdded) {
                                 details = tool_details.get(tool_name, [])
                                 if details:
                                     top_items = _Counter(details).most_common(10)
-                                    with ui.expansion("").style("width:100%;border-bottom:1px solid #27272a;margin:0;"):
-                                        ui.html(bar_html).style("padding:0;")
+                                    with ui.expansion(f"{tool_name} ({count})").style(
+                                        "width:100%;border-bottom:1px solid #27272a;margin:0;"
+                                    ):
                                         for val, cnt in top_items:
                                             pct = round(cnt / count * 100)
                                             ui.html(
@@ -1022,9 +1023,6 @@ if (!window._mcAddPasteListenerAdded) {
 
                 import yaml as _yaml
 
-                from agile_backlog.config import get_context_logs_dir as _get_ctx_dir
-                from agile_backlog.context_report import parse_read_log as _parse_log
-                from agile_backlog.context_report import skill_usage_stats as _skill_stats
                 from agile_backlog.yaml_store import _git_root
 
                 git_root = _git_root()
@@ -1068,7 +1066,15 @@ if (!window._mcAddPasteListenerAdded) {
                                             desc = fm.get("description", "")
                                         except Exception:
                                             pass
-                                    skills_found.append({"name": name, "description": desc, "source": source})
+                                    desc_tokens = len(desc) // 4 if desc else 0
+                                    skills_found.append(
+                                        {
+                                            "name": name,
+                                            "description": desc,
+                                            "source": source,
+                                            "tokens": desc_tokens,
+                                        }
+                                    )
 
                         # Project skills
                         _scan_skills(git_root / ".claude" / "skills", "project")
@@ -1091,18 +1097,11 @@ if (!window._mcAddPasteListenerAdded) {
                                                 f"plugin:{plugin_dir.name}",
                                             )
 
-                        # Load skill usage stats from context logs
-                        ctx_log_dir = _get_ctx_dir()
-                        all_ctx_entries: list[dict] = []
-                        if ctx_log_dir.exists():
-                            for lf in sorted(ctx_log_dir.glob("tools-*.jsonl")):
-                                all_ctx_entries.extend(_parse_log(lf))
-                        skill_counts = _skill_stats(all_ctx_entries)
-
+                        total_tokens = sum(sk["tokens"] for sk in skills_found)
                         ui.html(
                             f'<div style="font-size:11px;color:#71717a;padding:4px 0 8px;">'
-                            f"Found {len(skills_found)} skills "
-                            f"(project, personal, plugins)</div>"
+                            f"{len(skills_found)} skills &middot; "
+                            f"~{total_tokens} description tokens total</div>"
                         )
                         if not skills_found:
                             ui.html(
@@ -1115,16 +1114,16 @@ if (!window._mcAddPasteListenerAdded) {
                                 "text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #27272a;"
                             )
                             rows_html = ""
-                            for sk in skills_found:
-                                usage = skill_counts.get(sk["name"], 0)
+                            for sk in sorted(skills_found, key=lambda s: -s["tokens"]):
                                 src = sk.get("source", "")
                                 src_color = (
                                     "#3b82f6" if src == "project" else "#a78bfa" if src == "personal" else "#71717a"
                                 )
-                                # Truncate long descriptions
                                 desc = sk["description"]
                                 if len(desc) > 120:
                                     desc = desc[:117] + "..."
+                                tok = sk["tokens"]
+                                tok_color = "#f87171" if tok > 100 else "#ca8a04" if tok > 50 else "#71717a"
                                 rows_html += (
                                     f"<tr><td style='padding:6px 12px;color:#e4e4e7;font-size:12px;"
                                     f"font-weight:600;border-bottom:1px solid #27272a;white-space:nowrap;'>"
@@ -1136,10 +1135,10 @@ if (!window._mcAddPasteListenerAdded) {
                                     f"<td style='padding:6px 12px;color:#a1a1aa;font-size:11px;"
                                     f"border-bottom:1px solid #27272a;'>"
                                     f"{safe_html(desc)}</td>"
-                                    f"<td style='padding:6px 12px;color:#71717a;font-size:11px;"
+                                    f"<td style='padding:6px 12px;color:{tok_color};font-size:11px;"
                                     f"text-align:center;border-bottom:1px solid #27272a;"
                                     f'font-family:"IBM Plex Mono",monospace;\'>'
-                                    f"{safe_html(str(usage))}</td></tr>"
+                                    f"~{tok}</td></tr>"
                                 )
                             ui.html(
                                 f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
@@ -1148,7 +1147,7 @@ if (!window._mcAddPasteListenerAdded) {
                                 f"<th style='{_th}'>Skill</th>"
                                 f"<th style='{_th}'>Source</th>"
                                 f"<th style='{_th}'>Description</th>"
-                                f"<th style='{_th}text-align:center;'>Usage</th>"
+                                f"<th style='{_th}text-align:center;'>Tokens</th>"
                                 f"</tr></thead><tbody>{rows_html}</tbody></table>"
                             )
 
