@@ -1,0 +1,22 @@
+title: "Refactor app.py \u2014 extract Context, Process, and Done views into separate\
+  \ modules to reduce 1576-line single file"
+status: backlog
+priority: P2
+category: chore
+sprint_target: null
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
