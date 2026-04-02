@@ -1,25 +1,40 @@
 title: "Context analysis dashboard \u2014 display reports in web UI"
-status: backlog
+status: doing
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 27
 created: 2026-03-25
-updated: 2026-03-25
+updated: 2026-04-02
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Web UI dashboard visualizing context analysis reports with re-read ratios, file
+  heatmaps, and token spend
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/app.py \u2014 add /context-analysis route"
+- "File: src/agile_backlog/components.py \u2014 context_dashboard component with charts"
+- "File: src/agile_backlog/context_report.py \u2014 load_report(), aggregate_sessions()\
+  \ functions"
+- "File: tests/test_context_report.py \u2014 dashboard data tests"
 description: "Add a dashboard view to the web UI that visualizes context analysis\
   \ reports (SPRINT{N}_CONTEXT_REPORT.json). Show: re-read ratio trend across sprints,\
   \ top files heatmap, token spend per session, wasteful reads highlighted. This ties\
   \ into the planned Done/Retro view \u2014 the context report becomes one of several\
   \ sprint retrospective data sources alongside task completion stats, test coverage,\
   \ and other metrics."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Dashboard page at /context-analysis shows report data
+- Re-read waste ratio displayed per session and as trend
+- Top files heatmap shows most-read files
+- Token/tool-call summary per session
+- Sprint selector to view historical reports
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_context_report.py: test report loading and aggregation'
+- 'tests/test_app.py: test context dashboard route renders'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

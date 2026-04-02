@@ -1,0 +1,39 @@
+title: Detect failed tool calls in context analysis
+status: doing
+priority: P2
+category: feature
+sprint_target: 27
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: Capture tool call exit codes and errors in post-tool-logger, surface error rates
+  in context reports
+complexity: M
+technical_specs:
+- "File: .claude/hooks/post-tool-logger.sh \u2014 capture TOOL_EXIT_CODE env var,\
+  \ log error details"
+- "File: src/agile_backlog/context_report.py \u2014 add error analysis to report generation"
+- "File: tests/test_hook_script.py \u2014 test error capture in hook"
+- "File: tests/test_context_report.py \u2014 test error analysis output"
+description: "Log tool_result exit codes and errors in post-tool-logger.sh, surface\
+  \ error rates in context reports. Use the data to identify recurring wrong CLI usage,\
+  \ bad parameters, and failed commands \u2014 then recommend improvements (e.g. better\
+  \ defaults, aliases, or PreToolUse validation hooks). Phase 1: capture errors. Phase\
+  \ 2: analyze patterns and suggest fixes."
+acceptance_criteria:
+- post-tool-logger.sh captures exit_code from tool results
+- Failed tool calls logged with error details
+- context_report.py includes error_rate and top_errors in reports
+- CLI context-report command shows error summary
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_hook_script.py: test hook captures exit codes'
+- 'tests/test_context_report.py: test error rate calculation'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

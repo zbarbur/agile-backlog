@@ -1,25 +1,37 @@
 title: set_current_sprint(None) writes literal None string when config file missing
-status: backlog
+status: doing
 priority: P3
 category: bug
-sprint_target: null
+sprint_target: 27
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-04-02
 depends_on: []
 tags:
 - cli
 - data
-goal: ''
-complexity: null
-technical_specs: []
+goal: Fix set_current_sprint(None) to handle None properly instead of writing literal
+  string 'None'
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/config.py \u2014 fix set_current_sprint to guard against\
+  \ None"
+- "File: tests/test_config.py \u2014 add test for None and missing file cases"
 description: 'config.py set_current_sprint(None) when sprint-config.yaml doesn''t
   exist writes f''current_sprint: {sprint}'' which produces ''current_sprint: None''
   (string). Next read returns string ''None'' not Python None. Path not currently
   invoked but will break if used.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- set_current_sprint(None) does not write 'None' string to config
+- set_current_sprint(None) either skips write or writes empty/null value
+- Missing config file case handled gracefully
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_config.py: test set_current_sprint(None) does not write ''None'' string'
+- 'tests/test_config.py: test set_current_sprint with missing config file'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

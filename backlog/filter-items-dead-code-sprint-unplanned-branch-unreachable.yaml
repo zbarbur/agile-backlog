@@ -1,22 +1,30 @@
 title: "filter_items dead code \u2014 sprint unplanned branch unreachable"
-status: backlog
+status: doing
 priority: P3
 category: bug
-sprint_target: null
+sprint_target: 27
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-04-02
 depends_on: []
 tags:
 - cli
-goal: ''
-complexity: null
-technical_specs: []
+goal: Remove unreachable 'unplanned' branch in filter_items or fix the type mismatch
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/pure.py \u2014 fix filter_items sprint parameter handling"
+- "File: tests/test_pure.py \u2014 verify existing filter tests cover the fix"
 description: In pure.py filter_items, sprint parameter is typed int | None but compared
   to string 'unplanned'. The branch is dead code. Either remove it or fix the type.
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Dead code branch removed or type fixed
+- Existing filter tests still pass
+- Tests pass (.venv/bin/pytest tests/ -v)
+- Lint clean (.venv/bin/ruff check . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: confirm filter_items handles sprint param correctly'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []
