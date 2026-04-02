@@ -1,0 +1,22 @@
+title: "Session lifecycle hooks \u2014 SessionStart capture, UserPromptSubmit reminders,\
+  \ PreToolUse validation, SessionEnd reports"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 28
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

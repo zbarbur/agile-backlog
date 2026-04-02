@@ -1,0 +1,28 @@
+title: "Improve Process view \u2014 hooks tab show actual commands and purpose, permissions\
+  \ tab show consolidation suggestions, skills tab link to usage trends"
+status: backlog
+priority: P2
+category: feature
+sprint_target: null
+created: 2026-04-02
+updated: 2026-04-02
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria:
+- Skills tab shows description token cost per skill
+- Skills tab shows actual invocation count from context logs
+- 'Unused skills highlighted with analysis prompt: why unused, description quality'
+- Plugins tab shows installed plugins with their skills, hooks, and agents
+- Hooks tab shows actual command being run, not just matcher
+- Permissions tab shows consolidation suggestions for redundant patterns
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

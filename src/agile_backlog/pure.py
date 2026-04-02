@@ -42,9 +42,7 @@ def filter_items(
             result = [i for i in result if i.priority == priority]
     if category:
         result = [i for i in result if i.category == category]
-    if sprint == "unplanned":
-        result = [i for i in result if i.sprint_target is None]
-    elif sprint is not None:
+    if sprint is not None:
         result = [i for i in result if i.sprint_target == sprint]
     if search:
         q = search.lower()

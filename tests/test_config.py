@@ -51,6 +51,25 @@ def test_set_current_sprint_writes_to_sprint_config(tmp_path, monkeypatch):
     assert "# Project config" in text  # comments preserved
 
 
+def test_set_current_sprint_none_no_existing_config(tmp_path, monkeypatch):
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    set_current_sprint(None)
+    assert not config.exists()
+
+
+def test_set_current_sprint_none_removes_line_from_existing_config(tmp_path, monkeypatch):
+    config = tmp_path / ".claude" / "sprint-config.yaml"
+    config.parent.mkdir()
+    config.write_text("# Project config\nproject_name: test\ncurrent_sprint: 16\n")
+    monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: config)
+    set_current_sprint(None)
+    text = config.read_text()
+    assert "current_sprint" not in text
+    assert "project_name: test" in text
+    assert "# Project config" in text
+
+
 def test_get_archive_days_default(tmp_path, monkeypatch):
     """Returns 7 when no config exists."""
     monkeypatch.setattr("agile_backlog.config._sprint_config_path", lambda: tmp_path / "nope.yaml")

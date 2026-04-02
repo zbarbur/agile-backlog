@@ -40,6 +40,29 @@ ts = '$TIMESTAMP'
 
 entry = {'ts': ts, 'tool': tool}
 
+# Extract error information from tool_result
+result = data.get('tool_result', {})
+is_error = False
+error_msg = ''
+exit_code = None
+if isinstance(result, dict):
+    is_error = bool(result.get('is_error', False))
+    exit_code = result.get('exit_code')
+    if exit_code is not None and int(exit_code) != 0:
+        is_error = True
+    error_msg = result.get('stderr', '') or result.get('error', '') or ''
+elif isinstance(result, str):
+    low = result.lower()
+    if any(kw in low for kw in ['error', 'traceback', 'exception']):
+        is_error = True
+        error_msg = result
+if is_error:
+    entry['error'] = True
+    if error_msg:
+        entry['error_message'] = error_msg[:200]
+if exit_code is not None:
+    entry['exit_code'] = int(exit_code)
+
 if tool == 'Read':
     entry['file'] = inp.get('file_path', '')
     entry['offset'] = inp.get('offset', 0) or 0

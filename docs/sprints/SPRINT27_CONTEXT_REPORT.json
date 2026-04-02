@@ -1,0 +1,286 @@
+{
+  "sprint": 27,
+  "total_reads": 110,
+  "unique_files": 43,
+  "reread_count": 67,
+  "reread_ratio": 0.61,
+  "estimated_tokens": 132560,
+  "top_files": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+      "count": 39
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+      "count": 6
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+      "count": 5
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-tool-logger.sh",
+      "count": 4
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+      "count": 3
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/docs/claude-code-agent-optimization-guide.md",
+      "count": 3
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_app.py",
+      "count": 3
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/2a5643c6-c180-4277-95a7-8e0fcf0bab84/tool-results/bukmw1k0o.txt",
+      "count": 2
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+      "count": 2
+    }
+  ],
+  "wasteful_reads": [
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-tool-logger.sh",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+      "count": 5,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+      "count": 6,
+      "range": "0-0"
+    }
+  ],
+  "tool_usage": {
+    "total_tool_calls": 418,
+    "by_tool": {
+      "Bash": 220,
+      "Read": 110,
+      "Edit": 51,
+      "Grep": 18,
+      "Write": 10,
+      "Agent": 7,
+      "Skill": 2
+    },
+    "reads": 128,
+    "writes": 61,
+    "read_write_ratio": 2.1
+  },
+  "efficiency": {
+    "total_reads": 110,
+    "reread_count": 67,
+    "exact_reread_count": 16,
+    "reread_waste_ratio": 0.15,
+    "unique_grep_patterns": 18,
+    "total_grep_calls": 18
+  },
+  "errors": {
+    "total_errors": 0,
+    "error_rate": 0.0,
+    "errors_by_tool": {},
+    "top_error_commands": []
+  },
+  "sessions": [
+    {
+      "total_reads": 104,
+      "unique_files": 40,
+      "reread_count": 64,
+      "reread_ratio": 0.62,
+      "estimated_tokens": 122400,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 39
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-tool-logger.sh",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/optimization/docs/claude-code-agent-optimization-guide.md",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_app.py",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/2a5643c6-c180-4277-95a7-8e0fcf0bab84/tool-results/bukmw1k0o.txt",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+          "count": 2
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/sprint-config.yaml",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/hooks/post-tool-logger.sh",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+          "count": 5,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 5,
+          "range": "0-0"
+        }
+      ],
+      "session_id": "w1t0p0D506B919-A7CB-43E8-BD82-0A9306E1E030",
+      "tool_usage": {
+        "total_tool_calls": 373,
+        "by_tool": {
+          "Bash": 191,
+          "Read": 104,
+          "Edit": 44,
+          "Grep": 18,
+          "Write": 8,
+          "Agent": 7,
+          "Skill": 1
+        },
+        "reads": 122,
+        "writes": 52,
+        "read_write_ratio": 2.35
+      },
+      "efficiency": {
+        "total_reads": 104,
+        "reread_count": 64,
+        "exact_reread_count": 14,
+        "reread_waste_ratio": 0.13,
+        "unique_grep_patterns": 18,
+        "total_grep_calls": 18
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      }
+    },
+    {
+      "total_reads": 6,
+      "unique_files": 6,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 10160,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.gitignore",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/.claude/settings.json",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT26_CONTEXT_REPORT.json",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/project_sprint21_status.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "w9t0p03B5C0C0A-8F97-42E9-A04F-5ABF927C770A",
+      "tool_usage": {
+        "total_tool_calls": 45,
+        "by_tool": {
+          "Bash": 29,
+          "Edit": 7,
+          "Read": 6,
+          "Write": 2,
+          "Skill": 1
+        },
+        "reads": 6,
+        "writes": 9,
+        "read_write_ratio": 0.67
+      },
+      "efficiency": {
+        "total_reads": 6,
+        "reread_count": 0,
+        "exact_reread_count": 0,
+        "reread_waste_ratio": 0.0,
+        "unique_grep_patterns": 0,
+        "total_grep_calls": 0
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      }
+    }
+  ]
+}

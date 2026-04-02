@@ -119,6 +119,37 @@ def analyze_efficiency(entries: list[dict]) -> dict:
     }
 
 
+def analyze_errors(entries: list[dict]) -> dict:
+    error_entries = [e for e in entries if e.get("error") is True]
+    total = len(entries)
+    total_errors = len(error_entries)
+
+    errors_by_tool: dict[str, int] = {}
+    for e in error_entries:
+        tool = e.get("tool", "unknown")
+        errors_by_tool[tool] = errors_by_tool.get(tool, 0) + 1
+
+    bash_error_cmds = [e.get("command", "") for e in error_entries if e.get("tool") == "Bash" and e.get("command")]
+    cmd_counts = Counter(bash_error_cmds)
+    top_error_commands = [{"command": cmd, "count": cnt} for cmd, cnt in cmd_counts.most_common(5)]
+
+    return {
+        "total_errors": total_errors,
+        "error_rate": round(total_errors / total, 2) if total > 0 else 0.0,
+        "errors_by_tool": errors_by_tool,
+        "top_error_commands": top_error_commands,
+    }
+
+
+def skill_usage_stats(entries: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for e in entries:
+        if e.get("tool") == "Skill":
+            skill = e.get("skill", "unknown")
+            counts[skill] = counts.get(skill, 0) + 1
+    return dict(sorted(counts.items(), key=lambda x: -x[1]))
+
+
 def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path:
     all_entries: list[dict] = []
     sessions: list[dict] = []
@@ -130,6 +161,7 @@ def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path
             session_metrics["session_id"] = log_file.stem.replace("tools-", "")
             session_metrics["tool_usage"] = analyze_tool_usage(entries)
             session_metrics["efficiency"] = analyze_efficiency(entries)
+            session_metrics["errors"] = analyze_errors(entries)
             sessions.append(session_metrics)
             all_entries.extend(entries)
 
@@ -141,12 +173,14 @@ def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path
             session_metrics["session_id"] = log_file.stem.replace("reads-", "")
             session_metrics["tool_usage"] = analyze_tool_usage(entries)
             session_metrics["efficiency"] = analyze_efficiency(entries)
+            session_metrics["errors"] = analyze_errors(entries)
             sessions.append(session_metrics)
             all_entries.extend(entries)
 
     aggregate = analyze_reads(all_entries)
     aggregate["tool_usage"] = analyze_tool_usage(all_entries)
     aggregate["efficiency"] = analyze_efficiency(all_entries)
+    aggregate["errors"] = analyze_errors(all_entries)
     report = {
         "sprint": sprint,
         **aggregate,

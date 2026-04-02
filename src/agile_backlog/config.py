@@ -118,6 +118,8 @@ def get_version() -> str:
 def set_current_sprint(sprint: int | None) -> None:
     path = _sprint_config_path()
     if not path.exists():
+        if sprint is None:
+            return
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"current_sprint: {sprint}\n")
         return
