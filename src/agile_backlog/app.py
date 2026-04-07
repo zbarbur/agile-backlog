@@ -1078,21 +1078,40 @@ if (!window._mcAddPasteListenerAdded) {
                                 details = tool_details.get(tool_name, [])
                                 if details:
                                     top_items = _Counter(details).most_common(10)
-                                    with ui.expansion(f"{tool_name} ({count})").style(
-                                        "width:100%;border-bottom:1px solid #27272a;margin:0;color:#d4d4d8;"
-                                    ):
-                                        ui.html(bar_html)
-                                        for val, cnt in top_items:
-                                            pct = round(cnt / count * 100)
-                                            ui.html(
-                                                f"<div style='display:flex;gap:8px;padding:2px 8px 2px 70px;"
-                                                f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
-                                                f"<span style='color:#71717a;min-width:30px;text-align:right;'>"
-                                                f"{cnt}x</span>"
-                                                f"<span style='color:#71717a;min-width:30px;'>({pct}%)</span>"
-                                                f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
-                                                f"white-space:nowrap;'>{safe_html(val)}</span></div>"
+                                    # Bar always visible, drilldown toggles on click
+                                    _detail_rows = ""
+                                    for val, cnt in top_items:
+                                        pct = round(cnt / count * 100)
+                                        _detail_rows += (
+                                            f"<div style='display:flex;gap:8px;padding:2px 8px 2px 70px;"
+                                            f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
+                                            f"<span style='color:#71717a;min-width:30px;text-align:right;'>"
+                                            f"{cnt}x</span>"
+                                            f"<span style='color:#71717a;min-width:30px;'>({pct}%)</span>"
+                                            f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
+                                            f"white-space:nowrap;'>{safe_html(val)}</span></div>"
+                                        )
+                                    _row_container = ui.element("div").style("border-bottom:1px solid #27272a;")
+                                    with _row_container:
+                                        with (
+                                            ui.element("div")
+                                            .style("padding:8px 10px;cursor:pointer;")
+                                            .on(
+                                                "click",
+                                                lambda e, rc=_row_container: rc.run_method(
+                                                    "querySelectorAll", ".tool-drilldown"
+                                                ),
                                             )
+                                        ):
+                                            ui.html(bar_html)
+                                        _dd = ui.element("div").style("display:none;padding:4px 0 6px;")
+                                        with _dd:
+                                            ui.html(_detail_rows)
+
+                                        async def _toggle_dd(e, dd=_dd):
+                                            dd.visible = not dd.visible
+
+                                        _row_container.on("click", _toggle_dd)
                                 else:
                                     with ui.element("div").style("padding:8px 10px;border-bottom:1px solid #27272a;"):
                                         ui.html(bar_html)
