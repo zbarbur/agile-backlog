@@ -691,3 +691,26 @@ class TestContextSummary:
         content = md_path.read_text()
         assert "Sprint 99" in content
         assert "Sprint Context Summary" in content
+
+    def test_context_summary_generates_from_logs(self, runner: CliRunner, tmp_path: Path):
+        """context-summary generates JSON report from logs when no pre-existing report."""
+        output_dir = tmp_path / "sprints"
+        output_dir.mkdir()
+        log_dir = tmp_path / "logs"
+        log_dir.mkdir()
+        # Create a minimal JSONL log file
+        log_file = log_dir / "tools-test-session.jsonl"
+        log_file.write_text(
+            '{"tool":"Read","file":"app.py","lines":100}\n'
+            '{"tool":"Bash","command":"ls"}\n'
+            '{"tool":"Read","file":"app.py","lines":100}\n'
+        )
+        result = runner.invoke(
+            main,
+            ["context-summary", "--sprint", "88", "--output-dir", str(output_dir), "--log-dir", str(log_dir)],
+        )
+        assert result.exit_code == 0
+        assert (output_dir / "SPRINT88_CONTEXT_REPORT.json").exists()
+        md_path = output_dir / "SPRINT88_CONTEXT_SUMMARY.md"
+        assert md_path.exists()
+        assert "Sprint 88" in md_path.read_text()
