@@ -1078,7 +1078,6 @@ if (!window._mcAddPasteListenerAdded) {
                                 details = tool_details.get(tool_name, [])
                                 if details:
                                     top_items = _Counter(details).most_common(10)
-                                    # Bar always visible, drilldown toggles on click
                                     _detail_rows = ""
                                     for val, cnt in top_items:
                                         pct = round(cnt / count * 100)
@@ -1091,27 +1090,30 @@ if (!window._mcAddPasteListenerAdded) {
                                             f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
                                             f"white-space:nowrap;'>{safe_html(val)}</span></div>"
                                         )
-                                    _row_container = ui.element("div").style("border-bottom:1px solid #27272a;")
-                                    with _row_container:
+                                    with ui.element("div").style("border-bottom:1px solid #27272a;"):
+                                        _dd = ui.element("div").style("display:none;padding:4px 0 6px;")
+                                        _dd_state: dict[str, bool] = {"open": False}
+
+                                        def _make_toggle(dd_el=_dd, state=_dd_state):
+                                            def _toggle(e):
+                                                state["open"] = not state["open"]
+                                                dd_el.style(
+                                                    f"display:{'block' if state['open'] else 'none'};padding:4px 0 6px;"
+                                                )
+
+                                            return _toggle
+
                                         with (
                                             ui.element("div")
                                             .style("padding:8px 10px;cursor:pointer;")
-                                            .on(
-                                                "click",
-                                                lambda e, rc=_row_container: rc.run_method(
-                                                    "querySelectorAll", ".tool-drilldown"
-                                                ),
-                                            )
+                                            .on("click", _make_toggle())
                                         ):
-                                            ui.html(bar_html)
-                                        _dd = ui.element("div").style("display:none;padding:4px 0 6px;")
+                                            ui.html(
+                                                bar_html + "<span style='color:#52525b;font-size:9px;margin-left:8px;'>"
+                                                "&#9662; details</span>"
+                                            )
                                         with _dd:
                                             ui.html(_detail_rows)
-
-                                        async def _toggle_dd(e, dd=_dd):
-                                            dd.visible = not dd.visible
-
-                                        _row_container.on("click", _toggle_dd)
                                 else:
                                     with ui.element("div").style("padding:8px 10px;border-bottom:1px solid #27272a;"):
                                         ui.html(bar_html)
