@@ -462,3 +462,219 @@ def test_skill_usage_stats_ignores_other_tools():
 def test_skill_usage_stats_empty():
     result = skill_usage_stats([])
     assert result == {}
+
+
+# ---------------------------------------------------------------------------
+# estimate_tool_tokens
+# ---------------------------------------------------------------------------
+
+
+def test_estimate_tool_tokens_read_with_lines():
+    from agile_backlog.context_report import estimate_tool_tokens
+
+    entries = [
+        {"tool": "Read", "file": "a.py", "lines": 200},
+        {"tool": "Read", "file": "b.py", "lines": 100},
+    ]
+    result = estimate_tool_tokens(entries)
+    assert result["Read"] == (200 + 100) * 4  # 1200
+
+
+def test_estimate_tool_tokens_read_fallback():
+    from agile_backlog.context_report import DEFAULT_FULL_FILE_LINES, TOKENS_PER_LINE, estimate_tool_tokens
+
+    entries = [{"tool": "Read", "file": "a.py"}]
+    result = estimate_tool_tokens(entries)
+    assert result["Read"] == DEFAULT_FULL_FILE_LINES * TOKENS_PER_LINE
+
+
+def test_estimate_tool_tokens_mixed():
+    from agile_backlog.context_report import estimate_tool_tokens
+
+    entries = [
+        {"tool": "Read", "file": "a.py", "lines": 100},
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Grep", "pattern": "bar"},
+        {"tool": "Bash", "command": "ls"},
+        {"tool": "Edit", "file": "x.py"},
+    ]
+    result = estimate_tool_tokens(entries)
+    assert result["Read"] == 400
+    assert result["Grep"] == 100
+    assert result["Bash"] == 80
+    assert result["Edit"] == 100
+
+
+# ---------------------------------------------------------------------------
+# generate_sprint_summary
+# ---------------------------------------------------------------------------
+
+
+def _make_report(**overrides) -> dict:
+    base = {
+        "sprint": 29,
+        "total_reads": 50,
+        "unique_files": 20,
+        "reread_count": 10,
+        "reread_ratio": 0.2,
+        "estimated_tokens": 40000,
+        "top_files": [
+            {"file": "app.py", "count": 15},
+            {"file": "cli.py", "count": 8},
+        ],
+        "wasteful_reads": [{"file": "app.py", "count": 15, "range": "0-0"}],
+        "tool_usage": {
+            "total_tool_calls": 120,
+            "by_tool": {"Read": 50, "Grep": 30, "Bash": 20, "Edit": 10, "Glob": 10},
+            "reads": 90,
+            "writes": 10,
+            "read_write_ratio": 9.0,
+        },
+        "efficiency": {"reread_waste_ratio": 0.1},
+        "errors": {"total_errors": 2, "error_rate": 0.02, "errors_by_tool": {"Bash": 2}, "top_error_commands": []},
+        "sessions": [{"session_id": "s1"}, {"session_id": "s2"}],
+    }
+    base.update(overrides)
+    return base
+
+
+def test_generate_sprint_summary_basic():
+    from agile_backlog.context_report import generate_sprint_summary
+
+    report = _make_report()
+    result = generate_sprint_summary(report)
+    assert "Sprint Context Summary" in result
+    assert "Sprint 29" in result
+    assert "Overview" in result
+    assert "Tool Breakdown" in result
+    assert "Read Efficiency" in result
+
+
+def test_generate_sprint_summary_thresholds():
+    from agile_backlog.context_report import generate_sprint_summary
+
+    report = _make_report(
+        reread_ratio=0.65,
+        errors={"total_errors": 10, "error_rate": 0.08, "errors_by_tool": {"Bash": 10}, "top_error_commands": []},
+    )
+    result = generate_sprint_summary(report)
+    assert "High re-read ratio" in result
+    assert "Critical re-read ratio" in result
+    assert "High error rate" in result
+
+
+def test_generate_sprint_summary_clean():
+    from agile_backlog.context_report import generate_sprint_summary
+
+    report = _make_report(
+        reread_ratio=0.1,
+        errors={"total_errors": 0, "error_rate": 0.0, "errors_by_tool": {}, "top_error_commands": []},
+    )
+    result = generate_sprint_summary(report)
+    assert "No optimization issues detected" in result or "Optimization Suggestions" not in result
+
+
+def test_generate_sprint_summary_top_file_warning():
+    from agile_backlog.context_report import generate_sprint_summary
+
+    report = _make_report(top_files=[{"file": "big_file.py", "count": 25}, {"file": "small.py", "count": 3}])
+    result = generate_sprint_summary(report)
+    assert "big_file.py" in result
+    assert "25 times" in result
+
+
+# ---------------------------------------------------------------------------
+# load_all_sprint_reports / compare_sprints
+# ---------------------------------------------------------------------------
+
+
+def _make_sprint_report(
+    sprint: int,
+    reread_ratio: float = 0.2,
+    error_rate: float = 0.01,
+    total_calls: int = 100,
+    total_reads: int = 30,
+    estimated_tokens: int = 50000,
+) -> dict:
+    return {
+        "sprint": sprint,
+        "total_reads": total_reads,
+        "unique_files": 10,
+        "reread_ratio": reread_ratio,
+        "estimated_tokens": estimated_tokens,
+        "top_files": [{"file": "app.py", "count": 10}],
+        "wasteful_reads": [],
+        "tool_usage": {
+            "total_tool_calls": total_calls,
+            "by_tool": {"Read": total_reads, "Bash": total_calls - total_reads},
+            "reads": total_reads,
+            "writes": 5,
+        },
+        "efficiency": {"reread_waste_ratio": reread_ratio * 0.5},
+        "errors": {"total_errors": int(total_calls * error_rate), "error_rate": error_rate, "errors_by_tool": {}},
+        "sessions": [{"session_id": f"session-{sprint}"}],
+    }
+
+
+def test_load_all_sprint_reports(tmp_path):
+    from agile_backlog.context_report import load_all_sprint_reports
+
+    for s in [25, 26, 27]:
+        (tmp_path / f"SPRINT{s}_CONTEXT_REPORT.json").write_text(json.dumps(_make_sprint_report(s)))
+    result = load_all_sprint_reports(tmp_path)
+    assert len(result) == 3
+    assert [r["sprint"] for r in result] == [25, 26, 27]
+
+
+def test_load_all_sprint_reports_skips_invalid(tmp_path):
+    from agile_backlog.context_report import load_all_sprint_reports
+
+    (tmp_path / "SPRINT25_CONTEXT_REPORT.json").write_text(json.dumps(_make_sprint_report(25)))
+    (tmp_path / "SPRINT26_CONTEXT_REPORT.json").write_text("NOT VALID JSON {{{")
+    (tmp_path / "SPRINT27_CONTEXT_REPORT.json").write_text(json.dumps(_make_sprint_report(27)))
+    result = load_all_sprint_reports(tmp_path)
+    assert len(result) == 2
+    assert [r["sprint"] for r in result] == [25, 27]
+
+
+def test_compare_sprints_three_sprints():
+    from agile_backlog.context_report import compare_sprints
+
+    reports = [
+        _make_sprint_report(25, reread_ratio=0.5, error_rate=0.05, estimated_tokens=80000),
+        _make_sprint_report(26, reread_ratio=0.3, error_rate=0.03, estimated_tokens=60000),
+        _make_sprint_report(27, reread_ratio=0.2, error_rate=0.02, estimated_tokens=40000),
+    ]
+    result = compare_sprints(reports)
+    assert len(result["sprints"]) == 3
+    assert result["trends"]["reread_ratio"] == "improving"
+    assert result["trends"]["error_rate"] == "improving"
+    assert result["trends"]["token_usage"] == "improving"
+
+
+def test_compare_sprints_two_sprints():
+    from agile_backlog.context_report import compare_sprints
+
+    reports = [
+        _make_sprint_report(25, reread_ratio=0.5),
+        _make_sprint_report(26, reread_ratio=0.2),
+    ]
+    result = compare_sprints(reports)
+    assert len(result["sprints"]) == 2
+    assert result["trends"]["reread_ratio"] == "stable"
+    assert result["trends"]["error_rate"] == "stable"
+    assert result["trends"]["token_usage"] == "stable"
+
+
+def test_compare_sprints_worsening():
+    from agile_backlog.context_report import compare_sprints
+
+    reports = [
+        _make_sprint_report(25, reread_ratio=0.2, error_rate=0.01, estimated_tokens=30000),
+        _make_sprint_report(26, reread_ratio=0.3, error_rate=0.03, estimated_tokens=50000),
+        _make_sprint_report(27, reread_ratio=0.5, error_rate=0.06, estimated_tokens=80000),
+    ]
+    result = compare_sprints(reports)
+    assert result["trends"]["reread_ratio"] == "declining"
+    assert result["trends"]["error_rate"] == "declining"
+    assert result["trends"]["token_usage"] == "declining"

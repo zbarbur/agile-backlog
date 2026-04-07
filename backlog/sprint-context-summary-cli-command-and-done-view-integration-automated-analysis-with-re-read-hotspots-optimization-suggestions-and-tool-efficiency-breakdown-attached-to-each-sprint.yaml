@@ -1,12 +1,12 @@
 title: "Sprint context summary CLI command and Done view integration \u2014 automated\
   \ analysis with re-read hotspots, optimization suggestions, and tool efficiency\
   \ breakdown attached to each sprint"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 29
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: agile-backlog context-summary command generates markdown summary from context
@@ -38,7 +38,7 @@ test_plan:
   \ suggestion"
 - "test_context_summary_cli \u2014 CLI command writes file to expected path"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

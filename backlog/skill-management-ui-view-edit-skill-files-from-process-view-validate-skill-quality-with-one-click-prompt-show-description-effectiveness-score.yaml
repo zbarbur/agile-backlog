@@ -1,11 +1,11 @@
 title: "Skill management UI \u2014 view/edit skill files from Process view, validate\
   \ skill quality with one-click prompt, show description effectiveness score"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 29
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: View, edit, and validate skill files directly from Process view Skills tab with
@@ -32,7 +32,7 @@ test_plan:
 - "test_score_skill_quality_poor \u2014 missing description/keywords scores low"
 - "test_score_skill_quality_edge_cases \u2014 empty content, very long descriptions"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

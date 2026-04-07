@@ -654,3 +654,40 @@ class TestBacklogDirOverride:
         runner.invoke(main, ["--backlog-dir", str(custom_dir), "add", "Custom item", "--category", "feature"])
         result = runner.invoke(main, ["--backlog-dir", str(custom_dir), "list"])
         assert "custom-item" in result.output
+
+
+class TestContextSummary:
+    def test_context_summary_cli(self, runner: CliRunner, tmp_path: Path):
+        """context-summary creates .md file from existing JSON report."""
+        output_dir = tmp_path / "sprints"
+        output_dir.mkdir()
+        report = {
+            "sprint": 99,
+            "total_reads": 10,
+            "unique_files": 5,
+            "reread_count": 2,
+            "reread_ratio": 0.2,
+            "estimated_tokens": 8000,
+            "top_files": [{"file": "a.py", "count": 5}],
+            "wasteful_reads": [],
+            "tool_usage": {
+                "total_tool_calls": 30,
+                "by_tool": {"Read": 10, "Grep": 10, "Bash": 10},
+                "reads": 20,
+                "writes": 0,
+                "read_write_ratio": None,
+            },
+            "efficiency": {"reread_waste_ratio": 0.1},
+            "errors": {"total_errors": 0, "error_rate": 0.0, "errors_by_tool": {}, "top_error_commands": []},
+            "sessions": [{"session_id": "s1"}],
+        }
+        report_path = output_dir / "SPRINT99_CONTEXT_REPORT.json"
+        report_path.write_text(json.dumps(report))
+
+        result = runner.invoke(main, ["context-summary", "--sprint", "99", "--output-dir", str(output_dir)])
+        assert result.exit_code == 0
+        md_path = output_dir / "SPRINT99_CONTEXT_SUMMARY.md"
+        assert md_path.exists()
+        content = md_path.read_text()
+        assert "Sprint 99" in content
+        assert "Sprint Context Summary" in content

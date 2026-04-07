@@ -1,0 +1,29 @@
+title: 'CLI documentation: clarify edit vs move command responsibilities in README
+  and --help output'
+status: backlog
+priority: P2
+category: docs
+sprint_target: null
+created: 2026-04-04
+updated: 2026-04-04
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Users (and AI agents) confuse edit and move commands. edit is for field
+  changes (title, specs, criteria), move is for status transitions (backlog/doing/done).
+  Key issues: (1) edit does not have --status flag but users try to use it, (2) batch
+  operations (multiple IDs) are supported by both commands but not documented prominently,
+  (3) the distinction between scoping (sprint-start) and speccing (pre-execution)
+  is not clear from CLI help alone. Suggested improvements: add a ''Command Reference''
+  section to README with a comparison table, update --help text to cross-reference
+  the other command, mention batch ID support in --help.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

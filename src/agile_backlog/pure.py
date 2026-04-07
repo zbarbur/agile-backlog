@@ -1,6 +1,7 @@
 """Pure functions for agile-backlog — framework-independent, fully tested."""
 
 import html as _html
+import re as _re
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -302,8 +303,87 @@ def relative_time(dt: date) -> str:
     return dt.strftime("%b %-d")
 
 
+def format_trend_indicator(current: float, previous: float, lower_is_better: bool = True) -> str:
+    if previous == 0:
+        return "<span style='color:#71717a;'>→</span>"
+    change = (current - previous) / abs(previous)
+    if abs(change) <= 0.10:
+        return "<span style='color:#71717a;'>→</span>"
+    if lower_is_better:
+        if change < 0:
+            return "<span style='color:#22c55e;'>↓</span>"
+        return "<span style='color:#f87171;'>↑</span>"
+    else:
+        if change > 0:
+            return "<span style='color:#22c55e;'>↑</span>"
+        return "<span style='color:#f87171;'>↓</span>"
+
+
 def backlog_dir_mtime(backlog_dir: str | Path) -> float:
     path = Path(backlog_dir)
     if not path.is_dir():
         return 0.0
     return max((f.stat().st_mtime for f in path.glob("*.yaml")), default=0.0)
+
+
+def score_skill_quality(name: str, description: str, content: str) -> dict:
+    breakdown: dict[str, int] = {}
+    suggestions: list[str] = []
+
+    # description_length (0-25)
+    desc_len = len(description)
+    if desc_len < 20:
+        breakdown["description_length"] = 0
+        suggestions.append("Description too short — aim for 50-150 characters")
+    elif desc_len < 50:
+        breakdown["description_length"] = 10
+        suggestions.append("Description could be more specific")
+    elif desc_len <= 150:
+        breakdown["description_length"] = 25
+    else:
+        breakdown["description_length"] = 15
+        suggestions.append("Description may be too long — keep under 150 characters")
+
+    # trigger_keywords (0-25)
+    trigger_patterns = ["use when", "use this", "do not", "trigger when", "examples:"]
+    desc_lower = description.lower()
+    trigger_count = sum(1 for p in trigger_patterns if p in desc_lower)
+    if trigger_count == 0:
+        breakdown["trigger_keywords"] = 0
+        suggestions.append("Add trigger keywords like 'Use when...', 'TRIGGER when...'")
+    elif trigger_count == 1:
+        breakdown["trigger_keywords"] = 15
+    else:
+        breakdown["trigger_keywords"] = 25
+
+    # action_patterns (0-25)
+    action_verbs = ["must", "always", "never", "run", "check", "verify", "create", "add", "follow"]
+    action_count = sum(1 for v in action_verbs if _re.search(rf"\b{v}\b", content, _re.IGNORECASE))
+    if action_count == 0:
+        breakdown["action_patterns"] = 5
+        suggestions.append("Add directive language (Must, Always, Never, etc.)")
+    elif action_count <= 3:
+        breakdown["action_patterns"] = 15
+    else:
+        breakdown["action_patterns"] = 25
+
+    # content_structure (0-25)
+    structure_types = 0
+    if _re.search(r"^##\s", content, _re.MULTILINE):
+        structure_types += 1
+    if "- [ ]" in content:
+        structure_types += 1
+    if "```" in content:
+        structure_types += 1
+    if _re.search(r"^\d+\.\s", content, _re.MULTILINE):
+        structure_types += 1
+    if structure_types == 0:
+        breakdown["content_structure"] = 5
+        suggestions.append("Add structure with headings (##), checklists (- [ ]), or code blocks")
+    elif structure_types <= 2:
+        breakdown["content_structure"] = 15
+    else:
+        breakdown["content_structure"] = 25
+
+    score = sum(breakdown.values())
+    return {"score": score, "breakdown": breakdown, "suggestions": suggestions}

@@ -1,12 +1,12 @@
 title: "Sprint retrospective dashboard \u2014 full per-sprint analysis in Done view\
   \ with tool breakdown, efficiency trends, error patterns, and comparison across\
   \ sprints"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 29
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: Full per-sprint analysis in Done view with tool breakdown, efficiency trends,
@@ -35,7 +35,7 @@ test_plan:
 - "test_compare_sprints \u2014 correct trend detection across 3+ sprints"
 - "test_format_trend_indicator \u2014 arrow directions and color thresholds"
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
