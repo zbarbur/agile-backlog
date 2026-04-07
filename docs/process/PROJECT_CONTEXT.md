@@ -2,14 +2,14 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 28 Planning |
-| **Last Sync** | 2026-04-02 |
+| **Status** | Sprint 30 Planning |
+| **Last Sync** | 2026-04-07 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
 
 Single Python package with three interfaces:
-- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, delete, show, serve, note, flagged, set-sprint, resolve-note, sprint-status, validate, install-skills, context-report
+- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, delete, show, serve, note, flagged, set-sprint, resolve-note, sprint-status, validate, install-skills, context-report, context-summary
 - **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view + context analysis dashboard + process management tools
 - **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
 
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 331 |
+| **Tests** | 354 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -58,3 +58,4 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 25 | UI Polish + Observability | 264 | #24 |
 | 26 | Operationalize Context Analysis | 304 | #25 |
 | 27 | Process Tools, Context Dashboard & Bug Fixes | 331 | #27 |
+| 29 | Observability & Skill Management | 354 | — |

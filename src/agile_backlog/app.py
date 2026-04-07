@@ -711,6 +711,98 @@ if (!window._mcAddPasteListenerAdded) {
                                 'text-align:center;">No completed items yet</div>'
                             )
                         else:
+                            # Cross-sprint comparison dashboard
+                            from pathlib import Path as _CmpPath
+
+                            from agile_backlog.context_report import compare_sprints, load_all_sprint_reports
+                            from agile_backlog.pure import format_trend_indicator
+
+                            _all_reports = load_all_sprint_reports(_CmpPath(handover_dir))
+                            if len(_all_reports) >= 2:
+                                _comparison = compare_sprints(_all_reports)
+                                _cmp_sprints = _comparison["sprints"][-5:]  # last 5
+                                _trends = _comparison["trends"]
+
+                                _tbl_style = (
+                                    "width:100%;border-collapse:collapse;"
+                                    "font-family:'IBM Plex Mono',monospace;font-size:11px;"
+                                )
+                                _th_style = (
+                                    "color:#71717a;font-size:9px;text-transform:uppercase;"
+                                    "letter-spacing:0.05em;padding:6px 8px;text-align:right;"
+                                    "border-bottom:1px solid #27272a;"
+                                )
+                                _td_style = (
+                                    "color:#d4d4d8;padding:4px 8px;text-align:right;border-bottom:1px solid #1e1e23;"
+                                )
+
+                                _rows_html = ""
+                                for _idx, _sd in enumerate(_cmp_sprints):
+                                    _rr_pct = round(_sd["reread_ratio"] * 100, 1)
+                                    _rr_clr = "#22c55e" if _rr_pct < 15 else "#ca8a04" if _rr_pct < 30 else "#f87171"
+                                    _err_pct = round(_sd["error_rate"] * 100, 1)
+                                    _tk_d = (
+                                        f"{_sd['estimated_tokens'] // 1000}k"
+                                        if _sd["estimated_tokens"] >= 1000
+                                        else str(_sd["estimated_tokens"])
+                                    )
+                                    _trend_html = ""
+                                    if _idx > 0:
+                                        _prev = _cmp_sprints[_idx - 1]
+                                        _trend_html = format_trend_indicator(
+                                            _sd["reread_ratio"], _prev["reread_ratio"], lower_is_better=True
+                                        )
+                                    else:
+                                        _trend_html = "<span style='color:#71717a;'>—</span>"
+
+                                    _rows_html += (
+                                        f"<tr>"
+                                        f"<td style='{_td_style}text-align:left;'>S{safe_html(str(_sd['sprint']))}</td>"
+                                        f"<td style='{_td_style}'>{safe_html(str(_sd['total_tool_calls']))}</td>"
+                                        f"<td style='{_td_style}'>{safe_html(str(_sd['read_calls']))}</td>"
+                                        f"<td style='{_td_style}color:{_rr_clr};'>{safe_html(str(_rr_pct))}%</td>"
+                                        f"<td style='{_td_style}'>{safe_html(str(_tk_d))}</td>"
+                                        f"<td style='{_td_style}'>{safe_html(str(_err_pct))}%</td>"
+                                        f"<td style='{_td_style}text-align:center;'>{_trend_html}</td>"
+                                        f"</tr>"
+                                    )
+
+                                # Trend summary
+                                _trend_labels = {
+                                    "improving": "<span style='color:#22c55e;'>improving ↓</span>",
+                                    "declining": "<span style='color:#f87171;'>declining ↑</span>",
+                                    "stable": "<span style='color:#71717a;'>stable →</span>",
+                                }
+                                _trend_summary = (
+                                    f"<div style='display:flex;gap:16px;padding:6px 8px;font-size:10px;"
+                                    f'font-family:"IBM Plex Mono",monospace;color:#71717a;\'>'
+                                    f"<span>Re-read: {_trend_labels[_trends['reread_ratio']]}</span>"
+                                    f"<span>Errors: {_trend_labels[_trends['error_rate']]}</span>"
+                                    f"<span>Tokens: {_trend_labels[_trends['token_usage']]}</span>"
+                                    f"</div>"
+                                )
+
+                                with (
+                                    ui.expansion("Sprint Trends")
+                                    .classes("mc-done-section")
+                                    .style("width:100%;margin-bottom:8px;")
+                                ):
+                                    ui.html(
+                                        f"<table style='{_tbl_style}'>"
+                                        f"<thead><tr>"
+                                        f"<th style='{_th_style}text-align:left;'>Sprint</th>"
+                                        f"<th style='{_th_style}'>Tool Calls</th>"
+                                        f"<th style='{_th_style}'>Reads</th>"
+                                        f"<th style='{_th_style}'>Re-read %</th>"
+                                        f"<th style='{_th_style}'>Tokens</th>"
+                                        f"<th style='{_th_style}'>Errors</th>"
+                                        f"<th style='{_th_style}text-align:center;'>Trend</th>"
+                                        f"</tr></thead>"
+                                        f"<tbody>{_rows_html}</tbody>"
+                                        f"</table>"
+                                        f"{_trend_summary}"
+                                    )
+
                             for sprint_num, sprint_items in sprint_groups.items():
                                 header = f"Sprint {sprint_num}" if sprint_num is not None else "Unplanned"
                                 meta = (
@@ -760,16 +852,84 @@ if (!window._mcAddPasteListenerAdded) {
                                                     f"border:1px solid #27272a;font-size:10px;"
                                                     f'font-family:"IBM Plex Mono",monospace;\'>'
                                                     f"<span style='color:#71717a;'>Sessions: "
-                                                    f"<b style='color:#d4d4d8;'>{_sess}</b></span>"
+                                                    f"<b style='color:#d4d4d8;'>{safe_html(str(_sess))}</b></span>"
                                                     f"<span style='color:#71717a;'>Tool calls: "
-                                                    f"<b style='color:#d4d4d8;'>{_tc}</b></span>"
+                                                    f"<b style='color:#d4d4d8;'>{safe_html(str(_tc))}</b></span>"
                                                     f"<span style='color:#71717a;'>Re-read: "
-                                                    f"<b style='color:{_rr_c};'>{_rr}%</b></span>"
+                                                    f"<b style='color:{_rr_c};'>{safe_html(str(_rr))}%</b></span>"
                                                     f"<span style='color:#71717a;'>Tokens: "
                                                     f"<b style='color:#d4d4d8;'>{safe_html(_tk_d)}</b></span>"
                                                     f"</div>"
                                                 )
-                                            except Exception:
+                                                # Retro Details — tool breakdown and errors
+                                                _by_tool = _rpt.get("tool_usage", {}).get("by_tool", {})
+                                                if _by_tool:
+                                                    _sorted_tools = sorted(_by_tool.items(), key=lambda x: -x[1])[:5]
+                                                    _retro_rows = ""
+                                                    for _tn, _cnt in _sorted_tools:
+                                                        _t_pct = round(_cnt / _tc * 100, 1) if _tc else 0
+                                                        _retro_rows += (
+                                                            f"<tr><td style='color:#d4d4d8;padding:2px 8px;"
+                                                            f"font-size:10px;'>{safe_html(_tn)}</td>"
+                                                            f"<td style='color:#d4d4d8;padding:2px 8px;"
+                                                            f"font-size:10px;text-align:right;'>{_cnt}</td>"
+                                                            f"<td style='color:#71717a;padding:2px 8px;"
+                                                            f"font-size:10px;text-align:right;'>{_t_pct}%</td></tr>"
+                                                        )
+                                                    _err_info = _rpt.get("errors", {})
+                                                    _err_by_tool = _err_info.get("errors_by_tool", {})
+                                                    _err_html = ""
+                                                    if _err_by_tool:
+                                                        _err_items = ", ".join(
+                                                            f"{safe_html(t)}: {c}"
+                                                            for t, c in sorted(
+                                                                _err_by_tool.items(), key=lambda x: -x[1]
+                                                            )
+                                                        )
+                                                        _err_html = (
+                                                            f"<div style='margin-top:6px;font-size:10px;"
+                                                            f'color:#f87171;font-family:"IBM Plex Mono",'
+                                                            f"monospace;'>Errors by tool: {_err_items}</div>"
+                                                        )
+                                                    with ui.expansion("Retro Details").style(
+                                                        "width:100%;margin:2px 0 6px;color:#d4d4d8;"
+                                                    ):
+                                                        ui.html(
+                                                            f"<table style='border-collapse:collapse;"
+                                                            f'font-family:"IBM Plex Mono",monospace;\'>'
+                                                            f"<thead><tr>"
+                                                            f"<th style='color:#71717a;font-size:9px;"
+                                                            f"text-transform:uppercase;padding:2px 8px;"
+                                                            f"text-align:left;'>Tool</th>"
+                                                            f"<th style='color:#71717a;font-size:9px;"
+                                                            f"text-transform:uppercase;padding:2px 8px;"
+                                                            f"text-align:right;'>Count</th>"
+                                                            f"<th style='color:#71717a;font-size:9px;"
+                                                            f"text-transform:uppercase;padding:2px 8px;"
+                                                            f"text-align:right;'>%</th>"
+                                                            f"</tr></thead>"
+                                                            f"<tbody>{_retro_rows}</tbody>"
+                                                            f"</table>"
+                                                            f"{_err_html}"
+                                                        )
+                                            except (_json.JSONDecodeError, KeyError, TypeError, OSError):
+                                                pass
+                                        # Also check for markdown summary
+                                        _md_path = _Path(handover_dir) / f"SPRINT{sprint_num}_CONTEXT_SUMMARY.md"
+                                        if _md_path.exists():
+                                            try:
+                                                _md_content = _md_path.read_text()
+                                                with ui.expansion("Context Summary").style(
+                                                    "width:100%;margin:2px 0 8px;color:#d4d4d8;"
+                                                ):
+                                                    ui.html(
+                                                        f"<pre style='background:#18181b;color:#a1a1aa;"
+                                                        f"padding:8px;border-radius:6px;font-size:10px;"
+                                                        f'font-family:"IBM Plex Mono",monospace;'
+                                                        f"white-space:pre-wrap;overflow-x:auto;'>"
+                                                        f"{safe_html(_md_content)}</pre>"
+                                                    )
+                                            except OSError:
                                                 pass
                                     for card_item in sprint_items:
                                         _render_card(
@@ -891,17 +1051,26 @@ if (!window._mcAddPasteListenerAdded) {
                             elif _t == "Agent":
                                 tool_details.setdefault(_t, []).append(_e.get("prompt", "?")[:60])
 
+                        # Compute token estimates per tool
+                        from agile_backlog.context_report import estimate_tool_tokens
+
+                        _tool_tokens = estimate_tool_tokens(all_entries)
+
                         with ui.element("div").style(
                             "background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"
                         ):
                             for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
                                 bar_width = int((count / max_count) * 100)
+                                _tk = _tool_tokens.get(tool_name, 0)
+                                _tk_d = f"~{_tk // 1000}k" if _tk >= 1000 else f"~{_tk}"
                                 bar_html = (
                                     f"<div style='display:flex;align-items:center;gap:10px;width:100%;'>"
                                     f"<span style='color:#d4d4d8;font-size:12px;min-width:60px;"
                                     f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(tool_name)}</span>'
                                     f"<span style='color:#a1a1aa;font-size:12px;min-width:40px;text-align:right;"
                                     f'font-family:"IBM Plex Mono",monospace;\'>{count}</span>'
+                                    f"<span style='color:#71717a;font-size:10px;min-width:50px;text-align:right;"
+                                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(_tk_d)}</span>'
                                     f"<div style='flex:1;'>"
                                     f"<div style='background:rgba(59,130,246,0.25);height:14px;"
                                     f"border-radius:3px;width:{bar_width}%;'></div></div></div>"
@@ -910,8 +1079,9 @@ if (!window._mcAddPasteListenerAdded) {
                                 if details:
                                     top_items = _Counter(details).most_common(10)
                                     with ui.expansion(f"{tool_name} ({count})").style(
-                                        "width:100%;border-bottom:1px solid #27272a;margin:0;"
+                                        "width:100%;border-bottom:1px solid #27272a;margin:0;color:#d4d4d8;"
                                     ):
+                                        ui.html(bar_html)
                                         for val, cnt in top_items:
                                             pct = round(cnt / count * 100)
                                             ui.html(
@@ -1062,7 +1232,7 @@ if (!window._mcAddPasteListenerAdded) {
                                             fm = _yaml.safe_load(fm_match.group(1)) or {}
                                             name = fm.get("name", name)
                                             desc = fm.get("description", "")
-                                        except Exception:
+                                        except (_yaml.YAMLError, AttributeError):
                                             pass
                                     desc_tokens = len(desc) // 4 if desc else 0
                                     skills_found.append(
@@ -1071,6 +1241,8 @@ if (!window._mcAddPasteListenerAdded) {
                                             "description": desc,
                                             "source": source,
                                             "tokens": desc_tokens,
+                                            "path": str(skill_md),
+                                            "content": content,
                                         }
                                     )
 
@@ -1107,47 +1279,130 @@ if (!window._mcAddPasteListenerAdded) {
                                 "No skills found</div>"
                             )
                         else:
-                            _th = (
-                                "padding:8px 12px;text-align:left;color:#71717a;font-size:10px;"
-                                "text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #27272a;"
-                            )
-                            rows_html = ""
+                            from agile_backlog.pure import score_skill_quality
+
                             for sk in sorted(skills_found, key=lambda s: -s["tokens"]):
                                 src = sk.get("source", "")
                                 src_color = (
                                     "#3b82f6" if src == "project" else "#a78bfa" if src == "personal" else "#71717a"
                                 )
                                 desc = sk["description"]
-                                if len(desc) > 120:
-                                    desc = desc[:117] + "..."
+                                desc_short = (desc[:117] + "...") if len(desc) > 120 else desc
                                 tok = sk["tokens"]
-                                tok_color = "#f87171" if tok > 100 else "#ca8a04" if tok > 50 else "#71717a"
-                                rows_html += (
-                                    f"<tr><td style='padding:6px 12px;color:#e4e4e7;font-size:12px;"
-                                    f"font-weight:600;border-bottom:1px solid #27272a;white-space:nowrap;'>"
-                                    f"{safe_html(sk['name'])}</td>"
-                                    f"<td style='padding:6px 8px;color:{src_color};font-size:10px;"
-                                    f"border-bottom:1px solid #27272a;white-space:nowrap;"
-                                    f'font-family:"IBM Plex Mono",monospace;\'>'
-                                    f"{safe_html(src)}</td>"
-                                    f"<td style='padding:6px 12px;color:#a1a1aa;font-size:11px;"
-                                    f"border-bottom:1px solid #27272a;'>"
-                                    f"{safe_html(desc)}</td>"
-                                    f"<td style='padding:6px 12px;color:{tok_color};font-size:11px;"
-                                    f"text-align:center;border-bottom:1px solid #27272a;"
-                                    f'font-family:"IBM Plex Mono",monospace;\'>'
-                                    f"~{tok}</td></tr>"
-                                )
-                            ui.html(
-                                f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
-                                f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
-                                f"<thead><tr>"
-                                f"<th style='{_th}'>Skill</th>"
-                                f"<th style='{_th}'>Source</th>"
-                                f"<th style='{_th}'>Description</th>"
-                                f"<th style='{_th}text-align:center;'>Tokens</th>"
-                                f"</tr></thead><tbody>{rows_html}</tbody></table>"
-                            )
+                                quality = score_skill_quality(sk["name"], desc, sk["content"])
+                                qs = quality["score"]
+                                q_color = "#22c55e" if qs >= 80 else "#ca8a04" if qs >= 50 else "#f87171"
+                                header_text = f"{sk['name']}  ·  {desc_short[:60]}  ·  ~{tok} tok  ·  quality: {qs}"
+                                with ui.expansion(header_text).style(
+                                    "width:100%;margin-bottom:4px;color:#d4d4d8;font-size:12px;"
+                                    'font-family:"IBM Plex Mono",monospace;'
+                                ):
+                                    # Source and quality badge
+                                    ui.html(
+                                        f"<div style='display:flex;gap:12px;align-items:center;margin-bottom:8px;'>"
+                                        f"<span style='color:{src_color};font-size:10px;'>"
+                                        f"{safe_html(src)}</span>"
+                                        f"<span style='color:{q_color};font-size:11px;font-weight:600;'>"
+                                        f"Quality: {safe_html(str(qs))}/100</span></div>"
+                                    )
+                                    # Quality breakdown bars
+                                    _bd = quality["breakdown"]
+                                    _bd_html = ""
+                                    for _cat, _val in _bd.items():
+                                        _pct = int(_val / 25 * 100)
+                                        _c = "#22c55e" if _val >= 20 else "#ca8a04" if _val >= 10 else "#f87171"
+                                        _bd_html += (
+                                            f"<div style='display:flex;align-items:center;gap:6px;'>"
+                                            f"<span style='color:#71717a;font-size:9px;min-width:110px;'>"
+                                            f"{safe_html(_cat)}</span>"
+                                            f"<div style='flex:1;background:#27272a;height:8px;border-radius:4px;'>"
+                                            f"<div style='width:{_pct}%;background:{_c};height:8px;"
+                                            f"border-radius:4px;'></div></div>"
+                                            f"<span style='color:#a1a1aa;font-size:9px;min-width:24px;"
+                                            f"text-align:right;'>{safe_html(str(_val))}</span></div>"
+                                        )
+                                    ui.html(
+                                        f"<div style='display:flex;flex-direction:column;gap:3px;"
+                                        f"margin-bottom:8px;'>{_bd_html}</div>"
+                                    )
+                                    # Suggestions
+                                    if quality["suggestions"]:
+                                        _sug_html = "".join(
+                                            f"<div style='color:#ca8a04;font-size:10px;padding:1px 0;'>"
+                                            f"• {safe_html(s)}</div>"
+                                            for s in quality["suggestions"]
+                                        )
+                                        ui.html(
+                                            f"<div style='margin-bottom:8px;padding:6px 8px;background:#1e1e23;"
+                                            f"border-radius:4px;border:1px solid #27272a;'>{_sug_html}</div>"
+                                        )
+                                    # Content view and edit area
+                                    _sk_state: dict = {
+                                        "path": sk["path"],
+                                        "content": sk["content"],
+                                        "editing": False,
+                                    }
+                                    _content_container = ui.element("div")
+
+                                    def _render_view_mode(_container, state=_sk_state):
+                                        _container.clear()
+                                        with _container:
+                                            ui.html(
+                                                f"<pre style='background:#18181b;color:#a1a1aa;padding:8px;"
+                                                f"border-radius:6px;font-size:10px;"
+                                                f'font-family:"IBM Plex Mono",monospace;'
+                                                f"white-space:pre-wrap;overflow-x:auto;max-height:400px;"
+                                                f"overflow-y:auto;'>{safe_html(state['content'])}</pre>"
+                                            )
+
+                                    def _render_edit_mode(_container, state=_sk_state):
+                                        _container.clear()
+                                        with _container:
+                                            _ta = ui.textarea(value=state["content"]).style(
+                                                "width:100%;min-height:300px;background:#18181b;color:#a1a1aa;"
+                                                "font-family:'IBM Plex Mono',monospace;font-size:10px;"
+                                            )
+
+                                            def _save(ta=_ta, cont=_container, st=state):
+                                                _Path(st["path"]).write_text(ta.value)
+                                                st["content"] = ta.value
+                                                st["editing"] = False
+                                                _render_view_mode(cont, st)
+                                                ui.notify(f"Saved {st['path']}", type="positive")
+
+                                            ui.button("Save", on_click=_save).style(
+                                                "margin-top:6px;background:#22c55e;color:#18181b;"
+                                                "font-size:11px;padding:4px 12px;"
+                                            )
+
+                                    _render_view_mode(_content_container)
+
+                                    # Action buttons
+                                    with ui.element("div").style("display:flex;gap:8px;margin-top:6px;"):
+
+                                        def _toggle_edit(cont=_content_container, state=_sk_state):
+                                            if state["editing"]:
+                                                state["editing"] = False
+                                                _render_view_mode(cont, state)
+                                            else:
+                                                state["editing"] = True
+                                                _render_edit_mode(cont, state)
+
+                                        ui.button("Edit", on_click=_toggle_edit).style(
+                                            "background:#3b82f6;color:#fff;font-size:11px;padding:4px 12px;"
+                                        )
+
+                                        def _validate(n=sk["name"], d=sk["description"], state=_sk_state):
+                                            q = score_skill_quality(n, d, state["content"])
+                                            ui.notify(
+                                                f"Quality: {q['score']}/100 — "
+                                                + (", ".join(q["suggestions"]) if q["suggestions"] else "No issues"),
+                                                type="info" if q["score"] >= 50 else "warning",
+                                            )
+
+                                        ui.button("Validate", on_click=_validate).style(
+                                            "background:#27272a;color:#d4d4d8;font-size:11px;padding:4px 12px;"
+                                        )
 
                     # --- CLAUDE.md Tab ---
                     with ui.tab_panel(claude_md_tab):

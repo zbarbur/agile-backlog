@@ -10,7 +10,7 @@ import yaml
 
 import agile_backlog.yaml_store as _yaml_store
 from agile_backlog.config import get_context_logs_dir, get_current_sprint, get_serve_port
-from agile_backlog.context_report import generate_sprint_report
+from agile_backlog.context_report import generate_sprint_report, generate_sprint_summary
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
 
@@ -535,6 +535,31 @@ def context_report(log_dir, output_dir, sprint):
         log_dir = str(get_context_logs_dir())
     report_path = generate_sprint_report(Path(log_dir), Path(output_dir), sprint)
     click.echo(f"Report generated: {report_path}")
+
+
+@main.command("context-summary")
+@click.option("--sprint", required=True, type=int, help="Sprint number")
+@click.option("--output-dir", default="docs/sprints", help="Output directory")
+@click.option("--log-dir", default=None, help="Directory with session tool logs")
+def context_summary(sprint, output_dir, log_dir):
+    """Generate a markdown context summary for a sprint."""
+    import json as _json
+
+    out = Path(output_dir)
+    report_path = out / f"SPRINT{sprint}_CONTEXT_REPORT.json"
+    if report_path.exists():
+        report = _json.loads(report_path.read_text())
+    else:
+        if log_dir is None:
+            log_dir = str(get_context_logs_dir())
+        generated = generate_sprint_report(Path(log_dir), out, sprint)
+        report = _json.loads(generated.read_text())
+
+    md = generate_sprint_summary(report)
+    md_path = out / f"SPRINT{sprint}_CONTEXT_SUMMARY.md"
+    out.mkdir(parents=True, exist_ok=True)
+    md_path.write_text(md)
+    click.echo(f"Summary written: {md_path}")
 
 
 def _pid_file() -> Path:

@@ -33,7 +33,7 @@ code_reviewed: false
 comments:
 - text: this one is for a discussion as it's a big feature with several items to consider
   flagged: true
-  resolved: false
+  resolved: true
   created: '2026-03-24'
   author: user
 images: []

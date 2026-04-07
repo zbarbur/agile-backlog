@@ -1,12 +1,11 @@
-title: "Process review prompts \u2014 actionable one-click prompts for CLAUDE.md audit,\
-  \ skill description optimization, hook coverage gaps, permission consolidation,\
-  \ and context budget check"
+title: "Design session \u2014 dashboard v2 consolidation (process prompts, optimization\
+  \ guidelines, context enhancements)"
 status: backlog
 priority: P1
 category: feature
-sprint_target: 0
-created: 2026-04-02
-updated: 2026-04-02
+sprint_target: null
+created: 2026-04-07
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: ''

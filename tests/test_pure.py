@@ -18,6 +18,7 @@ from agile_backlog.pure import (
     render_card_html,
     render_comment_html,
     safe_html,
+    score_skill_quality,
 )
 
 
@@ -531,6 +532,43 @@ class TestSafeHtml:
         assert "&lt;img" in html
 
 
+class TestFormatTrendIndicator:
+    def test_improving_lower_is_better(self):
+        from agile_backlog.pure import format_trend_indicator
+
+        result = format_trend_indicator(0.2, 0.5, lower_is_better=True)
+        assert "#22c55e" in result  # green
+        assert "↓" in result
+
+    def test_declining_lower_is_better(self):
+        from agile_backlog.pure import format_trend_indicator
+
+        result = format_trend_indicator(0.5, 0.2, lower_is_better=True)
+        assert "#f87171" in result  # red
+        assert "↑" in result
+
+    def test_stable(self):
+        from agile_backlog.pure import format_trend_indicator
+
+        result = format_trend_indicator(0.21, 0.20, lower_is_better=True)
+        assert "#71717a" in result  # gray
+        assert "→" in result
+
+    def test_improving_higher_is_better(self):
+        from agile_backlog.pure import format_trend_indicator
+
+        result = format_trend_indicator(0.8, 0.5, lower_is_better=False)
+        assert "#22c55e" in result  # green
+        assert "↑" in result
+
+    def test_declining_higher_is_better(self):
+        from agile_backlog.pure import format_trend_indicator
+
+        result = format_trend_indicator(0.3, 0.6, lower_is_better=False)
+        assert "#f87171" in result  # red
+        assert "↓" in result
+
+
 class TestBacklogDirMtime:
     def test_empty_dir_returns_zero(self, tmp_path):
         assert backlog_dir_mtime(tmp_path) == 0.0
@@ -640,3 +678,61 @@ class TestParseSprintHandover:
         assert result["theme"] == "Quick Fix"
         assert result["date"] == "2026-02-01"
         assert "tests" not in result
+
+
+class TestScoreSkillQuality:
+    def test_score_skill_quality_good(self):
+        name = "sprint-end"
+        description = (
+            "Close the current sprint. Use when all sprint items are done. "
+            "TRIGGER when sprint is ending. Examples: closing sprints, writing handover docs."
+        )
+        content = (
+            "## Steps\n"
+            "1. Check all items are done\n"
+            "2. Write handover document\n"
+            "- [ ] Verify DoD\n"
+            "- [ ] Update PROJECT_CONTEXT.md\n"
+            "```bash\nagile-backlog sprint-end\n```\n"
+            "Must update the version. Always run CI before closing. Never skip the handover.\n"
+            "Run the tests. Check coverage. Verify all items pass DoD.\n"
+        )
+        result = score_skill_quality(name, description, content)
+        assert result["score"] >= 80
+        assert result["breakdown"]["description_length"] == 25
+        assert result["breakdown"]["trigger_keywords"] == 25
+        assert result["breakdown"]["action_patterns"] == 25
+        assert result["breakdown"]["content_structure"] == 25
+        assert len(result["suggestions"]) == 0
+
+    def test_score_skill_quality_poor(self):
+        name = "bad-skill"
+        description = "A skill."
+        content = "do stuff"
+        result = score_skill_quality(name, description, content)
+        assert result["score"] < 30
+        assert result["breakdown"]["description_length"] == 0
+        assert result["breakdown"]["trigger_keywords"] == 0
+
+    def test_score_skill_quality_medium(self):
+        name = "medium-skill"
+        description = "Use when you need to review code changes against project standards."
+        content = "## Review Checklist\nCheck the code for style issues.\nLook at test coverage.\n"
+        result = score_skill_quality(name, description, content)
+        assert 40 <= result["score"] <= 70
+
+    def test_score_skill_quality_empty_content(self):
+        result = score_skill_quality("empty", "A short desc for testing purposes here", "")
+        assert isinstance(result["score"], int)
+        assert result["score"] >= 0
+        assert isinstance(result["suggestions"], list)
+
+    def test_score_skill_quality_suggestions(self):
+        poor = score_skill_quality("bad", "A skill.", "do stuff")
+        assert len(poor["suggestions"]) > 0
+        good = score_skill_quality(
+            "good",
+            "Use when closing sprints. TRIGGER when sprint items are done. Examples: end sprint.",
+            "## Steps\n1. First\n2. Second\n- [ ] Check\n```bash\nrun\n```\nMust do. Always check. Never skip. Run CI.",
+        )
+        assert len(good["suggestions"]) == 0
