@@ -1,0 +1,36 @@
+title: edit repeatable list flags only append, no way to replace acceptance_criteria/technical_specs/test_plan
+status: backlog
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-04-15
+updated: 2026-04-15
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "When invoking 'agile-backlog edit ITEM_ID --acceptance-criteria \"new\"\
+  \ --technical-specs \"new\" --test-plan \"new\"' on an item that already has values\
+  \ for those fields, the new values are APPENDED to the existing lists instead of\
+  \ REPLACING them. There is no CLI flag to clear or replace the existing values.\
+  \ This makes in-place rescoping of an item impossible \u2014 when a sprint plan\
+  \ changes between sprint-end and sprint-start, the only options are: (a) edit the\
+  \ YAML file directly (violates the documented 'use agile-backlog edit, not manual\
+  \ editing' convention), (b) delete and recreate the item (loses ID, created date,\
+  \ history), or (c) live with appended-on-top contradictory criteria. Discovered\
+  \ 2026-04-15 during /sprint-start 12 in data_classifier when rescoping sprint12-shadow-directive-promotion-gate\
+  \ per the Sprint 12 reframe. Suggested fix: either add --clear-acceptance-criteria\
+  \ / --clear-technical-specs / --clear-test-plan flags, OR change semantics so repeatable\
+  \ flags REPLACE the list when invoked with --append-* variants for the additive\
+  \ case (matches AWS CLI / sklearn ecosystem conventions), OR add a --from-yaml-fragment\
+  \ FILE option that reads a YAML fragment and merges it with list replacement (matches\
+  \ GitHub Actions structured-input pattern). Workaround: edit the YAML files directly."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

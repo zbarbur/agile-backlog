@@ -4,9 +4,9 @@ title: "Track slash command skill invocations \u2014 capture /skill-name invocat
 status: backlog
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 32
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: ''

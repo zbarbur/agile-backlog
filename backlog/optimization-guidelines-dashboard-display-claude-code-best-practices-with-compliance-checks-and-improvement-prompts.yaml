@@ -1,11 +1,11 @@
 title: "Optimization guidelines dashboard \u2014 display Claude Code best practices\
   \ with compliance checks and improvement prompts"
-status: backlog
+status: doing
 priority: P1
 category: feature
-sprint_target: 29
+sprint_target: 31
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-09
 depends_on: []
 tags: []
 goal: ''
@@ -28,7 +28,7 @@ acceptance_criteria:
 - Each guideline has a one-click prompt to run analysis and get improvement suggestions
 test_plan: []
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

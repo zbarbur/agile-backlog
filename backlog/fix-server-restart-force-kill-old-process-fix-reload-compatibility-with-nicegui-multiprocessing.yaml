@@ -1,17 +1,17 @@
-title: add an easy ID for each item so it'll be easy to refer to it
+title: "Fix server restart \u2014 force-kill old process, fix --reload compatibility\
+  \ with NiceGUI multiprocessing"
 status: backlog
 priority: P2
-category: feature
-sprint_target: 31
-created: 2026-04-02
+category: bug
+sprint_target: null
+created: 2026-04-07
 updated: 2026-04-07
 depends_on: []
 tags: []
 goal: ''
 complexity: null
 technical_specs: []
-description: 'when communicating, it''ll be easier sometime to use this ID , let''s
-  talk what should be the format '
+description: ''
 acceptance_criteria: []
 test_plan: []
 notes: ''

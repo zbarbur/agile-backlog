@@ -3,9 +3,9 @@ title: "Refactor app.py \u2014 extract Context, Process, and Done views into sep
 status: backlog
 priority: P2
 category: chore
-sprint_target: null
+sprint_target: 32
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-04-07
 depends_on: []
 tags: []
 goal: ''
