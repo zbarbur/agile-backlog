@@ -1,21 +1,45 @@
 title: "Refactor app.py \u2014 extract Context, Process, and Done views into separate\
   \ modules to reduce 1576-line single file"
-status: backlog
+status: doing
 priority: P2
 category: chore
-sprint_target: 32
+sprint_target: 30
 created: 2026-04-02
-updated: 2026-04-07
+updated: 2026-04-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Extract the Done view (retrospective dashboard, per-sprint summaries, markdown
+  rendering) out of app.py into src/agile_backlog/views/done.py as the proof-of-pattern
+  slice toward breaking up the 1576-line file
+complexity: L
+technical_specs:
+- "File: src/agile_backlog/views/done.py \u2014 new module with Done view functions\
+  \ extracted verbatim"
+- "File: src/agile_backlog/views/__init__.py \u2014 new package init (may be empty\
+  \ or export render)"
+- "File: src/agile_backlog/app.py \u2014 remove extracted internals, import from views.done,\
+  \ preserve existing route binding"
+- 'Preserve existing patterns: shared state dicts for NiceGUI (no closure captures),
+  safe_html() on all ui.html() calls'
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- New module src/agile_backlog/views/done.py contains Done view rendering, retrospective
+  comparison UI, and markdown loading
+- src/agile_backlog/views/__init__.py created as package init
+- "app.py delegates Done view to views.done.render() \u2014 no Done-view internals\
+  \ remain in app.py"
+- app.py line count reduced by at least 300 lines
+- All existing Done view tests pass unchanged; no test logic moved unless imports
+  require it
+- 'Tests pass: .venv/bin/pytest tests/ -v'
+- 'Lint clean: .venv/bin/ruff check . && .venv/bin/ruff format --check .'
+test_plan:
+- 'pytest: all existing Done view tests pass without modification beyond import paths'
+- "Manual web UI check: .venv/bin/agile-backlog serve \u2014 Done tab shows retrospective\
+  \ dashboard, sprint comparison table, per-sprint summaries as before"
+- "wc -l src/agile_backlog/app.py shows reduction \u2265300 lines vs pre-refactor"
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

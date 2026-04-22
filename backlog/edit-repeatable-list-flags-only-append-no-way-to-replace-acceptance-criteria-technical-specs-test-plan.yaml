@@ -1,15 +1,21 @@
 title: edit repeatable list flags only append, no way to replace acceptance_criteria/technical_specs/test_plan
-status: backlog
+status: doing
 priority: P1
 category: bug
-sprint_target: null
+sprint_target: 30
 created: 2026-04-15
-updated: 2026-04-15
+updated: 2026-04-22
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Make agile-backlog edit --acceptance-criteria/--technical-specs/--test-plan
+  flags capable of REPLACING existing values so rescoping doesn't require manual YAML
+  edits
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 modify edit command Click handler for --acceptance-criteria,\
+  \ --technical-specs, --test-plan flags"
+- "File: tests/test_cli.py (or equivalent) \u2014 add regression tests covering replace\
+  \ vs append for each list field"
 description: "When invoking 'agile-backlog edit ITEM_ID --acceptance-criteria \"new\"\
   \ --technical-specs \"new\" --test-plan \"new\"' on an item that already has values\
   \ for those fields, the new values are APPENDED to the existing lists instead of\
@@ -26,10 +32,23 @@ description: "When invoking 'agile-backlog edit ITEM_ID --acceptance-criteria \"
   \ case (matches AWS CLI / sklearn ecosystem conventions), OR add a --from-yaml-fragment\
   \ FILE option that reads a YAML fragment and merges it with list replacement (matches\
   \ GitHub Actions structured-input pattern). Workaround: edit the YAML files directly."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Running edit with a repeatable list flag replaces the existing list instead of appending
+- A --append-acceptance-criteria / --append-technical-specs / --append-test-plan flag
+  (or equivalent) preserves the current append behavior as an opt-in
+- Regression test covers replace-default and append-opt-in semantics for all 3 list
+  fields
+- 'Tests pass: .venv/bin/pytest tests/ -v'
+- 'Lint clean: .venv/bin/ruff check . && .venv/bin/ruff format --check .'
+test_plan:
+- 'tests/test_cli.py: edit with --acceptance-criteria on populated item replaces the
+  list'
+- 'tests/test_cli.py: edit with --append-acceptance-criteria on populated item appends
+  to the list'
+- 'Manual: create item, populate AC via edit, re-run edit with new values, verify
+  YAML shows only the new values'
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []
