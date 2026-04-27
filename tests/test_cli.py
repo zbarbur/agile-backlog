@@ -244,13 +244,58 @@ class TestEdit:
         assert "My goal" in show.output
         assert "P1" in show.output
 
-    def test_edit_acceptance_criteria(self, runner, backlog_dir):
+    @pytest.mark.parametrize(
+        "flag,append_flag,field",
+        [
+            ("--acceptance-criteria", "--append-acceptance-criteria", "acceptance_criteria"),
+            ("--technical-specs", "--append-technical-specs", "technical_specs"),
+            ("--test-plan", "--append-test-plan", "test_plan"),
+        ],
+    )
+    def test_edit_list_flag_replaces_existing(self, runner, backlog_dir, flag, append_flag, field):
+        """Repeatable list flags replace the existing list (default semantic)."""
         runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        runner.invoke(main, ["edit", "edit-me", flag, "old-1", flag, "old-2"])
+        result = runner.invoke(main, ["edit", "edit-me", flag, "new-only"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "edit-me.yaml").read_text())
+        assert data[field] == ["new-only"]
+
+    @pytest.mark.parametrize(
+        "flag,append_flag,field",
+        [
+            ("--acceptance-criteria", "--append-acceptance-criteria", "acceptance_criteria"),
+            ("--technical-specs", "--append-technical-specs", "technical_specs"),
+            ("--test-plan", "--append-test-plan", "test_plan"),
+        ],
+    )
+    def test_edit_append_flag_extends_existing(self, runner, backlog_dir, flag, append_flag, field):
+        """--append-* flags extend the existing list (opt-in semantic)."""
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        runner.invoke(main, ["edit", "edit-me", flag, "first", flag, "second"])
+        result = runner.invoke(main, ["edit", "edit-me", append_flag, "third"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "edit-me.yaml").read_text())
+        assert data[field] == ["first", "second", "third"]
+
+    def test_edit_replace_then_append_in_one_call(self, runner, backlog_dir):
+        """Combining --foo and --append-foo in one invocation: replace first, then append."""
+        runner.invoke(main, ["add", "Edit me", "--category", "feature"])
+        runner.invoke(main, ["edit", "edit-me", "--acceptance-criteria", "old-1", "--acceptance-criteria", "old-2"])
         result = runner.invoke(
             main,
-            ["edit", "edit-me", "--acceptance-criteria", "Criterion 1", "--acceptance-criteria", "Criterion 2"],
+            [
+                "edit",
+                "edit-me",
+                "--acceptance-criteria",
+                "fresh",
+                "--append-acceptance-criteria",
+                "extra",
+            ],
         )
         assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "edit-me.yaml").read_text())
+        assert data["acceptance_criteria"] == ["fresh", "extra"]
 
     def test_edit_nonexistent(self, runner):
         result = runner.invoke(main, ["edit", "nope", "--goal", "test"])

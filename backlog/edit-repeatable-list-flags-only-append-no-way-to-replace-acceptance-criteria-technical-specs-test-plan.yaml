@@ -4,12 +4,12 @@ priority: P1
 category: bug
 sprint_target: 30
 created: 2026-04-15
-updated: 2026-04-22
+updated: 2026-04-26
 depends_on: []
 tags: []
-goal: Make agile-backlog edit --acceptance-criteria/--technical-specs/--test-plan
-  flags capable of REPLACING existing values so rescoping doesn't require manual YAML
-  edits
+goal: Add --append-* opt-in flags so the edit command supports both replace (default,
+  current behavior) and append semantics for technical_specs/acceptance_criteria/test_plan,
+  plus regression tests locking in replace as default
 complexity: S
 technical_specs:
 - "File: src/agile_backlog/cli.py \u2014 modify edit command Click handler for --acceptance-criteria,\
@@ -48,8 +48,8 @@ test_plan:
 - 'Manual: create item, populate AC via edit, re-run edit with new values, verify
   YAML shows only the new values'
 notes: ''
-phase: plan
+phase: review
 design_reviewed: false
-code_reviewed: false
+code_reviewed: true
 comments: []
 images: []
