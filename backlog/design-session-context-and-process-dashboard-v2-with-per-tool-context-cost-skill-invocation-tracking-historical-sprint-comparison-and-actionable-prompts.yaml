@@ -6,7 +6,7 @@ priority: P1
 category: feature
 sprint_target: 31
 created: 2026-04-02
-updated: 2026-04-07
+updated: 2026-04-27
 depends_on: []
 tags: []
 goal: ''
@@ -29,7 +29,10 @@ acceptance_criteria:
 - 'Actionable prompts: each section has a run-this-to-improve button'
 - 'Context breakdown by category: reads vs writes vs search vs execution'
 test_plan: []
-notes: ''
+notes: 'Fulfilled by docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md. Implementation lives
+  in sprint 31 items: dashboard-v2-actionable-prompt-registry-and-component, dashboard-v2-context-view-tools-categories-rereads-tabs,
+  dashboard-v2-skill-invocation-tracking-hook-and-skills-tab-usage, dashboard-v2-hooks-permissions-claude-md-tab-enhancements.
+  Plugins tab (AC #6) deferred to sprint 32.'
 phase: null
 design_reviewed: false
 code_reviewed: false

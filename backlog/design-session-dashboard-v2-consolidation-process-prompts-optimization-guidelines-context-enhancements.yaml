@@ -5,7 +5,7 @@ priority: P1
 category: feature
 sprint_target: 30
 created: 2026-04-07
-updated: 2026-04-22
+updated: 2026-04-27
 depends_on: []
 tags: []
 goal: Produce a single consolidated design doc unifying process-review-prompts, optimization-guidelines-dashboard,
@@ -31,8 +31,8 @@ test_plan:
   decisions'
 - Verify each source item's updated notes link resolves to the design doc anchor
 notes: ''
-phase: plan
-design_reviewed: false
+phase: review
+design_reviewed: true
 code_reviewed: false
 comments: []
 images: []
