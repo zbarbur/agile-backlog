@@ -1,10 +1,10 @@
 title: edit repeatable list flags only append, no way to replace acceptance_criteria/technical_specs/test_plan
-status: doing
+status: done
 priority: P1
 category: bug
 sprint_target: 30
 created: 2026-04-15
-updated: 2026-04-26
+updated: 2026-05-26
 depends_on: []
 tags: []
 goal: Add --append-* opt-in flags so the edit command supports both replace (default,

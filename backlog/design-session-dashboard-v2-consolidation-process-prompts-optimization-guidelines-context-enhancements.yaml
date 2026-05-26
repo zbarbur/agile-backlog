@@ -1,11 +1,11 @@
 title: "Design session \u2014 dashboard v2 consolidation (process prompts, optimization\
   \ guidelines, context enhancements)"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 30
 created: 2026-04-07
-updated: 2026-04-27
+updated: 2026-05-26
 depends_on: []
 tags: []
 goal: Produce a single consolidated design doc unifying process-review-prompts, optimization-guidelines-dashboard,
