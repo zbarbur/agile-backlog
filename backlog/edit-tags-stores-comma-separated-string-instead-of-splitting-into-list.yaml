@@ -1,0 +1,28 @@
+title: edit --tags stores comma-separated string instead of splitting into list
+status: backlog
+priority: P2
+category: bug
+sprint_target: null
+created: 2026-04-15
+updated: 2026-04-15
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "When invoking 'agile-backlog edit ITEM_ID --tags \"a,b,c\"', the tags\
+  \ field in the YAML stores a list with one entry containing the literal string 'a,b,c'\
+  \ instead of three separate list entries. Discovered 2026-04-15 during /sprint-start\
+  \ 12 in the data_classifier project \u2014 the rescoped sprint12-shadow-directive-promotion-gate\
+  \ item had tags: ['sprint12,meta-classifier,directive-promotion,family-metric,critical-path']\
+  \ in the resulting YAML. Expected: tags should split on comma into a proper YAML\
+  \ list. Fix scope: likely a one-line .split(',') in the click handler for --tags,\
+  \ plus a regression test. Workaround: edit the YAML directly."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -2,12 +2,13 @@ title: Add claude code terminal session
 status: backlog
 priority: P2
 category: feature
-sprint_target: 30
+sprint_target: null
 created: 2026-03-23
-updated: 2026-04-02
+updated: 2026-05-26
 depends_on: []
 tags:
 - plugin
+- on-hold
 goal: ''
 complexity: null
 technical_specs: []
@@ -56,4 +57,11 @@ comments:
   resolved: true
   created: '2026-03-23'
   author: user
+- text: "Delayed \u2014 removed from Sprint 30. Defer until: (a) Node.js dependency\
+    \ is acceptable, or (b) we pursue the smaller 'open in terminal with backlog context'\
+    \ alternative (see earlier agent assessment in this thread)."
+  flagged: false
+  resolved: false
+  created: '2026-05-26'
+  author: agent
 images: []

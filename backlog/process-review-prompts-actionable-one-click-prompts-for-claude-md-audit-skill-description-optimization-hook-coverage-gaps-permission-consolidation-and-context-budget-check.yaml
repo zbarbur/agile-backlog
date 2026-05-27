@@ -1,12 +1,12 @@
 title: "Process review prompts \u2014 actionable one-click prompts for CLAUDE.md audit,\
   \ skill description optimization, hook coverage gaps, permission consolidation,\
   \ and context budget check"
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: 0
+sprint_target: 31
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-05-26
 depends_on: []
 tags: []
 goal: ''
@@ -15,9 +15,20 @@ technical_specs: []
 description: ''
 acceptance_criteria: []
 test_plan: []
-notes: ''
+notes: Superseded by docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md. The 'actionable
+  prompts' surface is implemented as a shared registry in sprint 31 item 1 (dashboard-v2-actionable-prompt-registry-and-component)
+  and consumed inline by items 2/3/4/5. Per design decision D1, prompts are co-located
+  with findings rather than aggregated into an Action Center.
 phase: null
 design_reviewed: false
 code_reviewed: false
-comments: []
+comments:
+- text: Superseded by docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md. The actionable-prompts
+    surface is implemented as a shared registry in Sprint 31 item dashboard-v2-actionable-prompt-registry-and-component
+    and consumed inline by items 2-5. Per design decision D1, prompts are co-located
+    with findings rather than aggregated into an Action Center.
+  flagged: false
+  resolved: false
+  created: '2026-05-26'
+  author: agent
 images: []

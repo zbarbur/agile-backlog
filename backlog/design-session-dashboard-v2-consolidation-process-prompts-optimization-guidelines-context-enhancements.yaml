@@ -1,22 +1,38 @@
 title: "Design session \u2014 dashboard v2 consolidation (process prompts, optimization\
   \ guidelines, context enhancements)"
-status: backlog
+status: done
 priority: P1
 category: feature
-sprint_target: null
+sprint_target: 30
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-05-26
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Produce a single consolidated design doc unifying process-review-prompts, optimization-guidelines-dashboard,
+  and context-and-process-dashboard v2 threads into a coherent sprint 31 implementation
+  spec
+complexity: M
+technical_specs:
+- "File: docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md \u2014 new consolidated design\
+  \ doc"
+- 'Reconcile items: optimization-guidelines-dashboard, process-review-prompts, design-session-context-and-process-dashboard-v2'
+- Use existing NiceGUI Process/Context view architecture in src/agile_backlog/app.py
+  as layout constraint
 description: ''
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Design doc written to docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md
+- 'Doc covers all 3 threads: process-review-prompts, optimization-guidelines, context/process
+  dashboard v2'
+- Doc includes decision log recording consolidation tradeoffs and rejected alternatives
+- Doc produces concrete AC for each follow-up sprint 31 implementation item
+- Each source backlog item's notes field points at the design doc as source of truth
+test_plan:
+- 'Manual review: read doc end-to-end, confirm all 3 threads addressed with concrete
+  decisions'
+- Verify each source item's updated notes link resolves to the design doc anchor
 notes: ''
-phase: null
-design_reviewed: false
+phase: review
+design_reviewed: true
 code_reviewed: false
 comments: []
 images: []

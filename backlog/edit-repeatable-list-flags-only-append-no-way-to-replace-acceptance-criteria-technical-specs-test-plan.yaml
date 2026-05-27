@@ -1,0 +1,55 @@
+title: edit repeatable list flags only append, no way to replace acceptance_criteria/technical_specs/test_plan
+status: done
+priority: P1
+category: bug
+sprint_target: 30
+created: 2026-04-15
+updated: 2026-05-26
+depends_on: []
+tags: []
+goal: Add --append-* opt-in flags so the edit command supports both replace (default,
+  current behavior) and append semantics for technical_specs/acceptance_criteria/test_plan,
+  plus regression tests locking in replace as default
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 modify edit command Click handler for --acceptance-criteria,\
+  \ --technical-specs, --test-plan flags"
+- "File: tests/test_cli.py (or equivalent) \u2014 add regression tests covering replace\
+  \ vs append for each list field"
+description: "When invoking 'agile-backlog edit ITEM_ID --acceptance-criteria \"new\"\
+  \ --technical-specs \"new\" --test-plan \"new\"' on an item that already has values\
+  \ for those fields, the new values are APPENDED to the existing lists instead of\
+  \ REPLACING them. There is no CLI flag to clear or replace the existing values.\
+  \ This makes in-place rescoping of an item impossible \u2014 when a sprint plan\
+  \ changes between sprint-end and sprint-start, the only options are: (a) edit the\
+  \ YAML file directly (violates the documented 'use agile-backlog edit, not manual\
+  \ editing' convention), (b) delete and recreate the item (loses ID, created date,\
+  \ history), or (c) live with appended-on-top contradictory criteria. Discovered\
+  \ 2026-04-15 during /sprint-start 12 in data_classifier when rescoping sprint12-shadow-directive-promotion-gate\
+  \ per the Sprint 12 reframe. Suggested fix: either add --clear-acceptance-criteria\
+  \ / --clear-technical-specs / --clear-test-plan flags, OR change semantics so repeatable\
+  \ flags REPLACE the list when invoked with --append-* variants for the additive\
+  \ case (matches AWS CLI / sklearn ecosystem conventions), OR add a --from-yaml-fragment\
+  \ FILE option that reads a YAML fragment and merges it with list replacement (matches\
+  \ GitHub Actions structured-input pattern). Workaround: edit the YAML files directly."
+acceptance_criteria:
+- Running edit with a repeatable list flag replaces the existing list instead of appending
+- A --append-acceptance-criteria / --append-technical-specs / --append-test-plan flag
+  (or equivalent) preserves the current append behavior as an opt-in
+- Regression test covers replace-default and append-opt-in semantics for all 3 list
+  fields
+- 'Tests pass: .venv/bin/pytest tests/ -v'
+- 'Lint clean: .venv/bin/ruff check . && .venv/bin/ruff format --check .'
+test_plan:
+- 'tests/test_cli.py: edit with --acceptance-criteria on populated item replaces the
+  list'
+- 'tests/test_cli.py: edit with --append-acceptance-criteria on populated item appends
+  to the list'
+- 'Manual: create item, populate AC via edit, re-run edit with new values, verify
+  YAML shows only the new values'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: true
+comments: []
+images: []

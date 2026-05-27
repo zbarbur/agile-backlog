@@ -1,0 +1,152 @@
+{
+  "sprint": 30,
+  "total_reads": 17,
+  "unique_files": 9,
+  "reread_count": 8,
+  "reread_ratio": 0.47,
+  "estimated_tokens": 13780,
+  "top_files": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+      "count": 8
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/backlog/add-claude-code-terminal-session.yaml",
+      "count": 2
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/backlog/export-to-kanban-md.yaml",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT29_HANDOVER.md",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/backlog/design-session-context-and-process-dashboard-v2-with-per-tool-context-cost-skill-invocation-tracking-historical-sprint-comparison-and-actionable-prompts.yaml",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/plans/2026-05-26-refactor-app-py-done-view.md",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+      "count": 1
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/views/done.py",
+      "count": 1
+    }
+  ],
+  "wasteful_reads": [],
+  "tool_usage": {
+    "total_tool_calls": 167,
+    "by_tool": {
+      "Bash": 135,
+      "Read": 17,
+      "Edit": 9,
+      "Write": 3,
+      "Skill": 2,
+      "Agent": 1
+    },
+    "reads": 17,
+    "writes": 12,
+    "read_write_ratio": 1.42
+  },
+  "efficiency": {
+    "total_reads": 17,
+    "reread_count": 8,
+    "exact_reread_count": 0,
+    "reread_waste_ratio": 0.0,
+    "unique_grep_patterns": 0,
+    "total_grep_calls": 0
+  },
+  "errors": {
+    "total_errors": 0,
+    "error_rate": 0.0,
+    "errors_by_tool": {},
+    "top_error_commands": []
+  },
+  "sessions": [
+    {
+      "total_reads": 17,
+      "unique_files": 9,
+      "reread_count": 8,
+      "reread_ratio": 0.47,
+      "estimated_tokens": 13780,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 8
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/add-claude-code-terminal-session.yaml",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/export-to-kanban-md.yaml",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT29_HANDOVER.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/design-session-context-and-process-dashboard-v2-with-per-tool-context-cost-skill-invocation-tracking-historical-sprint-comparison-and-actionable-prompts.yaml",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/plans/2026-05-26-refactor-app-py-done-view.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/views/done.py",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "w0t0p08087CDF5-B334-47EE-9763-9DD065DCF120",
+      "tool_usage": {
+        "total_tool_calls": 167,
+        "by_tool": {
+          "Bash": 135,
+          "Read": 17,
+          "Edit": 9,
+          "Write": 3,
+          "Skill": 2,
+          "Agent": 1
+        },
+        "reads": 17,
+        "writes": 12,
+        "read_write_ratio": 1.42
+      },
+      "efficiency": {
+        "total_reads": 17,
+        "reread_count": 8,
+        "exact_reread_count": 0,
+        "reread_waste_ratio": 0.0,
+        "unique_grep_patterns": 0,
+        "total_grep_calls": 0
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+title: "Dashboard v2 \u2014 Hooks, Permissions, CLAUDE.md tab enhancements"
+status: backlog
+priority: P1
+category: feature
+sprint_target: 31
+created: 2026-05-26
+updated: 2026-05-26
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: See docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md Section 3 for full acceptance
+  criteria, technical specs, and dependencies. This item is one of 5 produced by the
+  Sprint 30 design session.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

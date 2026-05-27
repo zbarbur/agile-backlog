@@ -9,7 +9,7 @@ python_version: "3.11+"
 current_sprint: 30
 # Versioning — sprint-based: v0.{sprint}.{patch}
 version_scheme: "sprint"
-current_version: "0.30.0"
+current_version: "0.31.0"
 
 # Web UI
 serve_port: 8501
@@ -52,7 +52,7 @@ commit_style: conventional
 
 # Sprint settings
 # Archive — done items from older sprints are hidden on the board
-archive_sprints: 2
+archive_sprints: 5
 
 default_sprint_capacity:
   small: 3-4

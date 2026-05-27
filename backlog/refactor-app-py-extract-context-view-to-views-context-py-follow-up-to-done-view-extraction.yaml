@@ -1,0 +1,25 @@
+title: "Refactor app.py \u2014 extract Context view to views/context.py (follow-up\
+  \ to Done view extraction)"
+status: backlog
+priority: P2
+category: chore
+sprint_target: 31
+created: 2026-05-26
+updated: 2026-05-27
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: Follow-up to Sprint 30's Done view extraction. Pattern is set in src/agile_backlog/views/done.py.
+  Extract the Context analysis dashboard block (~app.py lines 947 onward) into src/agile_backlog/views/context.py
+  following the same render_context_view(...) pattern with closure dependencies as
+  parameters.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

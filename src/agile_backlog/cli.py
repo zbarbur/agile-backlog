@@ -240,9 +240,42 @@ def delete(item_ids: tuple[str, ...], skip_confirm: bool):
 @click.option("--sprint", "sprint_target", type=int, default=None)
 @click.option("--goal", default=None)
 @click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None)
-@click.option("--technical-specs", "technical_specs", multiple=True, help="Technical spec (repeatable).")
-@click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
-@click.option("--test-plan", "test_plan", multiple=True, help="Test plan item (repeatable).")
+@click.option(
+    "--technical-specs",
+    "technical_specs",
+    multiple=True,
+    help="Technical spec (repeatable, replaces existing).",
+)
+@click.option(
+    "--acceptance-criteria",
+    "acceptance_criteria",
+    multiple=True,
+    help="DoD criterion (repeatable, replaces existing).",
+)
+@click.option(
+    "--test-plan",
+    "test_plan",
+    multiple=True,
+    help="Test plan item (repeatable, replaces existing).",
+)
+@click.option(
+    "--append-technical-specs",
+    "append_technical_specs",
+    multiple=True,
+    help="Append to technical_specs without replacing (opt-in).",
+)
+@click.option(
+    "--append-acceptance-criteria",
+    "append_acceptance_criteria",
+    multiple=True,
+    help="Append to acceptance_criteria without replacing (opt-in).",
+)
+@click.option(
+    "--append-test-plan",
+    "append_test_plan",
+    multiple=True,
+    help="Append to test_plan without replacing (opt-in).",
+)
 @click.option(
     "--phase",
     type=click.Choice(["plan", "spec", "build", "review"]),
@@ -258,6 +291,9 @@ def delete(item_ids: tuple[str, ...], skip_confirm: bool):
 )
 def edit(item_ids: tuple[str, ...], resolve_notes: bool, **kwargs):
     """Edit fields on a backlog item (accepts multiple IDs)."""
+    append_specs = kwargs.pop("append_technical_specs", ()) or ()
+    append_ac = kwargs.pop("append_acceptance_criteria", ()) or ()
+    append_test = kwargs.pop("append_test_plan", ()) or ()
     errors = False
     for item_id in item_ids:
         try:
@@ -273,6 +309,13 @@ def edit(item_ids: tuple[str, ...], resolve_notes: bool, **kwargs):
                     setattr(item, field, list(value))
                 else:
                     setattr(item, field, value)
+
+        if append_specs:
+            item.technical_specs.extend(append_specs)
+        if append_ac:
+            item.acceptance_criteria.extend(append_ac)
+        if append_test:
+            item.test_plan.extend(append_test)
 
         if resolve_notes:
             for n in item.comments:
