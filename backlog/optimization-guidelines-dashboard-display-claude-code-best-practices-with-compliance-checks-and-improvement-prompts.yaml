@@ -1,11 +1,11 @@
 title: "Optimization guidelines dashboard \u2014 display Claude Code best practices\
   \ with compliance checks and improvement prompts"
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 31
 created: 2026-04-02
-updated: 2026-04-27
+updated: 2026-05-26
 depends_on: []
 tags: []
 goal: ''
@@ -34,5 +34,13 @@ notes: "Superseded by docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md (sprint 31 ite
 phase: null
 design_reviewed: false
 code_reviewed: false
-comments: []
+comments:
+- text: 'Superseded by docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md (Sprint 31 item:
+    dashboard-v2-process-view-guidelines-and-audit-tab). All 7 original ACs are addressed
+    by the new item''s ACs; threshold values moved to sprint-config.yaml per design
+    decision D5.'
+  flagged: false
+  resolved: false
+  created: '2026-05-26'
+  author: agent
 images: []

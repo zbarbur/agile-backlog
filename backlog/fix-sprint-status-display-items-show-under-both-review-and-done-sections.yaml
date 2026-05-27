@@ -1,0 +1,21 @@
+title: 'Fix sprint-status display: items show under both review and done sections'
+status: backlog
+priority: P3
+category: bug
+sprint_target: null
+created: 2026-05-26
+updated: 2026-05-26
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: ''
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

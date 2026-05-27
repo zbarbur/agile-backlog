@@ -1,6 +1,6 @@
 title: "Refactor app.py \u2014 extract Context, Process, and Done views into separate\
   \ modules to reduce 1576-line single file"
-status: doing
+status: done
 priority: P2
 category: chore
 sprint_target: 30
