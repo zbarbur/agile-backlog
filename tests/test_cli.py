@@ -297,6 +297,20 @@ class TestEdit:
         data = yaml.safe_load((backlog_dir / "edit-me.yaml").read_text())
         assert data["acceptance_criteria"] == ["fresh", "extra"]
 
+    def test_edit_append_with_multiple_ids(self, runner, backlog_dir):
+        """Batch edit with --append-* applies to every item, not just the first."""
+        runner.invoke(main, ["add", "Item A", "--category", "feature"])
+        runner.invoke(main, ["add", "Item B", "--category", "feature"])
+        runner.invoke(main, ["edit", "item-a", "item-b", "--acceptance-criteria", "base"])
+        result = runner.invoke(
+            main,
+            ["edit", "item-a", "item-b", "--append-acceptance-criteria", "added"],
+        )
+        assert result.exit_code == 0
+        for slug in ("item-a", "item-b"):
+            data = yaml.safe_load((backlog_dir / f"{slug}.yaml").read_text())
+            assert data["acceptance_criteria"] == ["base", "added"], slug
+
     def test_edit_nonexistent(self, runner):
         result = runner.invoke(main, ["edit", "nope", "--goal", "test"])
         assert result.exit_code != 0

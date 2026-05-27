@@ -26,7 +26,6 @@ def render_done_view(
     move_item: Callable[[BacklogItem, str], None],
     refresh_board: Callable[[], None],
 ) -> None:
-    """Render the Done view inside the current NiceGUI parent."""
     from agile_backlog.pure import parse_sprint_handover
 
     handover_dir = "docs/sprints"

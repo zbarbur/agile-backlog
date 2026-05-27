@@ -291,6 +291,9 @@ def delete(item_ids: tuple[str, ...], skip_confirm: bool):
 )
 def edit(item_ids: tuple[str, ...], resolve_notes: bool, **kwargs):
     """Edit fields on a backlog item (accepts multiple IDs)."""
+    append_specs = kwargs.pop("append_technical_specs", ()) or ()
+    append_ac = kwargs.pop("append_acceptance_criteria", ()) or ()
+    append_test = kwargs.pop("append_test_plan", ()) or ()
     errors = False
     for item_id in item_ids:
         try:
@@ -299,10 +302,6 @@ def edit(item_ids: tuple[str, ...], resolve_notes: bool, **kwargs):
             click.echo(f"Error: item '{item_id}' not found.", err=True)
             errors = True
             continue
-
-        append_specs = kwargs.pop("append_technical_specs", ()) or ()
-        append_ac = kwargs.pop("append_acceptance_criteria", ()) or ()
-        append_test = kwargs.pop("append_test_plan", ()) or ()
 
         for field, value in kwargs.items():
             if value is not None and value != ():
