@@ -704,6 +704,27 @@ if (!window._mcAddPasteListenerAdded) {
                     reads = analyze_reads(all_entries)
                     tools = analyze_tool_usage(all_entries)
 
+                    # Native-transcript usage (real tokens, cache-hit rate, cache-aware cost).
+                    # Additive + guarded: only rendered when transcript data is present.
+                    usage_summary: dict | None = None
+                    try:
+                        from pathlib import Path as _PathU
+
+                        from agile_backlog.context_report import analyze_usage
+                        from agile_backlog.transcript import discover_transcripts, parse_transcript
+
+                        _all_turns: list = []
+                        for _tp in discover_transcripts(_PathU.cwd()):
+                            try:
+                                _ts = parse_transcript(_tp)
+                            except Exception:
+                                continue
+                            _all_turns.extend(t for t in _ts.turns if not t.is_sidechain)
+                        if _all_turns:
+                            usage_summary = analyze_usage(_all_turns)
+                    except Exception:
+                        usage_summary = None
+
                     # Summary cards row
                     card_style = (
                         "background:#1e1e23;border:1px solid #27272a;border-radius:8px;"
@@ -731,6 +752,27 @@ if (!window._mcAddPasteListenerAdded) {
                             token_display = f"{tokens // 1000}k" if tokens >= 1000 else str(tokens)
                             ui.html(f'<div style="{label_style}">Est. Tokens</div>')
                             ui.html(f'<div style="{value_style}">{safe_html(token_display)}</div>')
+
+                    # Context efficiency (native transcript): cache-hit rate + real USD cost
+                    if usage_summary is not None:
+                        _hit_pct = round(usage_summary["cache_hit_rate"] * 100, 1)
+                        _hit_color = "#22c55e" if _hit_pct >= 80 else "#ca8a04" if _hit_pct >= 50 else "#f87171"
+                        _cost = usage_summary["cost_usd"]
+                        ui.html(
+                            '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:8px 0 8px;'
+                            "font-family:'DM Sans',sans-serif;\">Context Efficiency "
+                            '<span style="font-size:10px;font-weight:400;color:#71717a;">'
+                            "(native transcript)</span></div>"
+                        )
+                        with ui.element("div").style("display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"):
+                            with ui.element("div").style(card_style):
+                                ui.html(f'<div style="{label_style}">Cache-Hit Rate</div>')
+                                ui.html(
+                                    f'<div style="{value_style}color:{_hit_color};">{safe_html(str(_hit_pct))}%</div>'
+                                )
+                            with ui.element("div").style(card_style):
+                                ui.html(f'<div style="{label_style}">Real Token Cost</div>')
+                                ui.html(f'<div style="{value_style}">${safe_html(f"{_cost:.4f}")}</div>')
 
                     # Tool usage breakdown with drilldown
                     ui.html(
