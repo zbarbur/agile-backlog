@@ -4,7 +4,7 @@ priority: P1
 category: feature
 sprint_target: 31
 created: 2026-05-26
-updated: 2026-06-05
+updated: 2026-06-06
 depends_on: []
 tags: []
 goal: Build a shared prompts registry (template + get_prompt) plus a reusable prompt_button
@@ -44,7 +44,7 @@ notes: "No deps \u2014 ships FIRST; items context-view-tabs and the sprint-32 pr
   \ tabs all call prompt_button, so keep its signature stable. Only the registry +\
   \ primitive \u2014 no tabs/scorecards (those belong to consumer items). Supersedes\
   \ the done process-review-prompts item which was the broad version."
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
