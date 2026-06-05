@@ -1,0 +1,42 @@
+title: add command lacks goal/acceptance/tags flags that edit has
+status: doing
+priority: P3
+category: feature
+sprint_target: 31
+created: 2026-06-05
+updated: 2026-06-05
+depends_on: []
+tags: []
+goal: Add edit's richer flags (--goal, --acceptance-criteria, --tags, --complexity)
+  to the add command so a fully-specified item can be created in one call.
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 add 4 Click options to the add command mirroring\
+  \ edit (lines 30-44); pass into the existing BacklogItem(...) call (lines 60-67)\
+  \ with acceptance_criteria=list(...) and tags=list(...) \u2014 never comma-join\
+  \ tags"
+- "File: tests/test_cli.py \u2014 TestAdd: tests for --goal, --complexity, repeatable\
+  \ --acceptance-criteria, --tags stored as a list, and defaults-unchanged when flags\
+  \ omitted"
+description: add supports only title/priority/category/description/sprint. Bulk-creating
+  items from a spec needs add-then-edit or hand-written YAML (storybook migration
+  wrote a generator using the BacklogItem model). edit already has --goal/--acceptance-criteria/--tags/etc.
+acceptance_criteria:
+- add accepts --goal, --acceptance-criteria (repeatable), --tags (repeatable, stored
+  as a YAML list not a comma string), and --complexity (S/M/L), all persisted to the
+  created item
+- Existing add behavior is unchanged when the new flags are omitted (goal empty, acceptance_criteria
+  empty list, tags empty list, complexity None)
+- Tests pass; lint clean
+test_plan:
+- 'tests/test_cli.py: add with each new flag persists correctly; tags is a list of
+  multiple values; omitting flags keeps defaults'
+notes: 'DEFER --from-yaml bulk import to its own item (separate design: multi-doc
+  YAML, id/slug collisions, per-record validation). The 4 flags fully cover the storybook
+  pain point. Note: edit --tags already stores a list correctly, so there is no comma-string
+  bug to copy.'
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -1,0 +1,25 @@
+title: Detect repeated corrections and kitchen-sink topic-switching in sessions
+status: backlog
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-05-30
+updated: 2026-05-30
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Two source-backed signals (Claude Code best-practices docs): >2 corrections\
+  \ on the same issue, and unrelated topic-switching within one session \u2014 both\
+  \ indicate cluttered context warranting /clear. Add as Guidelines & Audit scorecard\
+  \ rows. Detectable from prompt sequence in native transcript. Thresholds config-driven.\
+  \ Source: research doc 2026-05-30."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

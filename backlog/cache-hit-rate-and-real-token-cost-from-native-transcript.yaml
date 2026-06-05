@@ -1,0 +1,50 @@
+title: Cache-hit rate and real token cost from native transcript
+status: doing
+priority: P1
+category: feature
+sprint_target: 31
+created: 2026-05-30
+updated: 2026-06-05
+depends_on:
+- native-transcript-ingestion-layer-parse-claude-code-session-jsonl-as-canonical-source
+tags: []
+goal: Compute per-session cache-hit rate and real USD token cost (cache-aware pricing)
+  from native transcript usage fields, surfaced as a context-efficiency metric in
+  the Context view.
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/context_report.py \u2014 add MODEL_PRICING_PER_1M table\
+  \ (Opus 4.8 5/25, Sonnet 4.6 3/15, Haiku 4.5 1/5) + cache multipliers (read 0.1x,\
+  \ write 1.25x), cache_hit_rate(), usage_cost_usd(), analyze_usage(); wire usage\
+  \ into generate_sprint_report per-session + aggregate. Do not touch tokens.py (design\
+  \ colors)."
+- "File: src/agile_backlog/app.py (or views/context.py if the extraction item has\
+  \ landed) \u2014 add a Context-efficiency card rendering cache_hit_rate and cost_usd"
+- "File: tests/test_context_report.py \u2014 tests for the formulas, mixed-model aggregation,\
+  \ unknown-model fallback, empty input"
+description: 'Replace TOKENS_PER_LINE=4 estimates with real usage fields. Compute
+  cache-hit rate (cache_read_input_tokens vs input_tokens) and real cost per session.
+  Surface as a first-class context-efficiency metric in the Context view. Depends
+  on native-transcript ingestion layer. Source: research doc 2026-05-30.'
+acceptance_criteria:
+- cache_hit_rate(usage) = cache_read/(cache_read+cache_creation+input), returns 0.0
+  on zero denominator
+- usage_cost_usd(usage, model) prices input 1x, cache_read 0.1x, cache_creation 1.25x,
+  output at output rate; unknown model falls back to a documented default without
+  crashing
+- analyze_usage aggregates token totals + cache-hit rate (computed on summed totals)
+  + cost across turns; report dict carries per-session and aggregate usage
+- Context view displays cache-hit rate as a percentage and real cost as a dollar figure
+- Tests pass; lint clean
+test_plan:
+- 'tests/test_context_report.py: cache-hit-rate basic/zero/no-cache; cost for Opus
+  + unknown-model fallback; analyze_usage aggregate + empty; generate_sprint_report
+  includes usage keys'
+notes: Hard dependency on native-transcript-ingestion (consumes per-turn usage dict
+  + model). Pricing verified against bundled claude-api reference; keep as a single
+  named table with documented default. Assumes 5-minute cache TTL.
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
