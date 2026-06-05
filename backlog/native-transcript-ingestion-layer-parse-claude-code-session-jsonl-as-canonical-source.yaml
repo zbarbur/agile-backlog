@@ -5,7 +5,7 @@ priority: P1
 category: feature
 sprint_target: 31
 created: 2026-05-30
-updated: 2026-06-05
+updated: 2026-06-06
 depends_on: []
 tags: []
 goal: "Add a transcript ingestion module that parses Claude Code native session JSONL\
@@ -47,7 +47,7 @@ test_plan:
 notes: 'FOUNDATION item (reverses design decision D2). Risks: slug discovery edge
   cases; server-side/Cowork sessions write no local JSONL; transcript format can drift
   across Claude Code versions (record per-session version field).'
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
