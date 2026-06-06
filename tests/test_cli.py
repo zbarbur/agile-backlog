@@ -73,6 +73,43 @@ class TestAdd:
         assert result.exit_code != 0
         assert "Cannot specify both" in result.output or "cannot specify both" in result.output.lower()
 
+    def test_add_with_goal(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "Goal task", "--category", "feature", "--goal", "Ship it"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "goal-task.yaml").read_text())
+        assert data["goal"] == "Ship it"
+
+    def test_add_with_complexity(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "Cx task", "--category", "feature", "--complexity", "M"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "cx-task.yaml").read_text())
+        assert data["complexity"] == "M"
+
+    def test_add_with_acceptance_criteria(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(
+            main,
+            ["add", "Ac task", "--category", "feature", "--acceptance-criteria", "a", "--acceptance-criteria", "b"],
+        )
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "ac-task.yaml").read_text())
+        assert data["acceptance_criteria"] == ["a", "b"]
+
+    def test_add_with_tags_stores_list(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "Tag task", "--category", "feature", "--tags", "x", "--tags", "y"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "tag-task.yaml").read_text())
+        assert isinstance(data["tags"], list)
+        assert data["tags"] == ["x", "y"]
+
+    def test_add_without_new_flags_uses_defaults(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(main, ["add", "Plain task", "--category", "feature"])
+        assert result.exit_code == 0
+        data = yaml.safe_load((backlog_dir / "plain-task.yaml").read_text())
+        assert data["goal"] == ""
+        assert data["complexity"] is None
+        assert data["tags"] == []
+        assert data["acceptance_criteria"] == []
+
 
 class TestList:
     def test_list_empty(self, runner: CliRunner):

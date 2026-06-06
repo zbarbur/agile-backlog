@@ -4,7 +4,7 @@ priority: P3
 category: feature
 sprint_target: 31
 created: 2026-06-05
-updated: 2026-06-05
+updated: 2026-06-06
 depends_on: []
 tags: []
 goal: Add edit's richer flags (--goal, --acceptance-criteria, --tags, --complexity)
@@ -35,7 +35,7 @@ notes: 'DEFER --from-yaml bulk import to its own item (separate design: multi-do
   YAML, id/slug collisions, per-record validation). The 4 flags fully cover the storybook
   pain point. Note: edit --tags already stores a list correctly, so there is no comma-string
   bug to copy.'
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
