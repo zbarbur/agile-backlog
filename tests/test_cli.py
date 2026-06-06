@@ -662,6 +662,7 @@ class TestInstallSkills:
         target = tmp_path / ".claude" / "skills"
         runner.invoke(main, ["install-skills", "--target", str(target)])
         result = runner.invoke(main, ["install-skills", "--target", str(target)])
+        assert result.exit_code == 0
         assert "Skipped" in result.output
 
     def test_install_skills_force(self, runner: CliRunner, tmp_path: Path):
@@ -669,8 +670,18 @@ class TestInstallSkills:
         target = tmp_path / ".claude" / "skills"
         runner.invoke(main, ["install-skills", "--target", str(target)])
         result = runner.invoke(main, ["install-skills", "--target", str(target), "--force"])
+        assert result.exit_code == 0
         assert "Installed" in result.output
         assert "Skipped" not in result.output
+
+    def test_install_skills_rerun_all_skipped_exits_zero(self, runner: CliRunner, tmp_path: Path):
+        """A second install run with everything skipped exits 0 with a skip summary."""
+        target = tmp_path / ".claude" / "skills"
+        runner.invoke(main, ["install-skills", "--target", str(target)])
+        result = runner.invoke(main, ["install-skills", "--target", str(target)])
+        assert result.exit_code == 0
+        assert "Skipped" in result.output
+        assert "Installed" not in result.output
 
 
 class TestContextReport:
