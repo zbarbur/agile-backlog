@@ -736,3 +736,81 @@ class TestScoreSkillQuality:
             "## Steps\n1. First\n2. Second\n- [ ] Check\n```bash\nrun\n```\nMust do. Always check. Never skip. Run CI.",
         )
         assert len(good["suggestions"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# categorize_tools / compute_reread_waste (Dashboard v2 Context tabs)
+# ---------------------------------------------------------------------------
+from agile_backlog.pure import TOOL_CATEGORIES, categorize_tools, compute_reread_waste  # noqa: E402
+
+
+def test_tool_categories_mapping():
+    assert TOOL_CATEGORIES == {
+        "Read": "Reads",
+        "Glob": "Reads",
+        "Edit": "Writes",
+        "Write": "Writes",
+        "Grep": "Search",
+        "Bash": "Execution",
+    }
+
+
+def test_categorize_tools_four_categories_with_sums_and_pct():
+    by_tool = {"Read": 5, "Glob": 1, "Edit": 2, "Write": 1, "Grep": 3, "Bash": 4}
+    tool_tokens = {"Read": 2000, "Glob": 20, "Edit": 200, "Write": 200, "Grep": 150, "Bash": 320}
+    result = categorize_tools(by_tool, tool_tokens)
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    assert result["Reads"]["calls"] == 6
+    assert result["Reads"]["tokens"] == 2020
+    assert result["Writes"]["calls"] == 3
+    assert result["Writes"]["tokens"] == 400
+    assert result["Search"]["calls"] == 3
+    assert result["Search"]["tokens"] == 150
+    assert result["Execution"]["calls"] == 4
+    assert result["Execution"]["tokens"] == 320
+    total = 2020 + 400 + 150 + 320
+    assert result["Reads"]["pct"] == round(2020 / total * 100, 1)
+    assert round(sum(r["pct"] for r in result.values()), 1) == 100.0
+
+
+def test_categorize_tools_unknown_tool_ignored():
+    by_tool = {"Read": 1, "Agent": 9, "Skill": 4}
+    tool_tokens = {"Read": 400, "Agent": 4500, "Skill": 120}
+    result = categorize_tools(by_tool, tool_tokens)
+    # Only mapped tools are bucketed; unknown tools (Agent/Skill) are ignored.
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    assert result["Reads"]["calls"] == 1
+    assert result["Reads"]["tokens"] == 400
+    assert result["Writes"]["calls"] == 0
+    assert result["Writes"]["tokens"] == 0
+    # pct over the categorized total only (Read = 400 of 400)
+    assert result["Reads"]["pct"] == 100.0
+
+
+def test_categorize_tools_empty():
+    result = categorize_tools({}, {})
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    for row in result.values():
+        assert row == {"calls": 0, "tokens": 0, "pct": 0.0}
+
+
+def test_compute_reread_waste_threshold_and_sort():
+    entries = [{"tool": "Read", "file": "a.py", "limit": 100} for _ in range(5)]
+    entries += [{"tool": "Read", "file": "b.py", "limit": 50} for _ in range(4)]
+    entries += [{"tool": "Read", "file": "c.py"} for _ in range(3)]  # exactly 3 -> excluded
+    entries += [{"tool": "Edit", "file": "a.py"}]  # non-Read ignored
+    result = compute_reread_waste(entries, threshold=3)
+    assert [r["file"] for r in result] == ["a.py", "b.py"]
+    assert result[0]["count"] == 5
+    assert result[1]["count"] == 4
+    # reread_tokens = (count-1) re-reads * per-read tokens (lines * TOKENS_PER_LINE)
+    from agile_backlog.context_report import TOKENS_PER_LINE
+
+    assert result[0]["reread_tokens"] == 4 * 100 * TOKENS_PER_LINE
+    assert result[1]["reread_tokens"] == 3 * 50 * TOKENS_PER_LINE
+
+
+def test_compute_reread_waste_empty_when_under_threshold():
+    entries = [{"tool": "Read", "file": "a.py"} for _ in range(3)]
+    assert compute_reread_waste(entries, threshold=3) == []
+    assert compute_reread_waste([], threshold=3) == []

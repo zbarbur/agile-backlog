@@ -291,6 +291,17 @@ def generate_sprint_report(
     return report_path
 
 
+def tool_category_breakdown(entries: list[dict]) -> dict[str, dict]:
+    """Compose analyze_tool_usage + estimate_tool_tokens + pure.TOOL_CATEGORIES into the
+    four-row category structure (Reads, Writes, Search, Execution). Single source of truth
+    for the Context view "Categories" tab so the renderer stays thin."""
+    from agile_backlog.pure import categorize_tools
+
+    by_tool = analyze_tool_usage(entries)["by_tool"]
+    tool_tokens = estimate_tool_tokens(entries)
+    return categorize_tools(by_tool, tool_tokens)
+
+
 def estimate_tool_tokens(entries: list[dict]) -> dict[str, int]:
     totals: dict[str, int] = {}
     for e in entries:

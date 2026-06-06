@@ -822,3 +822,50 @@ def test_analyze_usage_empty():
     assert result["cache_creation_input_tokens"] == 0
     assert result["cache_hit_rate"] == 0.0
     assert result["cost_usd"] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# tool_category_breakdown
+# ---------------------------------------------------------------------------
+
+
+def test_tool_category_breakdown_four_rows_match_helpers():
+    from agile_backlog.context_report import (
+        analyze_tool_usage,
+        estimate_tool_tokens,
+        tool_category_breakdown,
+    )
+
+    entries = [
+        {"tool": "Read", "file": "a.py", "limit": 100},
+        {"tool": "Read", "file": "b.py", "limit": 50},
+        {"tool": "Glob", "pattern": "*.py"},
+        {"tool": "Edit", "file": "a.py"},
+        {"tool": "Write", "file": "c.py"},
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Bash", "command": "ls"},
+    ]
+    by_tool = analyze_tool_usage(entries)["by_tool"]
+    tokens = estimate_tool_tokens(entries)
+    result = tool_category_breakdown(entries)
+
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    # Reads = Read (x2) + Glob (x1)
+    assert result["Reads"]["calls"] == by_tool["Read"] + by_tool["Glob"]
+    assert result["Reads"]["tokens"] == tokens["Read"] + tokens["Glob"]
+    assert result["Writes"]["calls"] == by_tool["Edit"] + by_tool["Write"]
+    assert result["Writes"]["tokens"] == tokens["Edit"] + tokens["Write"]
+    assert result["Search"]["calls"] == by_tool["Grep"]
+    assert result["Search"]["tokens"] == tokens["Grep"]
+    assert result["Execution"]["calls"] == by_tool["Bash"]
+    assert result["Execution"]["tokens"] == tokens["Bash"]
+    assert round(sum(r["pct"] for r in result.values()), 1) == 100.0
+
+
+def test_tool_category_breakdown_empty():
+    from agile_backlog.context_report import tool_category_breakdown
+
+    result = tool_category_breakdown([])
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    for row in result.values():
+        assert row == {"calls": 0, "tokens": 0, "pct": 0.0}

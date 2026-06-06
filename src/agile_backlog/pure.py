@@ -15,6 +15,66 @@ def safe_html(text: str) -> str:
     return _html.escape(text)
 
 
+# Tool -> category mapping for the Context view "Categories" tab. Tools not present
+# here are intentionally not bucketed (see categorize_tools).
+TOOL_CATEGORIES: dict[str, str] = {
+    "Read": "Reads",
+    "Glob": "Reads",
+    "Edit": "Writes",
+    "Write": "Writes",
+    "Grep": "Search",
+    "Bash": "Execution",
+}
+_CATEGORY_ORDER = ("Reads", "Writes", "Search", "Execution")
+
+
+def categorize_tools(by_tool: dict[str, int], tool_tokens: dict[str, int]) -> dict[str, dict]:
+    """Group per-tool call counts and token costs into the four fixed categories.
+
+    Returns exactly four rows (Reads, Writes, Search, Execution), each ``{calls, tokens, pct}``
+    where ``pct`` is the category's share of total categorized tokens. Tools absent from
+    ``TOOL_CATEGORIES`` (e.g. Agent, Skill) are ignored rather than bucketed.
+    """
+    rows: dict[str, dict] = {cat: {"calls": 0, "tokens": 0, "pct": 0.0} for cat in _CATEGORY_ORDER}
+    for tool, category in TOOL_CATEGORIES.items():
+        rows[category]["calls"] += by_tool.get(tool, 0)
+        rows[category]["tokens"] += tool_tokens.get(tool, 0)
+    total_tokens = sum(r["tokens"] for r in rows.values())
+    if total_tokens > 0:
+        for r in rows.values():
+            r["pct"] = round(r["tokens"] / total_tokens * 100, 1)
+    return rows
+
+
+def compute_reread_waste(entries: list[dict], threshold: int = 3) -> list[dict]:
+    """Per-file re-read waste: files read more than ``threshold`` times.
+
+    Returns ``[{file, count, reread_tokens}]`` sorted by count desc, where ``reread_tokens``
+    counts the wasted tokens of the redundant re-reads ((count - 1) re-reads * per-read tokens).
+    Per-read tokens reuse context_report's TOKENS_PER_LINE/DEFAULT_FULL_FILE_LINES semantics.
+    """
+    from agile_backlog.context_report import DEFAULT_FULL_FILE_LINES, TOKENS_PER_LINE
+
+    read_entries = [e for e in entries if e.get("tool", "Read") == "Read" and e.get("file")]
+    counts: dict[str, int] = {}
+    lines_sum: dict[str, int] = {}
+    for e in read_entries:
+        f = e["file"]
+        counts[f] = counts.get(f, 0) + 1
+        lines = e.get("lines") or e.get("limit") or DEFAULT_FULL_FILE_LINES
+        lines_sum[f] = lines_sum.get(f, 0) + lines
+
+    result: list[dict] = []
+    for f, count in counts.items():
+        if count <= threshold:
+            continue
+        avg_lines = lines_sum[f] / count
+        reread_tokens = int((count - 1) * avg_lines * TOKENS_PER_LINE)
+        result.append({"file": f, "count": count, "reread_tokens": reread_tokens})
+    result.sort(key=lambda r: -r["count"])
+    return result
+
+
 def category_style(category: str) -> tuple[str, str]:
     """Return (text_color, bg_color) for a category."""
     return CATEGORY_STYLES.get(category, ("#9ca3af", "rgba(156,163,175,0.10)"))

@@ -4,7 +4,7 @@ priority: P1
 category: feature
 sprint_target: 31
 created: 2026-05-26
-updated: 2026-06-05
+updated: 2026-06-06
 depends_on:
 - native-transcript-ingestion-layer-parse-claude-code-session-jsonl-as-canonical-source
 - dashboard-v2-actionable-prompt-registry-and-component
@@ -49,7 +49,7 @@ notes: "Depends on native-transcript-ingestion (entry schema must stay drop-in) 
   \ prompt-registry (prompt_button). No NiceGUI render-test harness exists, so push\
   \ all logic into pure.py/context_report.py and keep the renderer a thin untested\
   \ shell. Token figures are estimates \u2014 keep the ~ prefix."
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
