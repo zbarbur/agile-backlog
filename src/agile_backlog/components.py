@@ -32,7 +32,11 @@ def prompt_button(template_id: str, context: dict) -> None:
     """
 
     def _copy(_e=None, tid: str = template_id, ctx: dict = context) -> None:
-        text = get_prompt(tid, ctx)
+        try:
+            text = get_prompt(tid, ctx)
+        except (KeyError, ValueError) as exc:
+            ui.notify(f"Prompt unavailable: {exc}", type="negative")
+            return
         ui.run_javascript(f"navigator.clipboard.writeText({json.dumps(text)})")
         ui.notify("Prompt copied", type="positive")
 

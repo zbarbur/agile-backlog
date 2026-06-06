@@ -119,6 +119,29 @@ def test_tool_use_paired_to_result_success(tmp_path):
     assert calls[0].success is False
 
 
+def test_multiple_tool_uses_on_one_turn_map_to_distinct_calls(tmp_path):
+    # An assistant turn with two parallel tool_use blocks gets two result records.
+    # Each result must map to a separate call (in arrival order), not overwrite both.
+    content = [
+        {"type": "tool_use", "id": "toolu_1", "name": "Bash", "input": {"command": "false"}},
+        {"type": "tool_use", "id": "toolu_2", "name": "Read", "input": {}},
+    ]
+    log = tmp_path / "session.jsonl"
+    log.write_text(
+        json.dumps(_assistant("assist-uuid", "msg_1", _usage(inp=10), content=content))
+        + "\n"
+        + json.dumps(_tool_result("res-1", "assist-uuid", {"commandName": "Bash", "success": False}))
+        + "\n"
+        + json.dumps(_tool_result("res-2", "assist-uuid", {"commandName": "Read", "success": True}))
+        + "\n"
+    )
+    session = parse_transcript(log)
+    calls = session.tool_calls
+    assert len(calls) == 2
+    # The two results land on two distinct calls rather than the last one clobbering both.
+    assert [c.success for c in calls] == [False, True]
+
+
 def test_tool_use_result_non_dict_success_none(tmp_path):
     log = tmp_path / "session.jsonl"
     content = [{"type": "tool_use", "id": "toolu_1", "name": "Read", "input": {}}]

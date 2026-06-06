@@ -221,8 +221,13 @@ def parse_transcript(path: Path) -> Session:
                 success = tool_result.get("success") if isinstance(tool_result, dict) else None
                 target = turns_by_uuid.get(source_uuid) if source_uuid else None
                 if target is not None:
+                    # One assistant turn may hold several tool_use blocks, and a result record
+                    # links to the *record* (not the block id). Assign each result to the next
+                    # call still missing a success rather than overwriting every call on the turn.
                     for call in target.tool_calls:
-                        call.success = success
+                        if call.success is None:
+                            call.success = success
+                            break
 
             # Collect user prompts (string content, not tool results / meta).
             if (
