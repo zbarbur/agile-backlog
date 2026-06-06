@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from pathlib import Path
 from unittest.mock import patch
@@ -101,17 +102,33 @@ class TestLoadAll:
     def test_skips_invalid_yaml(self, backlog_dir: Path):
         (backlog_dir / "bad.yaml").write_text(": : : not valid yaml mapping")
         save_item(_make_item(id="good", title="Good"))
-        items = load_all()
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            items = load_all()
         assert len(items) == 1
         assert items[0].id == "good"
+        assert not any(issubclass(w.category, UserWarning) for w in caught)
 
     def test_skips_yaml_missing_required_fields(self, backlog_dir: Path):
-        """YAML that parses as dict but fails Pydantic validation."""
+        """YAML that parses as dict but fails Pydantic validation — skipped quietly, no UserWarning."""
         (backlog_dir / "incomplete.yaml").write_text(yaml.dump({"title": "No priority"}))
+        save_item(_make_item(id="good", title="Good"))
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            items = load_all()
+        assert len(items) == 1
+        assert items[0].id == "good"
+        assert not any(issubclass(w.category, UserWarning) for w in caught)
+
+    def test_ignores_underscore_prefixed_files(self, backlog_dir: Path, capsys):
+        """Files starting with _ are ignored entirely — not loaded and not counted as skipped."""
+        (backlog_dir / "_sprint-plan.yaml").write_text(yaml.dump({"sprint": 31, "scope": ["a", "b"]}))
         save_item(_make_item(id="good", title="Good"))
         items = load_all()
         assert len(items) == 1
         assert items[0].id == "good"
+        # underscore files are excluded by the glob, so nothing is counted/reported
+        assert "Skipped" not in capsys.readouterr().err
 
 
 class TestItemExists:

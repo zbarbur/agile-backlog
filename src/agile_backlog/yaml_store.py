@@ -1,10 +1,15 @@
-"""YAML file store for backlog items. Reads/writes backlog/*.yaml at git root."""
+"""YAML file store for backlog items. Reads/writes backlog/*.yaml at git root.
+
+Files and directories whose name starts with an underscore (e.g. `_sprint-plan.yaml`)
+are ignored entirely by `load_all()` — use this to keep foreign/non-item YAML in the
+backlog dir without it being parsed or counted as skipped.
+"""
 
 import subprocess
-import warnings
 from datetime import date
 from pathlib import Path
 
+import click
 import yaml
 
 from agile_backlog.models import BacklogItem
@@ -58,9 +63,10 @@ def load_item(item_id: str) -> BacklogItem:
 
 
 def load_all() -> list[BacklogItem]:
-    """Load all backlog items. Skips files that fail to parse."""
+    """Load all backlog items. Skips non-item YAML quietly; ignores `_`-prefixed names."""
     items = []
-    for path in sorted(get_backlog_dir().glob("*.yaml")):
+    skipped = []
+    for path in sorted(p for p in get_backlog_dir().glob("*.yaml") if not p.name.startswith("_")):
         try:
             raw = yaml.safe_load(path.read_text())
             if not isinstance(raw, dict):
@@ -68,8 +74,10 @@ def load_all() -> list[BacklogItem]:
             raw.pop("id", None)
             item_id = path.stem
             items.append(BacklogItem(id=item_id, **raw))
-        except Exception as exc:
-            warnings.warn(f"Skipping {path.name}: {exc}", stacklevel=2)
+        except Exception:
+            skipped.append(path)
+    if skipped:
+        click.echo(f"Skipped {len(skipped)} non-item YAML file(s)", err=True)
     return items
 
 
