@@ -7,10 +7,13 @@ from agile_backlog.context_report import (
     analyze_errors,
     analyze_reads,
     analyze_tool_usage,
+    analyze_usage,
     generate_sprint_report,
     parse_read_log,
     skill_usage_stats,
+    usage_cost_usd,
 )
+from agile_backlog.transcript import Turn, Usage
 
 # ---------------------------------------------------------------------------
 # Task 2: parse_read_log
@@ -432,6 +435,58 @@ def test_generate_sprint_report_includes_errors(tmp_path):
     assert data["sessions"][0]["errors"]["total_errors"] == 1
 
 
+def test_generate_sprint_report_includes_usage(tmp_path):
+    from agile_backlog.transcript import Session
+
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    output_dir = tmp_path / "reports"
+
+    session = log_dir / "tools-sess-usage.jsonl"
+    session.write_text(json.dumps({"tool": "Read", "file": "a.py", "offset": 0, "limit": 100}) + "\n")
+
+    tsession = Session(
+        session_id="sess-usage",
+        turns=[
+            Turn(role="assistant", model="claude-opus-4-8", usage=Usage(input_tokens=100, output_tokens=200)),
+            Turn(
+                role="assistant",
+                model="claude-haiku-4-5",
+                usage=Usage(input_tokens=50, cache_read_input_tokens=450),
+            ),
+        ],
+    )
+
+    report_path = generate_sprint_report(log_dir, output_dir, sprint=77, transcript_sessions=[tsession])
+    data = json.loads(report_path.read_text())
+
+    # Aggregate usage block present
+    assert "usage" in data
+    assert data["usage"]["input_tokens"] == 150
+    assert data["usage"]["cache_read_input_tokens"] == 450
+    assert data["usage"]["cache_hit_rate"] == 0.75
+    assert data["usage"]["cost_usd"] > 0.0
+
+    # Per-session usage matched by session_id
+    sess = data["sessions"][0]
+    assert sess["session_id"] == "sess-usage"
+    assert sess["usage"]["input_tokens"] == 150
+    assert sess["usage"]["cache_hit_rate"] == 0.75
+
+
+def test_generate_sprint_report_usage_zero_without_transcript(tmp_path):
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    output_dir = tmp_path / "reports"
+    session = log_dir / "tools-s.jsonl"
+    session.write_text(json.dumps({"tool": "Read", "file": "a.py", "offset": 0, "limit": 100}) + "\n")
+
+    report_path = generate_sprint_report(log_dir, output_dir, sprint=78)
+    data = json.loads(report_path.read_text())
+    assert data["usage"]["cost_usd"] == 0.0
+    assert data["sessions"][0]["usage"]["cache_hit_rate"] == 0.0
+
+
 # ---------------------------------------------------------------------------
 # skill_usage_stats
 # ---------------------------------------------------------------------------
@@ -678,3 +733,139 @@ def test_compare_sprints_worsening():
     assert result["trends"]["reread_ratio"] == "declining"
     assert result["trends"]["error_rate"] == "declining"
     assert result["trends"]["token_usage"] == "declining"
+
+
+# ---------------------------------------------------------------------------
+# cache-hit rate (reused from transcript.cache_hit_rate)
+# ---------------------------------------------------------------------------
+
+
+def test_cache_hit_rate_basic():
+    from agile_backlog.context_report import cache_hit_rate
+
+    usage = Usage(cache_read_input_tokens=900, cache_creation_input_tokens=50, input_tokens=50)
+    assert cache_hit_rate(usage) == 0.9
+
+
+def test_cache_hit_rate_zero_denominator():
+    from agile_backlog.context_report import cache_hit_rate
+
+    assert cache_hit_rate(Usage()) == 0.0
+
+
+def test_cache_hit_rate_no_cache():
+    from agile_backlog.context_report import cache_hit_rate
+
+    usage = Usage(input_tokens=100, output_tokens=200)
+    assert cache_hit_rate(usage) == 0.0
+
+
+# ---------------------------------------------------------------------------
+# usage_cost_usd
+# ---------------------------------------------------------------------------
+
+
+def test_usage_cost_opus():
+    # opus base in=5.0/1M, out=25.0/1M; cache_read 0.1x, cache_creation 1.25x
+    usage = Usage(
+        input_tokens=1_000_000,
+        output_tokens=1_000_000,
+        cache_read_input_tokens=1_000_000,
+        cache_creation_input_tokens=1_000_000,
+    )
+    cost = usage_cost_usd(usage, "claude-opus-4-8")
+    # input: 1M*5 = 5; cache_read: 1M*5*0.1 = 0.5; cache_creation: 1M*5*1.25 = 6.25; output: 1M*25 = 25
+    assert cost == round((5.0 + 0.5 + 6.25 + 25.0), 6)
+
+
+def test_usage_cost_unknown_model_falls_back():
+    usage = Usage(input_tokens=1_000_000, output_tokens=1_000_000)
+    cost = usage_cost_usd(usage, "some-future-model-v99")
+    assert isinstance(cost, float)
+    assert cost > 0.0
+
+
+def test_usage_cost_accepts_dict():
+    cost = usage_cost_usd({"input_tokens": 1_000_000}, "claude-haiku-4-5")
+    assert cost == round(1.0, 6)
+
+
+# ---------------------------------------------------------------------------
+# analyze_usage
+# ---------------------------------------------------------------------------
+
+
+def test_analyze_usage_aggregates_and_mixed_models():
+    t1 = Turn(role="assistant", model="claude-opus-4-8", usage=Usage(input_tokens=100, output_tokens=200))
+    t2 = Turn(
+        role="assistant",
+        model="claude-haiku-4-5",
+        usage=Usage(input_tokens=50, cache_read_input_tokens=450, cache_creation_input_tokens=0),
+    )
+    result = analyze_usage([t1, t2])
+    assert result["input_tokens"] == 150
+    assert result["output_tokens"] == 200
+    assert result["cache_read_input_tokens"] == 450
+    assert result["cache_creation_input_tokens"] == 0
+    # hit rate on summed totals: 450 / (450 + 0 + 150) = 0.75
+    assert result["cache_hit_rate"] == 0.75
+    # cost = per-turn sum
+    expected = usage_cost_usd(t1.usage, t1.model) + usage_cost_usd(t2.usage, t2.model)
+    assert result["cost_usd"] == round(expected, 6)
+
+
+def test_analyze_usage_empty():
+    result = analyze_usage([])
+    assert result["input_tokens"] == 0
+    assert result["output_tokens"] == 0
+    assert result["cache_read_input_tokens"] == 0
+    assert result["cache_creation_input_tokens"] == 0
+    assert result["cache_hit_rate"] == 0.0
+    assert result["cost_usd"] == 0.0
+
+
+# ---------------------------------------------------------------------------
+# tool_category_breakdown
+# ---------------------------------------------------------------------------
+
+
+def test_tool_category_breakdown_four_rows_match_helpers():
+    from agile_backlog.context_report import (
+        analyze_tool_usage,
+        estimate_tool_tokens,
+        tool_category_breakdown,
+    )
+
+    entries = [
+        {"tool": "Read", "file": "a.py", "limit": 100},
+        {"tool": "Read", "file": "b.py", "limit": 50},
+        {"tool": "Glob", "pattern": "*.py"},
+        {"tool": "Edit", "file": "a.py"},
+        {"tool": "Write", "file": "c.py"},
+        {"tool": "Grep", "pattern": "foo"},
+        {"tool": "Bash", "command": "ls"},
+    ]
+    by_tool = analyze_tool_usage(entries)["by_tool"]
+    tokens = estimate_tool_tokens(entries)
+    result = tool_category_breakdown(entries)
+
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    # Reads = Read (x2) + Glob (x1)
+    assert result["Reads"]["calls"] == by_tool["Read"] + by_tool["Glob"]
+    assert result["Reads"]["tokens"] == tokens["Read"] + tokens["Glob"]
+    assert result["Writes"]["calls"] == by_tool["Edit"] + by_tool["Write"]
+    assert result["Writes"]["tokens"] == tokens["Edit"] + tokens["Write"]
+    assert result["Search"]["calls"] == by_tool["Grep"]
+    assert result["Search"]["tokens"] == tokens["Grep"]
+    assert result["Execution"]["calls"] == by_tool["Bash"]
+    assert result["Execution"]["tokens"] == tokens["Bash"]
+    assert round(sum(r["pct"] for r in result.values()), 1) == 100.0
+
+
+def test_tool_category_breakdown_empty():
+    from agile_backlog.context_report import tool_category_breakdown
+
+    result = tool_category_breakdown([])
+    assert set(result) == {"Reads", "Writes", "Search", "Execution"}
+    for row in result.values():
+        assert row == {"calls": 0, "tokens": 0, "pct": 0.0}

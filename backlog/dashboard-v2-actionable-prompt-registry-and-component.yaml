@@ -1,22 +1,50 @@
 title: "Dashboard v2 \u2014 actionable prompt registry and component"
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 31
 created: 2026-05-26
-updated: 2026-05-26
+updated: 2026-06-06
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: Build a shared prompts registry (template + get_prompt) plus a reusable prompt_button
+  component so all Dashboard v2 tabs render one-click copy-to-clipboard fix prompts
+  from a single implementation.
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/prompts.py (NEW) \u2014 frozen PromptTemplate dataclass\
+  \ (id, label, template, required_keys), _REGISTRY of 8 templates as plain str.format\
+  \ strings, get_prompt validates id+required keys then template.format(**context);\
+  \ pure, no NiceGUI"
+- "File: src/agile_backlog/components.py \u2014 add prompt_button(template_id, context):\
+  \ small flat button; on click get_prompt then ui.run_javascript(navigator.clipboard.writeText(json.dumps(text)))\
+  \ + ui.notify positive. Use json.dumps for JS escaping, not safe_html."
+- "File: tests/test_prompts.py (NEW) \u2014 parametrize all 8 templates, assert non-empty\
+  \ + finding substring + action ask; unknown id and missing key raise; registry has\
+  \ 8 ids"
 description: See docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md Section 3 for full acceptance
   criteria, technical specs, and dependencies. This item is one of 5 produced by the
   Sprint 30 design session.
-acceptance_criteria: []
-test_plan: []
-notes: ''
-phase: null
+acceptance_criteria:
+- src/agile_backlog/prompts.py defines a PromptTemplate dataclass and get_prompt(id,
+  context) that interpolates project data and raises a clear error on unknown id or
+  missing keys
+- At least 8 templates registered (claude_md_audit, claude_md_trim, skill_description_audit,
+  skill_unused_analysis, hook_coverage_gap, permission_consolidate, context_budget_check,
+  re_read_waste_fix); each names the finding, inlines the data, ends with a concrete
+  ask
+- prompt_button(template_id, context) in components.py copies the rendered prompt
+  to clipboard (json.dumps-escaped) and confirms with ui.notify; no stale closures
+- prompts.py stays pure (no NiceGUI import) so it is unit-testable like pure.py
+- Tests pass; lint clean
+test_plan:
+- 'tests/test_prompts.py: every template renders with representative context; error
+  cases raise; registry count guard'
+notes: "No deps \u2014 ships FIRST; items context-view-tabs and the sprint-32 process/hooks/skills\
+  \ tabs all call prompt_button, so keep its signature stable. Only the registry +\
+  \ primitive \u2014 no tabs/scorecards (those belong to consumer items). Supersedes\
+  \ the done process-review-prompts item which was the broad version."
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

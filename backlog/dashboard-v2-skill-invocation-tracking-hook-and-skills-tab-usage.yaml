@@ -1,18 +1,19 @@
-title: "Dashboard v2 \u2014 skill invocation tracking hook and Skills tab usage"
+title: "Dashboard v2 \u2014 skill usage from native attributionSkill + Skills tab"
 status: backlog
 priority: P1
 category: feature
-sprint_target: 31
+sprint_target: 32
 created: 2026-05-26
-updated: 2026-05-26
+updated: 2026-05-30
 depends_on: []
 tags: []
 goal: ''
-complexity: null
+complexity: S
 technical_specs: []
-description: See docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md Section 3 for full acceptance
-  criteria, technical specs, and dependencies. This item is one of 5 produced by the
-  Sprint 30 design session.
+description: 'RE-SCOPED 2026-05-30: native transcript carries attributionSkill, so
+  the planned UserPromptSubmit hook is OBSOLETE. Read skill usage from the ingestion
+  layer''s attributionSkill field; render counts + unused badge on the Skills tab.
+  Drops from L to S. Reverses design-doc D2. See docs/superpowers/specs/2026-05-30-context-optimization-session-analysis-research.md.'
 acceptance_criteria: []
 test_plan: []
 notes: ''

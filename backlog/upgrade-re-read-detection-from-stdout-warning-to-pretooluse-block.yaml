@@ -1,0 +1,24 @@
+title: Upgrade re-read detection from stdout warning to PreToolUse block
+status: backlog
+priority: P3
+category: feature
+sprint_target: 32
+created: 2026-05-30
+updated: 2026-05-30
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: 'Today post-tool-logger.sh only WARNS on duplicate Reads via PostToolUse
+  stdout. Research confirms PreToolUse hooks can BLOCK a call (permissionDecision
+  deny / exit 2). Add an opt-in PreToolUse guard. Caveat: edge-case bugs (GitHub #37210,
+  #24327). Source: research doc 2026-05-30.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -1,22 +1,55 @@
 title: "Dashboard v2 \u2014 context view: Tools, Categories, Re-reads tabs"
-status: backlog
+status: done
 priority: P1
 category: feature
 sprint_target: 31
 created: 2026-05-26
-updated: 2026-05-26
-depends_on: []
+updated: 2026-06-06
+depends_on:
+- native-transcript-ingestion-layer-parse-claude-code-session-jsonl-as-canonical-source
+- dashboard-v2-actionable-prompt-registry-and-component
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Add Tools, Categories, and Re-reads tabs to the dashboard Context view \u2014\
+  \ per-tool token cost, tool-category breakdown, and re-read waste \u2014 backed\
+  \ by pure helpers and wired to prompt_button."
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/pure.py \u2014 add TOOL_CATEGORIES constant (Read/Glob->Reads,\
+  \ Edit/Write->Writes, Grep->Search, Bash->Execution) + categorize_tools() + compute_reread_waste(entries,\
+  \ threshold=3)"
+- "File: src/agile_backlog/context_report.py \u2014 add tool_category_breakdown(entries)\
+  \ composing analyze_tool_usage + estimate_tool_tokens + TOOL_CATEGORIES into the\
+  \ four-row structure"
+- "File: src/agile_backlog/app.py (or views/context.py if extraction landed) \u2014\
+  \ wrap context view in ui.tabs/ui.tab_panels mirroring the Process view scaffold;\
+  \ reuse the state-dict drilldown pattern (commit 2c0faaa); call prompt_button from\
+  \ the registry item"
+- "File: tests/test_pure.py + tests/test_context_report.py \u2014 unit test categorize_tools,\
+  \ compute_reread_waste, tool_category_breakdown"
 description: See docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md Section 3 for full acceptance
   criteria, technical specs, and dependencies. This item is one of 5 produced by the
   Sprint 30 design session.
-acceptance_criteria: []
-test_plan: []
-notes: ''
-phase: null
+acceptance_criteria:
+- Context view renders tabs Overview (current flat content moved intact) + Tools +
+  Categories + Re-reads, default Overview
+- 'Tools tab: sortable table Tool/Calls/Total tokens/Percent with click-to-expand
+  per-target drilldown and a context_budget_check prompt_button'
+- 'Categories tab: four rows Reads/Writes/Search/Execution with tokens, calls, percentage
+  bar from a pure mapping constant'
+- 'Re-reads tab: files read more than 3 times sorted desc with count, reread tokens,
+  and a re_read_waste_fix prompt_button; empty state when none'
+- All ui.html content safe_html-wrapped; tabs consume existing parsed entries (no
+  new log parsing); tests pass; lint clean
+test_plan:
+- 'tests/test_pure.py: categorize_tools four-category sums/percentages and unknown-tool
+  handling; compute_reread_waste threshold filter, descending sort, empty case'
+- 'tests/test_context_report.py: tool_category_breakdown over a multi-tool fixture
+  matches estimate_tool_tokens + analyze_tool_usage'
+notes: "Depends on native-transcript-ingestion (entry schema must stay drop-in) and\
+  \ prompt-registry (prompt_button). No NiceGUI render-test harness exists, so push\
+  \ all logic into pure.py/context_report.py and keep the renderer a thin untested\
+  \ shell. Token figures are estimates \u2014 keep the ~ prefix."
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

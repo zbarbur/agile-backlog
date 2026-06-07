@@ -1,6 +1,7 @@
 """NiceGUI UI components for agile-backlog."""
 
 import base64
+import json
 import mimetypes
 from datetime import date
 from pathlib import Path
@@ -8,6 +9,7 @@ from pathlib import Path
 from nicegui import ui
 
 from agile_backlog.models import BacklogItem
+from agile_backlog.prompts import get_prompt
 from agile_backlog.pure import (
     apply_reopen,
     category_style,
@@ -19,6 +21,28 @@ from agile_backlog.pure import (
 )
 from agile_backlog.tokens import PRIORITY_COLORS
 from agile_backlog.yaml_store import get_backlog_dir
+
+
+def prompt_button(template_id: str, context: dict) -> None:
+    """Render a small 'Copy fix prompt' button that copies a rendered fix prompt to the clipboard.
+
+    Renders the prompt for ``template_id`` from the shared registry, copies it via the browser
+    clipboard API (payload safely escaped with json.dumps), and confirms with a positive notify.
+    Per-call values are bound explicitly to avoid stale closures.
+    """
+
+    def _copy(_e=None, tid: str = template_id, ctx: dict = context) -> None:
+        try:
+            text = get_prompt(tid, ctx)
+        except (KeyError, ValueError) as exc:
+            ui.notify(f"Prompt unavailable: {exc}", type="negative")
+            return
+        ui.run_javascript(f"navigator.clipboard.writeText({json.dumps(text)})")
+        ui.notify("Prompt copied", type="positive")
+
+    ui.button("Copy fix prompt", on_click=_copy).props("flat dense no-caps").style(
+        "color:#3b82f6;font-size:10px;font-weight:600;"
+    )
 
 
 def _render_pill(text: str, text_color: str, bg_color: str, *, italic: bool = False, outlined: bool = False) -> None:

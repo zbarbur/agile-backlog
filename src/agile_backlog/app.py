@@ -7,6 +7,7 @@ from agile_backlog.components import (
     _render_backlog_list,
     _render_card,
     _render_side_panel_content,
+    prompt_button,
 )
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.pure import (
@@ -33,6 +34,418 @@ SORT_OPTIONS = {
     "created_desc": "Created \u2193",
     "title_asc": "Title A-Z",
 }
+
+
+_CTX_CARD_STYLE = (
+    "background:#1e1e23;border:1px solid #27272a;border-radius:8px;padding:16px 20px;flex:1;min-width:140px;"
+)
+_CTX_LABEL_STYLE = (
+    "font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;"
+    "color:#71717a;text-transform:uppercase;letter-spacing:0.05em;"
+)
+_CTX_VALUE_STYLE = "font-size:24px;font-weight:700;color:#fafafa;margin-top:4px;"
+
+
+def _render_context_overview(reads, tools, usage_summary, by_tool, tool_tokens, all_entries, session_data) -> None:
+    """Overview tab — relocated, behavior-preserving copy of the original flat Context view."""
+    from collections import Counter as _Counter
+
+    from agile_backlog.context_report import analyze_efficiency, analyze_reads, analyze_tool_usage
+
+    card_style = _CTX_CARD_STYLE
+    label_style = _CTX_LABEL_STYLE
+    value_style = _CTX_VALUE_STYLE
+
+    # Summary cards row
+    with ui.element("div").style("display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"):
+        with ui.element("div").style(card_style):
+            ui.html(f'<div style="{label_style}">Total Tool Calls</div>')
+            ui.html(f'<div style="{value_style}">{safe_html(str(tools["total_tool_calls"]))}</div>')
+        with ui.element("div").style(card_style):
+            ui.html(f'<div style="{label_style}">Read Calls</div>')
+            ui.html(f'<div style="{value_style}">{safe_html(str(reads["total_reads"]))}</div>')
+        with ui.element("div").style(card_style):
+            reread_pct = round(reads["reread_ratio"] * 100, 1)
+            color = "#22c55e" if reread_pct < 15 else "#ca8a04" if reread_pct < 30 else "#f87171"
+            ui.html(f'<div style="{label_style}">Re-read Ratio</div>')
+            ui.html(f'<div style="{value_style}color:{color};">{safe_html(str(reread_pct))}%</div>')
+        with ui.element("div").style(card_style):
+            tokens = reads["estimated_tokens"]
+            token_display = f"{tokens // 1000}k" if tokens >= 1000 else str(tokens)
+            ui.html(f'<div style="{label_style}">Est. Tokens</div>')
+            ui.html(f'<div style="{value_style}">{safe_html(token_display)}</div>')
+
+    # Context efficiency (native transcript): cache-hit rate + real USD cost
+    if usage_summary is not None:
+        _hit_pct = round(usage_summary["cache_hit_rate"] * 100, 1)
+        _hit_color = "#22c55e" if _hit_pct >= 80 else "#ca8a04" if _hit_pct >= 50 else "#f87171"
+        _cost = usage_summary["cost_usd"]
+        ui.html(
+            '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:8px 0 8px;'
+            "font-family:'DM Sans',sans-serif;\">Context Efficiency "
+            '<span style="font-size:10px;font-weight:400;color:#71717a;">'
+            "(native transcript)</span></div>"
+        )
+        with ui.element("div").style("display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"):
+            with ui.element("div").style(card_style):
+                ui.html(f'<div style="{label_style}">Cache-Hit Rate</div>')
+                ui.html(f'<div style="{value_style}color:{_hit_color};">{safe_html(str(_hit_pct))}%</div>')
+            with ui.element("div").style(card_style):
+                ui.html(f'<div style="{label_style}">Real Token Cost</div>')
+                ui.html(f'<div style="{value_style}">${safe_html(f"{_cost:.4f}")}</div>')
+
+    # Tool usage breakdown with drilldown
+    ui.html(
+        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:16px 0 8px;'
+        "font-family:'DM Sans',sans-serif;\">Tool Usage Breakdown</div>"
+    )
+    if by_tool:
+        max_count = max(by_tool.values()) if by_tool else 1
+        # Group entries by tool for drilldown
+        tool_details: dict[str, list[str]] = {}
+        for _e in all_entries:
+            _t = _e.get("tool", "")
+            if _t == "Bash":
+                tool_details.setdefault(_t, []).append(_e.get("command", "?")[:80])
+            elif _t == "Read":
+                _f = _e.get("file", "?")
+                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+            elif _t == "Grep":
+                tool_details.setdefault(_t, []).append(_e.get("pattern", "?"))
+            elif _t == "Edit":
+                _f = _e.get("file", "?")
+                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+            elif _t == "Write":
+                _f = _e.get("file", "?")
+                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+            elif _t == "Skill":
+                tool_details.setdefault(_t, []).append(_e.get("skill", "?"))
+            elif _t == "Agent":
+                tool_details.setdefault(_t, []).append(_e.get("prompt", "?")[:60])
+
+        with ui.element("div").style("background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"):
+            for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
+                bar_width = int((count / max_count) * 100)
+                _tk = tool_tokens.get(tool_name, 0)
+                _tk_d = f"~{_tk // 1000}k" if _tk >= 1000 else f"~{_tk}"
+                bar_html = (
+                    f"<div style='display:flex;align-items:center;gap:10px;width:100%;'>"
+                    f"<span style='color:#d4d4d8;font-size:12px;min-width:60px;"
+                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(tool_name)}</span>'
+                    f"<span style='color:#a1a1aa;font-size:12px;min-width:40px;text-align:right;"
+                    f'font-family:"IBM Plex Mono",monospace;\'>{count}</span>'
+                    f"<span style='color:#71717a;font-size:10px;min-width:50px;text-align:right;"
+                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(_tk_d)}</span>'
+                    f"<div style='flex:1;'>"
+                    f"<div style='background:rgba(59,130,246,0.25);height:14px;"
+                    f"border-radius:3px;width:{bar_width}%;'></div></div></div>"
+                )
+                details = tool_details.get(tool_name, [])
+                if details:
+                    top_items = _Counter(details).most_common(10)
+                    _detail_rows = ""
+                    for val, cnt in top_items:
+                        pct = round(cnt / count * 100)
+                        _detail_rows += (
+                            f"<div style='display:flex;gap:8px;padding:2px 8px 2px 70px;"
+                            f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
+                            f"<span style='color:#71717a;min-width:30px;text-align:right;'>"
+                            f"{cnt}x</span>"
+                            f"<span style='color:#71717a;min-width:30px;'>({pct}%)</span>"
+                            f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
+                            f"white-space:nowrap;'>{safe_html(val)}</span></div>"
+                        )
+                    with ui.element("div").style("border-bottom:1px solid #27272a;"):
+                        _dd = ui.element("div").style("display:none;padding:4px 0 6px;")
+                        _dd_state: dict[str, bool] = {"open": False}
+
+                        def _make_toggle(dd_el=_dd, state=_dd_state):
+                            def _toggle(e):
+                                state["open"] = not state["open"]
+                                dd_el.style(f"display:{'block' if state['open'] else 'none'};padding:4px 0 6px;")
+
+                            return _toggle
+
+                        with ui.element("div").style("padding:8px 10px;cursor:pointer;").on("click", _make_toggle()):
+                            ui.html(
+                                bar_html + "<span style='color:#52525b;font-size:9px;margin-left:8px;'>"
+                                "&#9662; details</span>"
+                            )
+                        with _dd:
+                            ui.html(_detail_rows)
+                else:
+                    with ui.element("div").style("padding:8px 10px;border-bottom:1px solid #27272a;"):
+                        ui.html(bar_html)
+
+    # Top files heatmap
+    ui.html(
+        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
+        "font-family:'DM Sans',sans-serif;\">Top Files (by read count)</div>"
+    )
+    top_files = reads.get("top_files", [])
+    if top_files:
+        file_rows = ""
+        max_file_count = top_files[0]["count"] if top_files else 1
+        for tf in top_files:
+            intensity = min(tf["count"] / max_file_count, 1.0)
+            r = int(59 + intensity * (248 - 59))
+            g = int(130 + intensity * (113 - 130))
+            b = int(246 + intensity * (113 - 246))
+            bg = f"rgba({r},{g},{b},0.12)"
+            fname = tf["file"]
+            short = fname.split("/")[-1] if "/" in fname else fname
+            file_rows += (
+                f"<tr><td style='padding:5px 10px;color:#93c5fd;font-size:11px;"
+                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+                f"background:{bg};' title='{safe_html(fname)}'>"
+                f"{safe_html(short)}</td>"
+                f"<td style='padding:5px 10px;color:#d4d4d8;font-size:11px;text-align:center;"
+                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+                f"background:{bg};white-space:nowrap;'>"
+                f"{safe_html(str(tf['count']))}</td>"
+                f"<td style='padding:5px 10px;color:#71717a;font-size:10px;"
+                f"border-bottom:1px solid #27272a;background:{bg};max-width:300px;"
+                f"overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"
+                f"{safe_html(fname)}</td></tr>"
+            )
+        ui.html(
+            f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
+            f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
+            f"<thead><tr><th style='padding:6px 10px;text-align:left;color:#71717a;"
+            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+            f"File</th><th style='padding:6px 10px;text-align:center;color:#71717a;"
+            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+            f"Reads</th><th style='padding:6px 10px;text-align:left;color:#71717a;"
+            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
+            f"Path</th></tr></thead><tbody>{file_rows}</tbody></table>"
+        )
+
+    # Per-session breakdown
+    if session_data:
+        ui.html(
+            '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
+            "font-family:'DM Sans',sans-serif;\">Sessions</div>"
+        )
+        for sess_id, sess_entries in session_data:
+            s_reads = analyze_reads(sess_entries)
+            s_tools = analyze_tool_usage(sess_entries)
+            s_eff = analyze_efficiency(sess_entries)
+            s_reread = round(s_reads["reread_ratio"] * 100, 1)
+            s_tokens = s_reads["estimated_tokens"]
+            s_token_display = f"{s_tokens // 1000}k" if s_tokens >= 1000 else str(s_tokens)
+            summary = (
+                f"{safe_html(str(s_tools['total_tool_calls']))} calls &middot; "
+                f"{safe_html(str(s_reads['total_reads']))} reads &middot; "
+                f"{safe_html(str(s_reread))}% re-read &middot; "
+                f"{safe_html(s_token_display)} tokens"
+            )
+            with ui.expansion(safe_html(sess_id)).style(
+                "width:100%;margin-bottom:4px;background:#1e1e23;border:1px solid #27272a;border-radius:6px;"
+            ):
+                ui.html(
+                    f"<div style='font-size:11px;color:#a1a1aa;"
+                    f'font-family:"IBM Plex Mono",monospace;'
+                    f"padding:4px 0;'>{summary}</div>"
+                )
+                if s_eff["exact_reread_count"] > 0:
+                    ui.html(
+                        f"<div style='font-size:10px;color:#f87171;padding:2px 0;'>"
+                        f"Exact re-reads: "
+                        f"{safe_html(str(s_eff['exact_reread_count']))}</div>"
+                    )
+                if s_reads.get("wasteful_reads"):
+                    for w in s_reads["wasteful_reads"]:
+                        ui.html(
+                            f"<div style='font-size:10px;color:#ca8a04;padding:1px 0;'>"
+                            f"Wasteful: {safe_html(w['file'])} ({safe_html(str(w['count']))}x)</div>"
+                        )
+
+
+def _render_context_tools_tab(by_tool, tool_tokens, all_entries, reads) -> None:
+    """Tools tab — sortable per-tool table with inline drilldown + context_budget_check prompt."""
+    if not by_tool:
+        ui.html(
+            '<div style="font-size:12px;color:#a1a1aa;padding:24px 10px;font-style:italic;'
+            "font-family:'DM Sans',sans-serif;text-align:center;\">No tool calls recorded.</div>"
+        )
+        return
+
+    total_tokens = sum(tool_tokens.values())
+    total_calls = sum(by_tool.values())
+
+    # Per-tool target lists for the drilldown (file / command / pattern / skill / prompt).
+    tool_targets: dict[str, list[str]] = {}
+    for _e in all_entries:
+        _t = _e.get("tool", "")
+        if _t == "Bash":
+            tool_targets.setdefault(_t, []).append(_e.get("command", "?")[:80])
+        elif _t in ("Read", "Edit", "Write"):
+            _f = _e.get("file", "?")
+            tool_targets.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
+        elif _t == "Grep":
+            tool_targets.setdefault(_t, []).append(_e.get("pattern", "?"))
+        elif _t == "Skill":
+            tool_targets.setdefault(_t, []).append(_e.get("skill", "?"))
+        elif _t == "Agent":
+            tool_targets.setdefault(_t, []).append(_e.get("prompt", "?")[:60])
+
+    th = (
+        "padding:6px 10px;color:#71717a;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+        'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+    )
+    with ui.element("div").style("background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"):
+        ui.html(
+            f"<div style='display:flex;align-items:center;gap:10px;'>"
+            f"<span style='{th}text-align:left;flex:1;'>Tool</span>"
+            f"<span style='{th}text-align:right;min-width:60px;'>Calls</span>"
+            f"<span style='{th}text-align:right;min-width:90px;'>Total tokens</span>"
+            f"<span style='{th}text-align:right;min-width:80px;'>% of session</span></div>"
+        )
+        for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
+            _tk = tool_tokens.get(tool_name, 0)
+            pct = round(_tk / total_tokens * 100, 1) if total_tokens else 0.0
+            row_html = (
+                f"<div style='display:flex;align-items:center;gap:10px;'>"
+                f"<span style='color:#d4d4d8;font-size:12px;flex:1;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(tool_name)}</span>'
+                f"<span style='color:#a1a1aa;font-size:12px;min-width:60px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{count}</span>'
+                f"<span style='color:#a1a1aa;font-size:12px;min-width:90px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{_tk:,}</span>'
+                f"<span style='color:#71717a;font-size:12px;min-width:80px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(str(pct))}%</span>'
+                "<span style='color:#52525b;font-size:9px;margin-left:8px;'>&#9662;</span></div>"
+            )
+            targets = tool_targets.get(tool_name, [])
+            with ui.element("div").style("border-bottom:1px solid #27272a;"):
+                _dd = ui.element("div").style("display:none;padding:2px 0 6px;")
+                _dd_state: dict[str, bool] = {"open": False}
+
+                def _make_toggle(dd_el=_dd, state=_dd_state):
+                    def _toggle(e):
+                        state["open"] = not state["open"]
+                        dd_el.style(f"display:{'block' if state['open'] else 'none'};padding:2px 0 6px;")
+
+                    return _toggle
+
+                with ui.element("div").style("padding:8px 10px;cursor:pointer;").on("click", _make_toggle()):
+                    ui.html(row_html)
+                with _dd:
+                    if targets:
+                        from collections import Counter as _Counter
+
+                        rows = ""
+                        for val, cnt in _Counter(targets).most_common(10):
+                            rows += (
+                                f"<div style='display:flex;gap:8px;padding:2px 8px 2px 24px;"
+                                f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
+                                f"<span style='color:#71717a;min-width:30px;text-align:right;'>{cnt}x</span>"
+                                f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
+                                f"white-space:nowrap;'>{safe_html(val)}</span></div>"
+                            )
+                        ui.html(rows)
+                    else:
+                        ui.html(
+                            "<div style='padding:2px 8px 2px 24px;font-size:10px;color:#52525b;"
+                            'font-family:"IBM Plex Mono",monospace;\'>No per-target detail.</div>'
+                        )
+
+    # Actionable prompt: feed real tool data into the context-budget check.
+    _est_tokens = reads.get("estimated_tokens", 0)
+    _budget = 200_000
+    _top = sorted(tool_tokens.items(), key=lambda x: -x[1])[:5]
+    top_consumers = "\n".join(f"- {name}: {tok:,} tokens ({by_tool.get(name, 0)} calls)" for name, tok in _top)
+    with ui.element("div").style("margin-top:10px;"):
+        prompt_button(
+            "context_budget_check",
+            {
+                "current_tokens": f"{total_tokens:,}",
+                "budget_tokens": f"{_budget:,}",
+                "top_consumers": top_consumers or "(none)",
+            },
+        )
+    # total_calls / _est_tokens kept available for future surfacing; reference to avoid lint noise.
+    _ = (total_calls, _est_tokens)
+
+
+def _render_context_categories_tab(all_entries) -> None:
+    """Categories tab — exactly four rows (Reads/Writes/Search/Execution) with percentage bars."""
+    from agile_backlog.context_report import tool_category_breakdown
+
+    breakdown = tool_category_breakdown(all_entries)
+    th = (
+        "padding:6px 10px;color:#71717a;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
+        'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
+    )
+    with ui.element("div").style("background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"):
+        ui.html(
+            f"<div style='display:flex;align-items:center;gap:10px;'>"
+            f"<span style='{th}text-align:left;min-width:90px;'>Category</span>"
+            f"<span style='{th}text-align:right;min-width:60px;'>Calls</span>"
+            f"<span style='{th}text-align:right;min-width:90px;'>Tokens</span>"
+            f"<span style='{th}text-align:left;flex:1;'>Share</span></div>"
+        )
+        for category in ("Reads", "Writes", "Search", "Execution"):
+            row = breakdown[category]
+            pct = row["pct"]
+            bar = (
+                f"<div style='flex:1;'><div style='background:rgba(59,130,246,0.25);height:12px;"
+                f"border-radius:3px;width:{pct}%;'></div></div>"
+            )
+            ui.html(
+                f"<div style='display:flex;align-items:center;gap:10px;padding:8px 10px;"
+                f"border-bottom:1px solid #27272a;'>"
+                f"<span style='color:#d4d4d8;font-size:12px;min-width:90px;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(category)}</span>'
+                f"<span style='color:#a1a1aa;font-size:12px;min-width:60px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{row["calls"]}</span>'
+                f"<span style='color:#a1a1aa;font-size:12px;min-width:90px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{row["tokens"]:,}</span>'
+                f"{bar}"
+                f"<span style='color:#71717a;font-size:11px;min-width:46px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(str(pct))}%</span></div>'
+            )
+
+
+def _render_context_rereads_tab(reread_waste, session_data) -> None:
+    """Re-reads tab — files read more than 3 times, each with a re_read_waste_fix prompt."""
+    if not reread_waste:
+        ui.html(
+            '<div style="font-size:12px;color:#a1a1aa;padding:24px 10px;font-style:italic;'
+            "font-family:'DM Sans',sans-serif;text-align:center;\">No re-read waste detected</div>"
+        )
+        return
+
+    sessions_label = ", ".join(sid for sid, _ in session_data) or "current session"
+    for w in reread_waste:
+        fname = w["file"]
+        short = fname.split("/")[-1] if "/" in fname else fname
+        with ui.element("div").style(
+            "background:#1e1e23;border:1px solid #27272a;border-radius:8px;padding:10px 12px;margin-bottom:6px;"
+        ):
+            ui.html(
+                f"<div style='display:flex;align-items:center;gap:10px;'>"
+                f"<span style='color:#93c5fd;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;"
+                f"white-space:nowrap;font-family:\"IBM Plex Mono\",monospace;' title='{safe_html(fname)}'>"
+                f"{safe_html(short)}</span>"
+                f"<span style='color:#f87171;font-size:12px;min-width:70px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>{w["count"]}x reads</span>'
+                f"<span style='color:#ca8a04;font-size:11px;min-width:110px;text-align:right;"
+                f'font-family:"IBM Plex Mono",monospace;\'>~{w["reread_tokens"]:,} tokens</span></div>'
+            )
+            with ui.element("div").style("margin-top:4px;"):
+                prompt_button(
+                    "re_read_waste_fix",
+                    {
+                        "file_path": fname,
+                        "read_count": w["count"],
+                        "wasted_tokens": f"{w['reread_tokens']:,}",
+                        "sessions": sessions_label,
+                    },
+                )
 
 
 def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
@@ -665,7 +1078,6 @@ if (!window._mcAddPasteListenerAdded) {
                     get_current_sprint as _get_sprint,
                 )
                 from agile_backlog.context_report import (
-                    analyze_efficiency,
                     analyze_reads,
                     analyze_tool_usage,
                     parse_read_log,
@@ -704,221 +1116,54 @@ if (!window._mcAddPasteListenerAdded) {
                     reads = analyze_reads(all_entries)
                     tools = analyze_tool_usage(all_entries)
 
-                    # Summary cards row
-                    card_style = (
-                        "background:#1e1e23;border:1px solid #27272a;border-radius:8px;"
-                        "padding:16px 20px;flex:1;min-width:140px;"
-                    )
-                    label_style = (
-                        "font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;"
-                        "color:#71717a;text-transform:uppercase;letter-spacing:0.05em;"
-                    )
-                    value_style = "font-size:24px;font-weight:700;color:#fafafa;margin-top:4px;"
-                    with ui.element("div").style("display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;"):
-                        with ui.element("div").style(card_style):
-                            ui.html(f'<div style="{label_style}">Total Tool Calls</div>')
-                            ui.html(f'<div style="{value_style}">{safe_html(str(tools["total_tool_calls"]))}</div>')
-                        with ui.element("div").style(card_style):
-                            ui.html(f'<div style="{label_style}">Read Calls</div>')
-                            ui.html(f'<div style="{value_style}">{safe_html(str(reads["total_reads"]))}</div>')
-                        with ui.element("div").style(card_style):
-                            reread_pct = round(reads["reread_ratio"] * 100, 1)
-                            color = "#22c55e" if reread_pct < 15 else "#ca8a04" if reread_pct < 30 else "#f87171"
-                            ui.html(f'<div style="{label_style}">Re-read Ratio</div>')
-                            ui.html(f'<div style="{value_style}color:{color};">{safe_html(str(reread_pct))}%</div>')
-                        with ui.element("div").style(card_style):
-                            tokens = reads["estimated_tokens"]
-                            token_display = f"{tokens // 1000}k" if tokens >= 1000 else str(tokens)
-                            ui.html(f'<div style="{label_style}">Est. Tokens</div>')
-                            ui.html(f'<div style="{value_style}">{safe_html(token_display)}</div>')
+                    # Native-transcript usage (real tokens, cache-hit rate, cache-aware cost).
+                    # Additive + guarded: only rendered when transcript data is present.
+                    usage_summary: dict | None = None
+                    try:
+                        from pathlib import Path as _PathU
 
-                    # Tool usage breakdown with drilldown
-                    ui.html(
-                        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:16px 0 8px;'
-                        "font-family:'DM Sans',sans-serif;\">Tool Usage Breakdown</div>"
-                    )
+                        from agile_backlog.context_report import analyze_usage
+                        from agile_backlog.transcript import discover_transcripts, parse_transcript
+
+                        _all_turns: list = []
+                        for _tp in discover_transcripts(_PathU.cwd()):
+                            try:
+                                _ts = parse_transcript(_tp)
+                            except Exception:
+                                continue
+                            _all_turns.extend(t for t in _ts.turns if not t.is_sidechain)
+                        if _all_turns:
+                            usage_summary = analyze_usage(_all_turns)
+                    except Exception:
+                        usage_summary = None
+
+                    # Per-tool token estimates + tool/category data shared across tabs.
+                    from agile_backlog.context_report import estimate_tool_tokens
+                    from agile_backlog.pure import compute_reread_waste
+
+                    _tool_tokens = estimate_tool_tokens(all_entries)
                     by_tool = tools.get("by_tool", {})
-                    if by_tool:
-                        max_count = max(by_tool.values()) if by_tool else 1
-                        # Group entries by tool for drilldown
-                        from collections import Counter as _Counter
 
-                        tool_details: dict[str, list[str]] = {}
-                        for _e in all_entries:
-                            _t = _e.get("tool", "")
-                            if _t == "Bash":
-                                tool_details.setdefault(_t, []).append(_e.get("command", "?")[:80])
-                            elif _t == "Read":
-                                _f = _e.get("file", "?")
-                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
-                            elif _t == "Grep":
-                                tool_details.setdefault(_t, []).append(_e.get("pattern", "?"))
-                            elif _t == "Edit":
-                                _f = _e.get("file", "?")
-                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
-                            elif _t == "Write":
-                                _f = _e.get("file", "?")
-                                tool_details.setdefault(_t, []).append(_f.split("/")[-1] if "/" in _f else _f)
-                            elif _t == "Skill":
-                                tool_details.setdefault(_t, []).append(_e.get("skill", "?"))
-                            elif _t == "Agent":
-                                tool_details.setdefault(_t, []).append(_e.get("prompt", "?")[:60])
+                    ctx_tab_bar_style = "background:#1e1e23;color:#8b8b9b;"
+                    ctx_tab_panel_style = "background:transparent;padding:12px 0 0;"
 
-                        # Compute token estimates per tool
-                        from agile_backlog.context_report import estimate_tool_tokens
+                    with ui.tabs().classes("w-full").style(ctx_tab_bar_style) as ctx_tabs:
+                        overview_tab = ui.tab("Overview")
+                        tools_tab = ui.tab("Tools")
+                        categories_tab = ui.tab("Categories")
+                        rereads_tab = ui.tab("Re-reads")
 
-                        _tool_tokens = estimate_tool_tokens(all_entries)
-
-                        with ui.element("div").style(
-                            "background:#1e1e23;border:1px solid #27272a;border-radius:8px;overflow:hidden;"
-                        ):
-                            for tool_name, count in sorted(by_tool.items(), key=lambda x: -x[1]):
-                                bar_width = int((count / max_count) * 100)
-                                _tk = _tool_tokens.get(tool_name, 0)
-                                _tk_d = f"~{_tk // 1000}k" if _tk >= 1000 else f"~{_tk}"
-                                bar_html = (
-                                    f"<div style='display:flex;align-items:center;gap:10px;width:100%;'>"
-                                    f"<span style='color:#d4d4d8;font-size:12px;min-width:60px;"
-                                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(tool_name)}</span>'
-                                    f"<span style='color:#a1a1aa;font-size:12px;min-width:40px;text-align:right;"
-                                    f'font-family:"IBM Plex Mono",monospace;\'>{count}</span>'
-                                    f"<span style='color:#71717a;font-size:10px;min-width:50px;text-align:right;"
-                                    f'font-family:"IBM Plex Mono",monospace;\'>{safe_html(_tk_d)}</span>'
-                                    f"<div style='flex:1;'>"
-                                    f"<div style='background:rgba(59,130,246,0.25);height:14px;"
-                                    f"border-radius:3px;width:{bar_width}%;'></div></div></div>"
-                                )
-                                details = tool_details.get(tool_name, [])
-                                if details:
-                                    top_items = _Counter(details).most_common(10)
-                                    _detail_rows = ""
-                                    for val, cnt in top_items:
-                                        pct = round(cnt / count * 100)
-                                        _detail_rows += (
-                                            f"<div style='display:flex;gap:8px;padding:2px 8px 2px 70px;"
-                                            f'font-size:10px;font-family:"IBM Plex Mono",monospace;\'>'
-                                            f"<span style='color:#71717a;min-width:30px;text-align:right;'>"
-                                            f"{cnt}x</span>"
-                                            f"<span style='color:#71717a;min-width:30px;'>({pct}%)</span>"
-                                            f"<span style='color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;"
-                                            f"white-space:nowrap;'>{safe_html(val)}</span></div>"
-                                        )
-                                    with ui.element("div").style("border-bottom:1px solid #27272a;"):
-                                        _dd = ui.element("div").style("display:none;padding:4px 0 6px;")
-                                        _dd_state: dict[str, bool] = {"open": False}
-
-                                        def _make_toggle(dd_el=_dd, state=_dd_state):
-                                            def _toggle(e):
-                                                state["open"] = not state["open"]
-                                                dd_el.style(
-                                                    f"display:{'block' if state['open'] else 'none'};padding:4px 0 6px;"
-                                                )
-
-                                            return _toggle
-
-                                        with (
-                                            ui.element("div")
-                                            .style("padding:8px 10px;cursor:pointer;")
-                                            .on("click", _make_toggle())
-                                        ):
-                                            ui.html(
-                                                bar_html + "<span style='color:#52525b;font-size:9px;margin-left:8px;'>"
-                                                "&#9662; details</span>"
-                                            )
-                                        with _dd:
-                                            ui.html(_detail_rows)
-                                else:
-                                    with ui.element("div").style("padding:8px 10px;border-bottom:1px solid #27272a;"):
-                                        ui.html(bar_html)
-
-                    # Top files heatmap
-                    ui.html(
-                        '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
-                        "font-family:'DM Sans',sans-serif;\">Top Files (by read count)</div>"
-                    )
-                    top_files = reads.get("top_files", [])
-                    if top_files:
-                        file_rows = ""
-                        max_file_count = top_files[0]["count"] if top_files else 1
-                        for tf in top_files:
-                            intensity = min(tf["count"] / max_file_count, 1.0)
-                            r = int(59 + intensity * (248 - 59))
-                            g = int(130 + intensity * (113 - 130))
-                            b = int(246 + intensity * (113 - 246))
-                            bg = f"rgba({r},{g},{b},0.12)"
-                            fname = tf["file"]
-                            short = fname.split("/")[-1] if "/" in fname else fname
-                            file_rows += (
-                                f"<tr><td style='padding:5px 10px;color:#93c5fd;font-size:11px;"
-                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
-                                f"background:{bg};' title='{safe_html(fname)}'>"
-                                f"{safe_html(short)}</td>"
-                                f"<td style='padding:5px 10px;color:#d4d4d8;font-size:11px;text-align:center;"
-                                f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;'
-                                f"background:{bg};white-space:nowrap;'>"
-                                f"{safe_html(str(tf['count']))}</td>"
-                                f"<td style='padding:5px 10px;color:#71717a;font-size:10px;"
-                                f"border-bottom:1px solid #27272a;background:{bg};max-width:300px;"
-                                f"overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"
-                                f"{safe_html(fname)}</td></tr>"
+                    with ui.tab_panels(ctx_tabs, value=overview_tab).classes("w-full").style(ctx_tab_panel_style):
+                        with ui.tab_panel(overview_tab):
+                            _render_context_overview(
+                                reads, tools, usage_summary, by_tool, _tool_tokens, all_entries, session_data
                             )
-                        ui.html(
-                            f"<table style='width:100%;border-collapse:collapse;background:#1e1e23;"
-                            f"border:1px solid #27272a;border-radius:8px;overflow:hidden;'>"
-                            f"<thead><tr><th style='padding:6px 10px;text-align:left;color:#71717a;"
-                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
-                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                            f"File</th><th style='padding:6px 10px;text-align:center;color:#71717a;"
-                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
-                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                            f"Reads</th><th style='padding:6px 10px;text-align:left;color:#71717a;"
-                            f"font-size:10px;text-transform:uppercase;letter-spacing:0.05em;"
-                            f'font-family:"IBM Plex Mono",monospace;border-bottom:1px solid #27272a;\'>'
-                            f"Path</th></tr></thead><tbody>{file_rows}</tbody></table>"
-                        )
-
-                    # Per-session breakdown
-                    if session_data:
-                        ui.html(
-                            '<div style="font-size:13px;font-weight:600;color:#e4e4e7;margin:20px 0 8px;'
-                            "font-family:'DM Sans',sans-serif;\">Sessions</div>"
-                        )
-                        for sess_id, sess_entries in session_data:
-                            s_reads = analyze_reads(sess_entries)
-                            s_tools = analyze_tool_usage(sess_entries)
-                            s_eff = analyze_efficiency(sess_entries)
-                            s_reread = round(s_reads["reread_ratio"] * 100, 1)
-                            s_tokens = s_reads["estimated_tokens"]
-                            s_token_display = f"{s_tokens // 1000}k" if s_tokens >= 1000 else str(s_tokens)
-                            summary = (
-                                f"{safe_html(str(s_tools['total_tool_calls']))} calls &middot; "
-                                f"{safe_html(str(s_reads['total_reads']))} reads &middot; "
-                                f"{safe_html(str(s_reread))}% re-read &middot; "
-                                f"{safe_html(s_token_display)} tokens"
-                            )
-                            with ui.expansion(safe_html(sess_id)).style(
-                                "width:100%;margin-bottom:4px;background:#1e1e23;"
-                                "border:1px solid #27272a;border-radius:6px;"
-                            ):
-                                ui.html(
-                                    f"<div style='font-size:11px;color:#a1a1aa;"
-                                    f'font-family:"IBM Plex Mono",monospace;'
-                                    f"padding:4px 0;'>{summary}</div>"
-                                )
-                                if s_eff["exact_reread_count"] > 0:
-                                    ui.html(
-                                        f"<div style='font-size:10px;color:#f87171;padding:2px 0;'>"
-                                        f"Exact re-reads: "
-                                        f"{safe_html(str(s_eff['exact_reread_count']))}</div>"
-                                    )
-                                if s_reads.get("wasteful_reads"):
-                                    for w in s_reads["wasteful_reads"]:
-                                        ui.html(
-                                            f"<div style='font-size:10px;color:#ca8a04;padding:1px 0;'>"
-                                            f"Wasteful: {safe_html(w['file'])} "
-                                            f"({safe_html(str(w['count']))}x)</div>"
-                                        )
-
+                        with ui.tab_panel(tools_tab):
+                            _render_context_tools_tab(by_tool, _tool_tokens, all_entries, reads)
+                        with ui.tab_panel(categories_tab):
+                            _render_context_categories_tab(all_entries)
+                        with ui.tab_panel(rereads_tab):
+                            _render_context_rereads_tab(compute_reread_waste(all_entries), session_data)
             elif view_mode["current"] == "process":
                 # --- Process management tools review ---
                 import json as _json

@@ -1,0 +1,54 @@
+title: "Native transcript ingestion layer \u2014 parse Claude Code session JSONL as\
+  \ canonical source"
+status: done
+priority: P1
+category: feature
+sprint_target: 31
+created: 2026-05-30
+updated: 2026-06-06
+depends_on: []
+tags: []
+goal: "Add a transcript ingestion module that parses Claude Code native session JSONL\
+  \ into a typed Session model (real token usage, tool success, skill attribution)\
+  \ \u2014 the canonical data source Dashboard v2 builds on."
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/transcript.py (NEW) \u2014 Pydantic models Usage/ToolCall/Turn/Session;\
+  \ functions parse_transcript, discover_transcripts, aggregate helpers; iterate json.loads\
+  \ per line skipping JSONDecodeError, branch on top-level type, read message.usage,\
+  \ pair tool_use by id+uuid, dedupe on message.id, degrade gracefully with .get"
+- "Do NOT modify context_report.py in this item \u2014 consumer wiring lands in the\
+  \ cache-hit-rate and context-tabs items to bound blast radius"
+- "File: tests/test_transcript.py (NEW) \u2014 inline JSONL fixtures (mirror tests/test_context_report.py)\
+  \ covering usage, tool pairing, attributionSkill, dedupe, sidechain, malformed line,\
+  \ discover_transcripts slug+missing-dir via monkeypatched home"
+description: "Dashboard v2 foundation. Parse ~/.claude/projects/<proj>/<uuid>.jsonl\
+  \ into a session model: real per-turn token usage (input/output/cache_read/cache_creation),\
+  \ tool_use->toolUseResult success pairing via sourceToolAssistantUUID, attributionSkill,\
+  \ prompts; separate isSidechain subagent turns; dedupe by message.id/uuid (claude-code\
+  \ #5034). Feed context_report.py. Reverses design-doc D2 \u2014 see docs/superpowers/specs/2026-05-30-context-optimization-session-analysis-research.md.\
+  \ Supersedes the planned UserPromptSubmit skill-invocation hook and heuristic error-sniffing."
+acceptance_criteria:
+- parse_transcript(path) reads a .jsonl transcript line-by-line, tolerates malformed
+  lines, returns a structured Session
+- Per-turn usage captured from message.usage (input/output/cache_read/cache_creation);
+  session exposes token totals and cache-hit rate
+- tool_use blocks paired to toolUseResult via sourceToolAssistantUUID exposing per-call
+  success; records deduped by message.id/uuid; isSidechain turns separated
+- Skill usage aggregated from attributionSkill into a skill-to-count map; discover_transcripts(cwd)
+  resolves project slug under ~/.claude/projects/<slug>/ and returns empty list when
+  absent
+- Tests pass (.venv/bin/pytest tests/ -v); lint clean (.venv/bin/ruff check . && .venv/bin/ruff
+  format --check .)
+test_plan:
+- 'tests/test_transcript.py: usage fields parsed, cache-hit rate, tool success pairing,
+  skill counts, dedupe by message.id, sidechain separation, malformed-line skip, slug
+  discovery + empty on missing dir'
+notes: 'FOUNDATION item (reverses design decision D2). Risks: slug discovery edge
+  cases; server-side/Cowork sessions write no local JSONL; transcript format can drift
+  across Claude Code versions (record per-session version field).'
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

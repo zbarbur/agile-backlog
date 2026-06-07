@@ -32,7 +32,7 @@ Python 3.11+ · NiceGUI · Click · Pydantic · YAML · Ruff · pytest
 | File | Purpose |
 |---|---|
 | `.claude/sprint-config.yaml` | Commands, paths, sprint settings |
-| `backlog/*.yaml` | Backlog items (single source of truth) |
+| `backlog/*.yaml` | Backlog items (single source of truth). Files/dirs prefixed with `_` (e.g. `_sprint-plan.yaml`) are ignored by `load_all()` |
 | `docs/process/PROJECT_CONTEXT.md` | Project snapshot |
 | `docs/process/DEFINITION_OF_DONE.md` | Quality gates |
 

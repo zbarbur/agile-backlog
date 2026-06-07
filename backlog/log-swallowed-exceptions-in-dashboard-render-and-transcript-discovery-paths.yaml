@@ -1,0 +1,24 @@
+title: Log swallowed exceptions in dashboard render and transcript-discovery paths
+status: backlog
+priority: P3
+category: chore
+sprint_target: 32
+created: 2026-06-07
+updated: 2026-06-07
+depends_on: []
+tags: []
+goal: Make the broad except Exception blocks in app.py (render + transcript discovery)
+  log what they swallow instead of failing silently.
+complexity: S
+technical_specs: []
+description: 'Sprint 31 review follow-up: 3 broad excepts in app.py context-view render/discovery
+  paths swallow errors silently. Add logging so failures are diagnosable without crashing
+  the dashboard.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

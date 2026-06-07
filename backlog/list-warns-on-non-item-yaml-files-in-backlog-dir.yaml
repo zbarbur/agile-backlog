@@ -1,0 +1,46 @@
+title: list warns on non-item YAML files in backlog dir
+status: done
+priority: P2
+category: feature
+sprint_target: 31
+created: 2026-06-05
+updated: 2026-06-06
+depends_on: []
+tags: []
+goal: Make load_all() skip foreign/non-item YAML quietly so adopting agile-backlog
+  on a repo with a pre-existing backlog format is clean, with a documented underscore-prefix
+  ignore rule.
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/yaml_store.py \u2014 load_all() (lines 60-73): filter glob\
+  \ to skip names starting with underscore; remove the per-file warnings.warn (line\
+  \ 72); accumulate skipped paths and emit at most one summary line via click.echo(err=True)\
+  \ or stay silent; drop the now-unused import warnings; keep the isinstance(raw,\
+  \ dict) guard"
+- "File: tests/test_yaml_store.py \u2014 update test_skips_yaml_missing_required_fields\
+  \ (line ~108) to assert silent skip with zero UserWarning and one valid item; add\
+  \ test_ignores_underscore_prefixed_files"
+description: load_all() globs backlog/*.yaml and raises a pydantic UserWarning per
+  file missing required item fields. On a repo with foreign YAML (e.g. nested sprint
+  plans), every 'list' is noisy. Discovered dogfooding on the storybook project.
+acceptance_criteria:
+- Running list on a dir with foreign/incomplete YAML emits no per-file UserWarning
+  or stack trace; at most one summary line, only when something was skipped
+- Files/dirs whose name starts with underscore are ignored entirely (not even counted);
+  the rule is documented
+- All load_all callers still receive only valid BacklogItems; valid items adjacent
+  to skipped files load unaffected
+- Updated test_skips_yaml_missing_required_fields and a new underscore-ignore test
+  pass; lint clean
+test_plan:
+- 'tests/test_yaml_store.py: incomplete YAML skipped silently (one valid item, zero
+  UserWarning); underscore-prefixed file never loaded or counted; invalid YAML still
+  skipped'
+notes: 'Revised S (was M): one function, one test. Recommend underscore-prefix ignore;
+  DEFER .backlogignore and an import/init adoption command to follow-up items. Glob
+  stays non-recursive.'
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

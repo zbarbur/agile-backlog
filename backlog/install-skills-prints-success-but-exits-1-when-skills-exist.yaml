@@ -1,0 +1,41 @@
+title: install-skills prints success but exits 1 when skills exist
+status: done
+priority: P2
+category: bug
+sprint_target: 31
+created: 2026-06-05
+updated: 2026-06-06
+depends_on: []
+tags: []
+goal: 'Make install-skills exit code truthful: skip pre-existing skills with a summary
+  line and exit 0; preserve non-zero only for genuine errors.'
+complexity: S
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 install_skills(target, force) (~lines 410-443)\
+  \ already accumulates installed/skipped and exits 0 on skip; verify no implicit\
+  \ non-zero exit, keep the summary-line behavior, preserve the missing-bundled-skills\
+  \ SystemExit at ~line 419"
+- "File: tests/test_cli.py \u2014 TestInstallSkills (~lines 650-673): add assert result.exit_code\
+  \ == 0 to the skip and force tests; add test_install_skills_rerun_all_skipped_exits_zero"
+description: Without --force, install-skills prints 'Installed N skill(s)' AND exits
+  1 when any skill already exists. Success message + failure code is contradictory.
+  Found dogfooding on storybook.
+acceptance_criteria:
+- A second install run (everything skipped) exits 0 with a skipped summary; --force
+  overwrites and exits 0
+- Only the genuine error path (bundled skills not found) exits non-zero
+- Regression tests assert result.exit_code == 0 on the skip and force paths
+- Tests pass; lint clean
+test_plan:
+- 'tests/test_cli.py: skip path exit 0, force exit 0, no-op rerun exit 0 with Skipped
+  present and Installed absent'
+notes: "FINDING: not reproducible on current main \u2014 install_skills already exits\
+  \ 0 (fixed in commit 8d304e5; second run reproduced EXIT=0). Storybook is likely\
+  \ on an older build \u2014 advise upgrade. This item hardens the contract with the\
+  \ missing exit-code assertions. If a reviewer still sees exit 1 on main, investigate\
+  \ the installed wheel/packaging, not cli.py."
+phase: review
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

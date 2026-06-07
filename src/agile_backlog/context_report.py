@@ -4,6 +4,9 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from agile_backlog.transcript import Usage
+from agile_backlog.transcript import cache_hit_rate as cache_hit_rate  # re-export (DRY)
+
 TOKENS_PER_LINE = 4
 DEFAULT_FULL_FILE_LINES = 500
 
@@ -18,6 +21,74 @@ TOOL_TOKEN_ESTIMATES: dict[str, int] = {
     "Skill": 30,
 }
 DEFAULT_TOOL_TOKENS = 50
+
+# ---------------------------------------------------------------------------
+# Cache-aware token pricing (USD per 1M tokens: (input_rate, output_rate)).
+# Cache reads bill at CACHE_READ_MULTIPLIER * input_rate; cache writes (creation)
+# bill at CACHE_WRITE_MULTIPLIER * input_rate. Unknown models fall back to
+# DEFAULT_PRICING_PER_1M (opus-tier) rather than crashing.
+# ---------------------------------------------------------------------------
+MODEL_PRICING_PER_1M: dict[str, tuple[float, float]] = {
+    "claude-opus-4-8": (5.0, 25.0),
+    "claude-opus-4-7": (5.0, 25.0),
+    "claude-opus-4-6": (5.0, 25.0),
+    "claude-sonnet-4-6": (3.0, 15.0),
+    "claude-haiku-4-5": (1.0, 5.0),
+}
+DEFAULT_PRICING_PER_1M: tuple[float, float] = (5.0, 25.0)
+CACHE_READ_MULTIPLIER = 0.1
+CACHE_WRITE_MULTIPLIER = 1.25
+
+
+def _coerce_usage(usage) -> Usage:
+    if isinstance(usage, Usage):
+        return usage
+    if isinstance(usage, dict):
+        return Usage(
+            input_tokens=usage.get("input_tokens", 0) or 0,
+            output_tokens=usage.get("output_tokens", 0) or 0,
+            cache_read_input_tokens=usage.get("cache_read_input_tokens", 0) or 0,
+            cache_creation_input_tokens=usage.get("cache_creation_input_tokens", 0) or 0,
+        )
+    return Usage()
+
+
+def usage_cost_usd(usage, model: str) -> float:
+    """Real cache-aware USD cost for a single usage record. Accepts a Usage or a dict.
+    Input bills at 1.0x base; cache_read at 0.1x; cache_creation at 1.25x; output at the
+    output rate. Unknown model -> DEFAULT_PRICING_PER_1M (no crash)."""
+    u = _coerce_usage(usage)
+    in_rate, out_rate = MODEL_PRICING_PER_1M.get(model, DEFAULT_PRICING_PER_1M)
+    cost = (
+        u.input_tokens * in_rate
+        + u.cache_read_input_tokens * in_rate * CACHE_READ_MULTIPLIER
+        + u.cache_creation_input_tokens * in_rate * CACHE_WRITE_MULTIPLIER
+        + u.output_tokens * out_rate
+    ) / 1e6
+    return round(cost, 6)
+
+
+def analyze_usage(turns: list) -> dict:
+    """Aggregate token totals, cache-hit rate (on SUMMED totals) and real cost across turns.
+    Each turn exposes a ``.usage`` (Usage) and a ``.model``. Cost sums per-turn
+    ``usage_cost_usd`` so mixed-model sessions price correctly. Empty -> all zeros."""
+    total = Usage()
+    cost = 0.0
+    for turn in turns:
+        u = _coerce_usage(getattr(turn, "usage", None))
+        total.input_tokens += u.input_tokens
+        total.output_tokens += u.output_tokens
+        total.cache_read_input_tokens += u.cache_read_input_tokens
+        total.cache_creation_input_tokens += u.cache_creation_input_tokens
+        cost += usage_cost_usd(u, getattr(turn, "model", None))
+    return {
+        "input_tokens": total.input_tokens,
+        "output_tokens": total.output_tokens,
+        "cache_read_input_tokens": total.cache_read_input_tokens,
+        "cache_creation_input_tokens": total.cache_creation_input_tokens,
+        "cache_hit_rate": round(cache_hit_rate(total), 6),
+        "cost_usd": round(cost, 6),
+    }
 
 
 def parse_read_log(path: Path) -> list[dict]:
@@ -162,37 +233,52 @@ def skill_usage_stats(entries: list[dict]) -> dict[str, int]:
     return dict(sorted(counts.items(), key=lambda x: -x[1]))
 
 
-def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path:
+def generate_sprint_report(
+    log_dir: Path, output_dir: Path, sprint: int, transcript_sessions: list | None = None
+) -> Path:
+    # Native transcript usage (real tokens + cache-aware cost) is the canonical source for the
+    # `usage` block. It is keyed by session_id when callers pass parsed transcript Sessions
+    # (each with `.session_id` and `.turns`). The hook-log pipeline below is unchanged; when no
+    # transcript is supplied, `usage` is a zero-valued shape so the report contract is stable.
+    usage_by_session: dict[str, dict] = {}
+    all_turns: list = []
+    for tsession in transcript_sessions or []:
+        turns = [t for t in getattr(tsession, "turns", []) if not getattr(t, "is_sidechain", False)]
+        sid = getattr(tsession, "session_id", None)
+        if sid:
+            usage_by_session[sid] = analyze_usage(turns)
+        all_turns.extend(turns)
+
     all_entries: list[dict] = []
     sessions: list[dict] = []
+
+    def _build(session_id: str, entries: list[dict]) -> dict:
+        metrics = analyze_reads(entries)
+        metrics["session_id"] = session_id
+        metrics["tool_usage"] = analyze_tool_usage(entries)
+        metrics["efficiency"] = analyze_efficiency(entries)
+        metrics["errors"] = analyze_errors(entries)
+        metrics["usage"] = usage_by_session.get(session_id, analyze_usage([]))
+        return metrics
 
     for log_file in sorted(log_dir.glob("tools-*.jsonl")):
         entries = parse_read_log(log_file)
         if entries:
-            session_metrics = analyze_reads(entries)
-            session_metrics["session_id"] = log_file.stem.replace("tools-", "")
-            session_metrics["tool_usage"] = analyze_tool_usage(entries)
-            session_metrics["efficiency"] = analyze_efficiency(entries)
-            session_metrics["errors"] = analyze_errors(entries)
-            sessions.append(session_metrics)
+            sessions.append(_build(log_file.stem.replace("tools-", ""), entries))
             all_entries.extend(entries)
 
     # Fallback: also check legacy reads-*.jsonl files
     for log_file in sorted(log_dir.glob("reads-*.jsonl")):
         entries = parse_read_log(log_file)
         if entries:
-            session_metrics = analyze_reads(entries)
-            session_metrics["session_id"] = log_file.stem.replace("reads-", "")
-            session_metrics["tool_usage"] = analyze_tool_usage(entries)
-            session_metrics["efficiency"] = analyze_efficiency(entries)
-            session_metrics["errors"] = analyze_errors(entries)
-            sessions.append(session_metrics)
+            sessions.append(_build(log_file.stem.replace("reads-", ""), entries))
             all_entries.extend(entries)
 
     aggregate = analyze_reads(all_entries)
     aggregate["tool_usage"] = analyze_tool_usage(all_entries)
     aggregate["efficiency"] = analyze_efficiency(all_entries)
     aggregate["errors"] = analyze_errors(all_entries)
+    aggregate["usage"] = analyze_usage(all_turns)
     report = {
         "sprint": sprint,
         **aggregate,
@@ -203,6 +289,17 @@ def generate_sprint_report(log_dir: Path, output_dir: Path, sprint: int) -> Path
     report_path = output_dir / f"SPRINT{sprint}_CONTEXT_REPORT.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     return report_path
+
+
+def tool_category_breakdown(entries: list[dict]) -> dict[str, dict]:
+    """Compose analyze_tool_usage + estimate_tool_tokens + pure.TOOL_CATEGORIES into the
+    four-row category structure (Reads, Writes, Search, Execution). Single source of truth
+    for the Context view "Categories" tab so the renderer stays thin."""
+    from agile_backlog.pure import categorize_tools
+
+    by_tool = analyze_tool_usage(entries)["by_tool"]
+    tool_tokens = estimate_tool_tokens(entries)
+    return categorize_tools(by_tool, tool_tokens)
 
 
 def estimate_tool_tokens(entries: list[dict]) -> dict[str, int]:

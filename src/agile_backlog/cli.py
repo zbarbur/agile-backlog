@@ -34,6 +34,10 @@ def main(backlog_dir: str | None):
 @click.option("--category", type=click.Choice(["bug", "feature", "docs", "chore"]), required=True, help="Category.")
 @click.option("--description", default="", help="Item description.")
 @click.option("--sprint", "sprint_target", type=int, default=None, help="Target sprint number.")
+@click.option("--goal", default="", help="Item goal.")
+@click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None, help="Complexity estimate.")
+@click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
+@click.option("--tags", multiple=True, help="Tag (repeatable).")
 def add(
     title_pos: str | None,
     title_opt: str | None,
@@ -41,6 +45,10 @@ def add(
     category: str,
     description: str,
     sprint_target: int | None,
+    goal: str,
+    complexity: str | None,
+    acceptance_criteria: tuple[str, ...],
+    tags: tuple[str, ...],
 ):
     """Create a new backlog item."""
     if title_pos and title_opt:
@@ -64,6 +72,10 @@ def add(
         category=category,
         description=description,
         sprint_target=sprint_target,
+        goal=goal,
+        complexity=complexity,
+        acceptance_criteria=list(acceptance_criteria),
+        tags=list(tags),
     )
     save_item(item)
     click.echo(f"Created: {item_id}")
