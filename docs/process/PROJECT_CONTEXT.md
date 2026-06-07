@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 31 Planning |
-| **Last Sync** | 2026-05-26 |
+| **Status** | Sprint 32 Planning |
+| **Last Sync** | 2026-06-07 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 361 |
+| **Tests** | 415 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -59,4 +59,5 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 26 | Operationalize Context Analysis | 304 | #25 |
 | 27 | Process Tools, Context Dashboard & Bug Fixes | 331 | #27 |
 | 29 | Observability & Skill Management | 354 | — |
-| 30 | Dashboard v2 Design + Debt Paydown | 361 | — |
+| 30 | Dashboard v2 Design + Debt Paydown | 361 | #31 |
+| 31 | Native-transcript Foundation + Storybook Adoption Fixes | 415 | — |

@@ -1,0 +1,26 @@
+title: "Sprint-folder backlog organization \u2014 three-tier layout with reconcile\
+  \ command"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-06-07
+updated: 2026-06-07
+depends_on: []
+tags: []
+goal: Organize backlog items into unplanned/sprint{N}/archive tiers, with folder derived
+  from sprint_target and a reconcile command.
+complexity: L
+technical_specs: []
+description: 'Approved design: docs/superpowers/specs/2026-06-07-sprint-folder-backlog-organization-design.md.
+  Tier-aware yaml_store (recursive load_all, item_path, save_item auto-relocate) +
+  reconcile [--dry-run] command + lifecycle hooks + one-time migration of existing
+  flat files.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

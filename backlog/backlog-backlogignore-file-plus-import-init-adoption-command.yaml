@@ -1,0 +1,24 @@
+title: Backlog .backlogignore file plus import/init adoption command
+status: backlog
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-06-07
+updated: 2026-06-07
+depends_on: []
+tags: []
+goal: 'Let teams adopt agile-backlog on a repo with a pre-existing backlog: a .backlogignore
+  file format and an import/init command.'
+complexity: M
+technical_specs: []
+description: Deferred from Sprint 31 list-warns item. .backlogignore honored by load_all/reconcile
+  (underscore-prefix is the interim mechanism); import/init scaffolds/migrates an
+  existing backlog. Storybook adoption ergonomics.
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

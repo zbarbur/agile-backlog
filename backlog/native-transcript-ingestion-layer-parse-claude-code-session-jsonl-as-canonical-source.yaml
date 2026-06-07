@@ -1,6 +1,6 @@
 title: "Native transcript ingestion layer \u2014 parse Claude Code session JSONL as\
   \ canonical source"
-status: doing
+status: done
 priority: P1
 category: feature
 sprint_target: 31

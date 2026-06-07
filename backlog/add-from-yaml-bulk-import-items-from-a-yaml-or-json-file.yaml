@@ -1,0 +1,25 @@
+title: add --from-yaml bulk import items from a YAML or JSON file
+status: backlog
+priority: P3
+category: feature
+sprint_target: 32
+created: 2026-06-07
+updated: 2026-06-07
+depends_on: []
+tags: []
+goal: Bulk-create backlog items from a YAML/JSON file in one command, replacing hand-rolled
+  generators.
+complexity: M
+technical_specs: []
+description: 'Deferred from Sprint 31 add-flags item. Design questions: multi-doc
+  YAML, id/slug collision handling, per-record validation, overwrite vs skip. Directly
+  addresses storybook''s original migration pain (they hand-rolled a generator against
+  BacklogItem).'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

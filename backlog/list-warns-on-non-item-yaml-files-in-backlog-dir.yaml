@@ -1,5 +1,5 @@
 title: list warns on non-item YAML files in backlog dir
-status: doing
+status: done
 priority: P2
 category: feature
 sprint_target: 31
