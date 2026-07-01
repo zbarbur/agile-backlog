@@ -1,11 +1,11 @@
 title: "Session analytics JSONL analyzer \u2014 skill compliance ratio, command categorization,\
   \ sprint retro integration"
-status: backlog
+status: done
 priority: P2
 category: feature
 sprint_target: 28
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-06-07
 depends_on: []
 tags: []
 goal: ''
@@ -18,5 +18,11 @@ notes: ''
 phase: null
 design_reviewed: false
 code_reviewed: false
-comments: []
+comments:
+- text: Superseded by CLI analyze epic (analyze-command-core-context-claude-md-analyzers
+    + analyze-tool-policy-analyzer-sprint-end-optimization-sweep). See docs/superpowers/specs/2026-06-07-cli-analyze-optimization-loop-design.md
+  flagged: false
+  resolved: false
+  created: '2026-06-07'
+  author: agent
 images: []

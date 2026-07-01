@@ -1,0 +1,24 @@
+title: analyze command core + context + claude-md analyzers
+status: backlog
+priority: P1
+category: feature
+sprint_target: 32
+created: 2026-06-07
+updated: 2026-06-07
+depends_on:
+- ''
+tags: []
+goal: ''
+complexity: M
+technical_specs: []
+description: Epic 1/2 of CLI analyze optimization loop. Finding model + analyze Click
+  group + human/--json renderers; context target wrapping context-report (alias retained);
+  claude-md analyzer (static + re-read enrichment). See docs/superpowers/specs/2026-06-07-cli-analyze-optimization-loop-design.md
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
