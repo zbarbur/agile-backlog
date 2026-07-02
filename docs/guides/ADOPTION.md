@@ -179,7 +179,49 @@ Add the following to the project's `CLAUDE.md` (create if it doesn't exist):
 
 ---
 
-## 4. Configure Statusline
+## 4. Configure Hooks
+
+agile-backlog uses two hooks in `.claude/settings.local.json`. **Neither is installed by `install-skills` (Step 6) — add them manually.**
+
+### 4.1 Context-logging hooks (recommended)
+
+These power the context-analysis features (`agile-backlog context-report`, `context-summary`) by logging every tool call to `.claude/context-logs/`. Without them, those commands have no data to report.
+
+First copy the hook script into the project — it ships in the repo, **not** the pip package:
+
+```bash
+mkdir -p .claude/hooks
+curl -fsSL https://raw.githubusercontent.com/zbarbur/agile-backlog/main/.claude/hooks/post-tool-logger.sh \
+  -o .claude/hooks/post-tool-logger.sh
+```
+
+Then wire it to every tool via `PostToolUse` in `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Read",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Grep",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Glob",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Bash",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "WebFetch", "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Agent",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Edit",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Write",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
+      { "matcher": "Skill",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] }
+    ]
+  }
+}
+```
+
+The script logs each call to `.claude/context-logs/tools-<session>.jsonl` and warns on re-reads. Add `.claude/context-logs/` to `.gitignore`. Verify after a few tool calls:
+
+```bash
+agile-backlog context-report
+```
+
+### 4.2 Statusline (optional)
 
 Add a statusline hook to `.claude/settings.local.json` to show sprint status in the Claude Code terminal. Create or merge into the existing file:
 
