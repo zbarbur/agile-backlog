@@ -1,5 +1,5 @@
 title: GitHub Issues as a read-only backlog source (pluggable source layer)
-status: backlog
+status: doing
 priority: P1
 category: feature
 sprint_target: 33
@@ -83,7 +83,7 @@ notes: "Subsumes the existing 'add-an-option-to-import-a-kanban-board-from-an-ex
   \ (move -> add/remove 'doing' label or close; note -> issue comment) via gh, still\
   \ no mirroring. Design question already leaning: represent 'doing' with a tool-managed\
   \ 'doing' label (simplest) rather than milestones-as-sprints.\n"
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

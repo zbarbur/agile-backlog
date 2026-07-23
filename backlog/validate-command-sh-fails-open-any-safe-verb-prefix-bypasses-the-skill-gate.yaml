@@ -1,0 +1,74 @@
+title: "validate-command.sh fails open \u2014 any safe-verb prefix bypasses the skill\
+  \ gate"
+status: doing
+priority: P2
+category: bug
+sprint_target: 33
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags:
+- adoption
+- hooks
+- tracksupp.ai
+goal: Make the PreToolUse command gate match against the whole command so it cannot
+  be bypassed by prefixing a safe verb, and stop it denying on incidental substring
+  matches.
+complexity: S
+technical_specs:
+- "File: docs/optimization/hooks/validate-command.sh \u2014 split COMMAND on shell\
+  \ separators (&&, ||, ;, |) and evaluate EVERY segment. SAFE_PATTERNS may only short-circuit\
+  \ the segment it matches, never the whole command; deny if ANY segment matches SKILL_PATTERNS."
+- "File: docs/optimization/hooks/validate-command.sh \u2014 give SKILL_PATTERNS word\
+  \ boundaries so bare verbs do not match inside filenames or paths (migrate vs notes-about-migrate.txt,\
+  \ deploy vs predeploy-check.sh)."
+- "File: tests/test_validate_command_hook.py (new) \u2014 drive the hook as a subprocess\
+  \ with fixture JSON on stdin and assert hookSpecificOutput.permissionDecision. The\
+  \ hook currently has no tests, which is why both defects shipped."
+- "File: docs/optimization/README.md \u2014 state that the gate evaluates every segment\
+  \ of a compound command, so adopters know prefixing a safe verb does not bypass\
+  \ it."
+description: "Split out of no-guidance-for-adopting-skill-patterns-... (that item\
+  \ keeps the documentation/selection-criteria asks; this one is the defect). Raised\
+  \ adopting the bundle on tracksupp.ai 2026-07-23; both halves reproduced against\
+  \ docs/optimization/hooks/validate-command.sh 2026-07-23.\n\nFAILS OPEN. Line 15\
+  \ anchors SAFE_PATTERNS at ^ and line 16 exits 0 on a match, so only the FIRST token\
+  \ is ever considered. Anything after a safe verb is never examined:\n  gcloud compute\
+  \ instances delete prod            -> deny   (correct)\n  cat notes.txt && gcloud\
+  \ ... delete prod         -> ALLOW  (bypass)\n  echo hi; terraform destroy -auto-approve\
+  \        -> ALLOW  (bypass)\n  ls && kubectl delete ns prod                    ->\
+  \ ALLOW  (bypass)\nAn adopter installs this believing dangerous commands are gated;\
+  \ prefixing 'ls && ' defeats it. A gate that fails open is worse than no gate, because\
+  \ it is trusted.\n\nOVER-BLOCKS. Line 22 matches SKILL_PATTERNS as an unanchored\
+  \ case-insensitive substring, so incidental occurrences are denied:\n  vim notes-about-migrate.txt\
+  \                     -> deny   (false positive)\nBare verbs like deploy/migrate/rollback\
+  \ appear inside ordinary filenames and paths (predeploy-check.sh, migrations/, rollback-notes.md).\n\
+  \nASKS: (1) evaluate SAFE_PATTERNS against the whole command, or split on &&/||/;\
+  \ /| and evaluate every segment, denying if ANY segment is skill-covered; (2) require\
+  \ word boundaries on SKILL_PATTERNS so substrings inside filenames do not match;\
+  \ (3) add a test harness for the hook \u2014 it currently has none, which is why\
+  \ both bugs shipped."
+acceptance_criteria:
+- A compound command whose skill-covered part follows a safe verb is DENIED (e.g.
+  'cat notes.txt && gcloud compute instances delete prod')
+- The same commands run alone are still denied, and genuinely safe standalone commands
+  ('ls -la', 'git status') are still allowed
+- A command merely CONTAINING a skill keyword as a substring is not denied (e.g. 'vim
+  notes-about-migrate.txt')
+- Tests cover bypass, over-block, and allow cases; lint clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_validate_command_hook.py: ''cat notes.txt && gcloud compute instances
+  delete prod'' -> deny (regression test for the reported bypass)'
+- 'tests/test_validate_command_hook.py: ''echo hi; terraform destroy -auto-approve''
+  and ''ls && kubectl delete ns prod'' -> deny'
+- 'tests/test_validate_command_hook.py: ''ls -la'' and ''git status'' -> allow; bare
+  ''gcloud compute instances delete prod'' -> deny (unchanged behaviour)'
+- 'tests/test_validate_command_hook.py: ''vim notes-about-migrate.txt'' -> allow (substring
+  false positive)'
+notes: ''
+phase: spec
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

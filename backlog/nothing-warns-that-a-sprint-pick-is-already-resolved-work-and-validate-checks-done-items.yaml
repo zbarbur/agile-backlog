@@ -1,6 +1,6 @@
 title: Nothing warns that a sprint pick is already-resolved work; and validate checks
   done items
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 33
@@ -8,7 +8,9 @@ created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
+goal: "Stop already-resolved work entering a sprint unnoticed \u2014 surface close-intent\
+  \ and unread comment context on the card, and scope validate to items that are not\
+  \ done."
 complexity: M
 technical_specs: []
 description: "Two related gaps hit on tracksupp.ai 2026-07-23 during sprint-13 planning.\
@@ -29,7 +31,16 @@ description: "Two related gaps hit on tracksupp.ai 2026-07-23 during sprint-13 p
   \ 13' failed on two items that were already status done, demanding goal and technical_specs\
   \ from finished work. validate is a pre-sprint readiness gate; it should scope to\
   \ items that are not done."
-acceptance_criteria: []
+acceptance_criteria:
+- '''validate --sprint N'' no longer reports items whose status is done, at either
+  --level; the two currently-failing done Sprint 32 items (cli-batch-add-..., fix-sprint-status-display-...)
+  pass with no edits made to them'
+- An item carrying close-intent signal in its latest comment is visibly marked before
+  it can be promoted into a sprint
+- The board card conveys that unread comment context exists (count and/or last-comment
+  snippet), so a reader can tell before promoting rather than after speccing
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
 test_plan: []
 notes: "Second half CONFIRMED in agile-backlog's own repo 2026-07-23 during Sprint\
   \ 32 start: 'validate --sprint 32' FAILed two status=done items (cli-batch-add-...,\
@@ -37,7 +48,7 @@ notes: "Second half CONFIRMED in agile-backlog's own repo 2026-07-23 during Spri
   \ from closed work. Root cause: src/agile_backlog/cli.py:507 selects sprint items\
   \ with no status filter \u2014 the same defect class as the sprint-status bug at\
   \ cli.py:478 being fixed in Sprint 32."
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -2,7 +2,7 @@ title: add an easy ID for each item so it'll be easy to refer to it
 status: backlog
 priority: P2
 category: feature
-sprint_target: 33
+sprint_target: null
 created: 2026-04-02
 updated: 2026-07-23
 depends_on: []

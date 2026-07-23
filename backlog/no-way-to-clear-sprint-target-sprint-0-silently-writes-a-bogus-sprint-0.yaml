@@ -1,5 +1,5 @@
 title: No way to clear sprint_target; --sprint 0 silently writes a bogus sprint 0
-status: backlog
+status: doing
 priority: P3
 category: bug
 sprint_target: 33
@@ -7,9 +7,17 @@ created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
+goal: Give sprint_target a real 'unset' so a mis-tagged item can be returned to the
+  unplanned pool, and stop 0 being persisted as a sprint that does not exist.
 complexity: S
-technical_specs: []
+technical_specs:
+- "File: src/agile_backlog/cli.py \u2014 edit(): map --sprint 0 to a cleared target\
+  \ (sprint_target None) instead of storing 0; state in the option help that 0 clears.\
+  \ Reject negative values with a clear message."
+- "File: src/agile_backlog/cli.py \u2014 verify the sprint filters in list/sprint-status/validate\
+  \ treat a null target as unplanned, so nothing groups under Sprint 0."
+- "File: tests/test_cli.py \u2014 cover clear, re-tag, negative rejection, and absence\
+  \ of a Sprint 0 grouping."
 description: "Hit on tracksupp.ai 2026-07-23. After closing two items that had been\
   \ wrongly tagged into an upcoming sprint, there was no way to remove the tag: 'edit\
   \ --sprint' takes an integer and offers no unset. 'edit <id> --sprint 0' is accepted\
@@ -18,10 +26,24 @@ description: "Hit on tracksupp.ai 2026-07-23. After closing two items that had b
   \ value (--sprint none / --no-sprint) or reject 0 as invalid. Workaround used: retag\
   \ each item to the sprint in which its work actually shipped, which was more accurate\
   \ anyway \u2014 but that only worked because the history was known."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- An item's sprint target can be cleared from the CLI; the cleared item reads as unplanned
+  in 'show' and is absent from 'list --sprint N' for every N
+- "'edit <id> --sprint 0' never persists sprint_target: 0 \u2014 it either clears\
+  \ the target or exits non-zero naming the correct flag"
+- Re-tagging a cleared item with --sprint N still works (no regression on the normal
+  path)
+- No 'Sprint 0' group appears in list, sprint-status or validate output for any existing
+  data
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: edit --sprint 0 leaves sprint_target None, not 0'
+- 'tests/test_cli.py: a cleared item is absent from ''list --sprint N'' and reads
+  as unplanned in ''show'''
+- 'tests/test_cli.py: edit --sprint -1 exits non-zero'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

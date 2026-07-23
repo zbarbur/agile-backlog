@@ -6,7 +6,7 @@ language: python
 python_version: "3.11+"
 
 # Current sprint
-current_sprint: 32
+current_sprint: 33
 # Versioning — sprint-based: v0.{sprint}.{patch}
 version_scheme: "sprint"
 current_version: "0.33.0"

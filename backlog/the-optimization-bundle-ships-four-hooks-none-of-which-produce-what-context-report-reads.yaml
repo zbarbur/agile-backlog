@@ -1,16 +1,40 @@
 title: The optimization bundle ships four hooks, none of which produce what context-report
   reads
-status: backlog
+status: doing
 priority: P1
 category: bug
-sprint_target: null
+sprint_target: 33
 created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
-technical_specs: []
+goal: "Make context-report work from Claude Code's native transcript alone, so an\
+  \ adopter gets real analytics with no hooks registered \u2014 retiring the bespoke\
+  \ tools-*.jsonl pipeline rather than repairing it."
+complexity: M
+technical_specs:
+- "File: src/agile_backlog/transcript.py \u2014 ToolCall (line ~50) gains the tool\
+  \ input fields the analyzers need (file_path, and offset/limit if cheap); extract\
+  \ them in _tool_calls_from_content from the tool_use block's input. Verified 2026-07-23\
+  \ against a live session: 183 tool_use blocks, 30 carrying input.file_path, 23 unique\
+  \ files, re-reads directly countable."
+- "File: src/agile_backlog/context_report.py (lines ~264-271) \u2014 replace the log_dir.glob('tools-*.jsonl')\
+  \ / legacy 'reads-*.jsonl' feed for analyze_reads / analyze_tool_usage / analyze_efficiency\
+  \ / analyze_errors with entries derived from Session.turns. Keep excluding isSidechain\
+  \ turns from main aggregates. The usage block is already canonical-from-transcripts\
+  \ \u2014 do not regress it."
+- "File: src/agile_backlog/context_report.py \u2014 decide during build whether parse_read_log\
+  \ and the glob survive as an explicit legacy path for the five existing hook-derived\
+  \ reports or are deleted; record the decision on the item either way. Do not leave\
+  \ both paths live and undocumented."
+- "File: docs/optimization/README.md + docs/optimization/hooks/ \u2014 drop post-tool-logger.sh\
+  \ from the required steps; separate 'hooks that feed ~/.claude session-stats' from\
+  \ 'context-report, which needs no hooks'. This is the adopter-facing half of the\
+  \ fix."
+- "Follow-through: once this lands, close post-tool-logger-sh-spawns-python3-two-to-three-times-per-tool-call\
+  \ as moot \u2014 its per-tool-call interpreter tax disappears with the hook."
+- "File: tests/test_transcript.py, tests/test_context_report.py \u2014 cover the new\
+  \ extraction and the transcript-fed analyzers."
 description: "Found adopting the bundle on tracksupp.ai 2026-07-23. docs/optimization/README.md\
   \ step 3 installs capture-start.sh, inject-reminders.sh, validate-command.sh and\
   \ session-report.sh. Their outputs go to ~/.claude/session-stats/current-session.json,\
@@ -29,10 +53,31 @@ description: "Found adopting the bundle on tracksupp.ai 2026-07-23. docs/optimiz
   \ naming the expected path and glob; (3) state plainly in the README which hooks\
   \ feed context-report and which only feed the separate ~/.claude session-stats reports\
   \ \u2014 right now they read as one system."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- "context-report produces a complete report \u2014 reads, re-read ratio, tool usage,\
+  \ efficiency, errors and skill usage \u2014 from native transcripts alone, with\
+  \ zero hooks registered"
+- A project with no context-logs directory and no hooks gets real numbers, not a silent
+  report of zeros
+- A project with no discoverable transcripts gets exactly one loud warning naming
+  what was looked for and where, and still exits 0 with the stable report shape
+- Sprint 32 is regenerated both ways and the delta recorded on this item, so the five-sprint
+  re-read trend (0.65/0.61/0.78/0.68/0.68) stays interpretable across the cutover
+- docs/optimization/README.md no longer tells adopters to register post-tool-logger.sh
+  for context-report, and states plainly which hooks feed the session-stats reports
+  vs what feeds context-report
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_transcript.py: ToolCall carries file_path parsed from a fixture transcript'
+- 'tests/test_context_report.py: a report generated from transcript fixtures alone
+  has non-zero reads and a computed re-read ratio, with no log_dir present'
+- 'tests/test_context_report.py: no transcripts discovered -> exactly one warning,
+  exit 0, report contract unchanged'
+- 'Manual gate: regenerate SPRINT32_CONTEXT_REPORT.json from transcripts, diff against
+  the committed hook-derived version, record the delta'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

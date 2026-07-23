@@ -2,7 +2,7 @@ title: add --from-yaml bulk import items from a YAML or JSON file
 status: backlog
 priority: P3
 category: feature
-sprint_target: 33
+sprint_target: null
 created: 2026-06-07
 updated: 2026-07-23
 depends_on: []

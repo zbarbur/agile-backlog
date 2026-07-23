@@ -1,5 +1,5 @@
 title: Dogfood .claude/skills can silently drift from canonical bundled_skills
-status: backlog
+status: doing
 priority: P2
 category: bug
 sprint_target: 33
@@ -10,7 +10,19 @@ tags: []
 goal: Extend the sync/drift gate to cover the dogfood .claude/skills copy, not just
   .claude/hooks.
 complexity: S
-technical_specs: []
+technical_specs:
+- "File: scripts/sync_plugin.py \u2014 add the directory pair src/agile_backlog/bundled_skills/\
+  \ -> .claude/skills/ so both sync() and check() cover the dogfood skills copy, alongside\
+  \ the existing plugin/skills pair and the single-file bundled_hooks/post-tool-logger.sh\
+  \ -> .claude/hooks/ mapping."
+- "File: scripts/sync_plugin.py \u2014 _stale_skills() is currently hardcoded to plugin/skills;\
+  \ generalise it per-pair. KEEP={'backlog'} is a plugin-only allowlist and must NOT\
+  \ apply to the dogfood pair. Verified 2026-07-23: .claude/skills matches canonical\
+  \ exactly with no project-local extras, so no dogfood allowlist is needed today\
+  \ \u2014 but a project-local skill added later would be deleted by sync, so gate\
+  \ or document that."
+- "File: tests/test_plugin_sync.py \u2014 extend the existing drift and restore tests\
+  \ to the new pair."
 description: "Found during Sprint 32 execution 2026-07-23, minutes after the plugin\
   \ drift gate landed. scripts/sync_plugin.py mirrors canonical src/agile_backlog/bundled_skills/\
   \ -> plugin/skills/ and enforces it in CI via --check, and it also mirrors bundled_hooks/post-tool-logger.sh\
@@ -38,7 +50,7 @@ test_plan:
 - 'tests/test_plugin_sync.py: sync restores the dogfood skills copy'
 notes: "Deferred from Sprint 32 to 33 at sprint-end: filed mid-execution, never entered\
   \ build. Not a scope failure \u2014 it was discovered by the sprint's own work."
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

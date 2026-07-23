@@ -2,7 +2,7 @@ title: Upgrade re-read detection from stdout warning to PreToolUse block
 status: backlog
 priority: P3
 category: feature
-sprint_target: 33
+sprint_target: null
 created: 2026-05-30
 updated: 2026-07-23
 depends_on: []

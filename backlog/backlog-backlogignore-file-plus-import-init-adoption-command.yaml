@@ -2,7 +2,7 @@ title: Backlog .backlogignore file plus import/init adoption command
 status: backlog
 priority: P2
 category: feature
-sprint_target: 33
+sprint_target: null
 created: 2026-06-07
 updated: 2026-07-23
 depends_on: []

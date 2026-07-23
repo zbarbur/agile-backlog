@@ -1,43 +1,55 @@
 title: No guidance for adopting SKILL_PATTERNS, and the highest-value pattern is the
   one that breaks the tool
-status: backlog
+status: doing
 priority: P2
 category: feature
-sprint_target: null
+sprint_target: 33
 created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
-complexity: null
+goal: Give adopters real selection criteria for SKILL_PATTERNS so they can predict
+  what adding a pattern costs before it breaks their workflow.
+complexity: S
 technical_specs: []
 description: "Raised adopting validate-command.sh on tracksupp.ai 2026-07-23. The\
   \ script's only instruction is a comment: 'CUSTOMIZE: Add patterns matching your\
   \ project's skill domains', with defaults (gcloud|bq |kubectl|docker compose|docker\
   \ build|terraform|deploy|migrate|rollback). Adopting this well is genuinely hard\
-  \ and nothing explains how. THE TRAP: the deny is unconditional and stateless \u2014\
-  \ a matched command is blocked every time, with no way for the agent to signal 'I\
-  \ read the skill, now run it'. So the pattern you most want to add is the one that\
-  \ destroys your setup. On this project the command whose flags actually get guessed\
-  \ is 'agile-backlog' \u2014 that is precisely why a cli-reference skill exists for\
-  \ it. Add it to SKILL_PATTERNS and every sprint skill that shells out to agile-backlog\
-  \ breaks permanently. The patterns that are SAFE to add turn out to be the ones\
-  \ you rarely run (deploy, migrate, rollback), which is also the low-value end. Nothing\
-  \ in the docs says this. SECOND ISSUE: SAFE_PATTERNS is evaluated first and anchored\
-  \ at ^, so any compound command that merely STARTS with a safe verb bypasses the\
-  \ block entirely \u2014 'cat notes.txt && gcloud ...' is allowed, because it starts\
-  \ with cat. The gate is trivially and probably accidentally circumvented. ASKS:\
-  \ (1) document selection criteria \u2014 a pattern belongs here when the command\
-  \ is rare, consequential, and has a skill documenting its correct form; it does\
-  \ NOT belong when it is a high-frequency tool invocation, however skill-covered;\
-  \ (2) give a worked example per project shape rather than a cloud-ops default set\
-  \ that suits few adopters; (3) add an escape mechanism so a skill-covered command\
-  \ can be run after the skill is consulted, otherwise the hook can only ever be a\
-  \ wall; (4) match SAFE_PATTERNS against the whole command, not just its first token."
-acceptance_criteria: []
+  \ and nothing explains how.\n\nTHE TRAP: the deny is unconditional and stateless\
+  \ \u2014 a matched command is blocked every time, with no way for the agent to signal\
+  \ 'I read the skill, now run it'. So the pattern you most want to add is the one\
+  \ that destroys your setup. On this project the command whose flags actually get\
+  \ guessed is 'agile-backlog' \u2014 that is precisely why a cli-reference skill\
+  \ exists for it. Add it to SKILL_PATTERNS and every sprint skill that shells out\
+  \ to agile-backlog breaks permanently. The patterns that are SAFE to add turn out\
+  \ to be the ones you rarely run (deploy, migrate, rollback), which is also the low-value\
+  \ end. Nothing in the docs says this.\n\nASKS: (1) document selection criteria \u2014\
+  \ a pattern belongs here when the command is rare, consequential, and has a skill\
+  \ documenting its correct form; it does NOT belong when it is a high-frequency tool\
+  \ invocation, however skill-covered; (2) give a worked example per project shape\
+  \ rather than a cloud-ops default set that suits few adopters; (3) add an escape\
+  \ mechanism so a skill-covered command can be run after the skill is consulted,\
+  \ otherwise the hook can only ever be a wall.\n\nSCOPE NOTE: this item is now the\
+  \ documentation/design half only. The two matching defects found in the same review\
+  \ (gate fails open on any safe-verb prefix; over-blocks on incidental substrings)\
+  \ were split out 2026-07-23 into validate-command-sh-fails-open-any-safe-verb-prefix-bypasses-the-skill-gate.\
+  \ Fix that one first \u2014 documenting selection criteria for a gate that does\
+  \ not gate is wasted work."
+acceptance_criteria:
+- "The docs state explicit selection criteria for SKILL_PATTERNS \u2014 a command\
+  \ belongs when it is rare, consequential and skill-documented; it does not belong\
+  \ when it is a high-frequency tool invocation, however well a skill covers it"
+- At least two worked examples for different project shapes replace the cloud-ops
+  default set as the only guidance
+- The docs state plainly that the deny is unconditional and stateless, and describe
+  the escape route or its absence, so an adopter can predict what adding a pattern
+  will cost them
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
 test_plan: []
 notes: ''
-phase: null
+phase: plan
 design_reviewed: false
 code_reviewed: false
 comments: []

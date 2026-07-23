@@ -3,7 +3,7 @@ title: "Refactor app.py \u2014 extract Context view to views/context.py (follow-
 status: backlog
 priority: P2
 category: chore
-sprint_target: 33
+sprint_target: null
 created: 2026-05-26
 updated: 2026-07-23
 depends_on: []
