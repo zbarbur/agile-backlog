@@ -1,0 +1,90 @@
+title: "GitHub Issues as a read-only backlog source (pluggable source layer)"
+status: backlog
+priority: P1
+category: feature
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags:
+- source-layer
+- github
+- dogfooding
+- dag-bedrock-demo
+complexity: L
+goal: >
+  Let a project federate GitHub issues into the board, list, and sprint views alongside
+  YAML items — issues stay the store of record (read live, never mirrored to disk), and
+  agile-backlog becomes the single planning surface for projects that track some work in
+  GitHub and some locally.
+description: >
+  Driving consumer: dag-bedrock-demo (adopted agile-backlog 2026-07-23). Its demo stream
+  lives in backlog/ YAML, but its portable-gateway roadmap lives in GitHub issues
+  (#75-#80 + target issues) by ratified design — the gateway doc set's Gap-callout
+  contract requires real issue URLs and PR auto-close, so those issues can never move
+  into YAML. Today sprint planning consults two lists. The general shape is near
+  universal: every team has GitHub issues AND wants local sprint mechanics.
+
+  Design principle: SOURCE, not SYNC. No YAML mirror files, no two-way reconciliation,
+  no conflict resolution. The GitHub source reads live (at most a gitignored cache) and
+  each item has exactly one store of record. Write-through (move -> label, note ->
+  comment, done -> close, via gh) is a deliberate SEPARATE follow-up item, to be filed
+  once read-only federation proves out in dag-bedrock-demo.
+technical_specs:
+- "Source protocol: introduce a minimal interface — load_items() -> list[BacklogItem]
+  plus a capabilities declaration (which fields are editable, which operations are
+  supported). Refactor yaml_store behind it as the first implementation (no behavior
+  change for existing projects)."
+- "GitHubSource: reads via `gh issue list --json
+  number,title,body,labels,state,milestone,assignees,url` (gh CLI = auth for free; no
+  token management). Configurable repo + filter."
+- "Config: a backlog_sources list in .claude/sprint-config.yaml (or .agile-backlog.yaml
+  fallback), e.g. [{type: yaml, dir: backlog/}, {type: github, repo: owner/name, filter:
+  'state:open'}]. Absent config -> current single-YAML behavior, zero migration for
+  existing projects."
+- "Mapping: issue number -> id '#75' (rendered as the reference everyone already uses);
+  title -> title; body -> description; labels P0-P4 -> priority (default P2 when
+  absent); labels bug/feature/docs/chore -> category (default feature); label
+  'sprint-N' or milestone 'Sprint N' -> sprint_target; remaining labels -> tags; state
+  closed -> done, label 'doing' -> doing, else backlog; url kept for link-out."
+- "Capability gating: GitHub-sourced items are read-only in v1 — board card + show
+  render a 'GitHub' source badge and link out for editing/discussion; move/edit/note on
+  a '#NN' id fail with a clear 'read-only source, use gh / the issue page' message.
+  Phases (plan/spec/build/review) are not applicable and render as '-'."
+- "Merged views: list, board (serve), and sprint-status interleave items from all
+  sources; a source column/badge distinguishes them; filters (status, priority,
+  category, sprint, tags) apply uniformly post-mapping."
+- "Failure mode: gh missing, unauthenticated, offline, or rate-limited -> loud one-line
+  warning + YAML items still served. Never crash the board because GitHub is
+  unreachable."
+- "Cache: optional, gitignored (e.g. .agile-backlog-cache/), TTL a few minutes, only to
+  keep `serve` snappy — never committed, never authoritative."
+acceptance_criteria:
+- "A project with a backlog_sources github entry sees its open issues interleaved in
+  `list`, `sprint-status`, and the board, each carrying a visible source badge and
+  working link-out."
+- "A project with no backlog_sources config behaves exactly as today (regression suite
+  green, no config required)."
+- "`move '#75' --status doing` (and edit/note on a GitHub-sourced id) fails with the
+  read-only-source message, exit code != 0."
+- "Issues labeled 'sprint-19' (or milestone 'Sprint 19') group under sprint 19 in
+  sprint-status alongside YAML items with sprint_target: 19."
+- "With gh unavailable, every command still serves YAML items and prints exactly one
+  warning line."
+- "Docs: README + docs/CLI.md gain a 'Sources' section covering config, mapping table,
+  and the source-not-sync principle."
+test_plan:
+- "Unit: mapping function issue-JSON -> BacklogItem across label/milestone/state
+  permutations (fixture JSON, no network)."
+- "Unit: capability gating — write ops on GitHub-sourced ids raise/exit with the
+  read-only message."
+- "Integration: fake gh via a stub script on PATH returning fixture JSON; assert merged
+  list/sprint-status output and the offline warning path (stub exits non-zero)."
+- "Dogfood: point a checkout at dag-bedrock-demo with its real issues and eyeball the
+  board (manual gate before release)."
+notes: >
+  Subsumes the existing 'add-an-option-to-import-a-kanban-board-from-an-existing-project'
+  item — import is a one-shot read from a source; revisit/retire that item when this
+  lands. Follow-up item to file after v1 proves out: write-through operations (move ->
+  add/remove 'doing' label or close; note -> issue comment) via gh, still no mirroring.
+  Design question already leaning: represent 'doing' with a tool-managed 'doing' label
+  (simplest) rather than milestones-as-sprints.
