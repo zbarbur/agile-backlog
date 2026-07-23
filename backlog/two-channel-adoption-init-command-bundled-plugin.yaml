@@ -68,7 +68,7 @@ test_plan:
   one'
 - 'Packaging: assert the hook resolves via importlib.resources from an installed wheel'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -1,0 +1,5 @@
+---
+description: Investigate and fix a bug from the backlog
+---
+
+Investigate and fix a bug. Use the fix-bug skill to load bug details from the backlog, diagnose root cause, implement fix after approval, run CI, and update item status. Pass a bug item ID as argument. Arguments: $ARGUMENTS

@@ -37,7 +37,7 @@ test_plan:
   exactly once in stdout'
 - 'tests/test_cli.py: done item with phase=None is absent from the unphased group'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

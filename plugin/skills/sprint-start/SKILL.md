@@ -90,28 +90,7 @@ The user may also move items to "doing" via the board UI directly.
 
 ## Step 6: Write Task Specs to YAML
 
-Sprint scoping supports two tiers of speccing depth. Ask the user (or decide per item) which
-tier applies — the two need not be uniform across the sprint:
-
-- **`scope`** — goal + complexity + acceptance criteria only. Use this for items that won't be
-  built until later in the sprint; defer technical-specs and test-plan to that item's own spec
-  phase, just in time, instead of front-loading them now.
-- **`full`** — today's full depth: goal, complexity, acceptance criteria, technical specs, and
-  test plan. Use this for items about to enter `build` immediately.
-
-For `scope`-tier items:
-
-```bash
-{backlog_commands.edit} <item-id> \
-  --sprint N \
-  --goal "One sentence — what this delivers" \
-  --complexity M \
-  --acceptance-criteria "Verifiable criterion 1" \
-  --acceptance-criteria "Verifiable criterion 2" \
-  --phase plan
-```
-
-For `full`-tier items, also add technical specs and a test plan:
+For each selected item, use `{backlog_commands.edit}` to populate the task definition:
 
 ```bash
 {backlog_commands.edit} <item-id> \
@@ -141,34 +120,18 @@ After speccing all items, update their phase to `spec`:
 {backlog_commands.move} <item-id> --status doing --phase plan
 ```
 
-**Important:** `scope`-tier deferral is temporary. An item must reach `full` (technical specs +
-test plan written) before it enters `build` — deferring speccing must never become skipping it.
-When an item's turn comes up in the sprint, spec it to `full` first, as part of its own spec
-phase.
-
 ## Step 7: Validate Completeness
 
-Run the CLI validator at the tier each item was scoped at:
-
-```bash
-{backlog_tool} validate --sprint N --level scope   # items still deferred to their own spec phase
-{backlog_tool} validate --sprint N --level full     # items about to enter build, and by the
-                                                     # time any item enters build
-```
-
-`--level scope` checks goal, complexity, and >=2 acceptance criteria. `--level full` additionally
-requires >=1 technical spec (this is also the default when `--level` is omitted — no change from
-prior behavior). For each sprint item, cross-check via `{backlog_commands.show} <item-id>`:
+For each sprint item, verify via `{backlog_commands.show} <item-id>`:
 - Has goal
 - Has complexity (S/M/L)
 - Has at least 2 acceptance criteria
-- If tiered `full`: has at least 1 technical spec and a test plan
+- Has at least 2 technical specs
+- Has test plan
 - Has sprint_target set to current sprint
 - Phase is set
 
-Report any gaps and suggest fixes. Before any item moves to `build`, confirm it passes
-`validate --level full` — re-run validate at that tier as items graduate from `scope` to `full`
-during the sprint.
+Report any gaps and suggest fixes.
 
 ## Step 8: Create Sprint Branch
 

@@ -66,7 +66,7 @@ test_plan:
 - 'Manual gate: load the board with a realistic backlog and eyeball lane proportions
   plus zoom behaviour'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

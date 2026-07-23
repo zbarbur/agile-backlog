@@ -52,7 +52,7 @@ test_plan:
   zero sized counts'
 - 'tests/test_pure.py: empty list returns an all-zero breakdown'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

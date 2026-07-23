@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-HOOK_SCRIPT = Path(__file__).parent.parent / ".claude" / "hooks" / "post-tool-logger.sh"
+HOOK_SCRIPT = Path(__file__).parent.parent / "src" / "agile_backlog" / "bundled_hooks" / "post-tool-logger.sh"
 
 
 def _run_hook(tool_input: dict, log_dir: Path, session_id: str = "test-session") -> subprocess.CompletedProcess:

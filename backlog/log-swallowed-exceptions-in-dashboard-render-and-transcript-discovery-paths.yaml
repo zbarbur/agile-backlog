@@ -43,7 +43,7 @@ test_plan:
 - 'tests/test_transcript.py: an unparseable transcript is logged (caplog) and the
   remaining transcripts still parse'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []

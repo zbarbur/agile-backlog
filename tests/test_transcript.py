@@ -1,7 +1,9 @@
 """Tests for transcript module — parse Claude Code native session JSONL into a typed Session."""
 
 import json
+import logging
 
+from agile_backlog.app import _compute_usage_summary, _parse_all_transcripts
 from agile_backlog.transcript import (
     Session,
     Usage,
@@ -302,3 +304,51 @@ def test_discover_transcripts_slug_and_missing_dir(tmp_path, monkeypatch):
     found = discover_transcripts(cwd)
     names = sorted(p.name for p in found)
     assert names == ["a.jsonl", "b.jsonl"]
+
+
+# ---------------------------------------------------------------------------
+# _parse_all_transcripts / _compute_usage_summary (app.py) — logging on failure
+# ---------------------------------------------------------------------------
+
+
+def _write_transcript(path, usages):
+    lines = [json.dumps(_assistant(f"u{i}", f"m{i}", usage)) for i, usage in enumerate(usages)]
+    path.write_text("\n".join(lines) + "\n")
+
+
+def test_parse_all_transcripts_logs_and_skips_unparseable_file(tmp_path, caplog):
+    """A transcript that fails to parse is logged by name and skipped; others still parse."""
+    good = tmp_path / "good.jsonl"
+    _write_transcript(
+        good, [{"input_tokens": 1, "output_tokens": 1, "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}]
+    )
+    bad = tmp_path / "bad.jsonl"
+    bad.mkdir()  # a directory, not a file -> parse_transcript raises IsADirectoryError
+
+    with caplog.at_level(logging.WARNING):
+        turns = _parse_all_transcripts([bad, good])
+
+    assert len(turns) == 1
+    warnings = [r for r in caplog.records if r.levelno >= logging.WARNING]
+    assert any(str(bad) in r.getMessage() for r in warnings)
+
+
+def test_compute_usage_summary_logs_and_returns_none_on_discovery_failure(monkeypatch, caplog, tmp_path):
+    """A failure in discover_transcripts/analyze_usage is logged before falling back to None."""
+
+    def _boom(_cwd):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr("agile_backlog.app.discover_transcripts", _boom)
+
+    with caplog.at_level(logging.WARNING):
+        result = _compute_usage_summary(tmp_path)
+
+    assert result is None
+    assert any(r.levelno >= logging.WARNING for r in caplog.records)
+
+
+def test_compute_usage_summary_none_when_no_transcripts(monkeypatch, tmp_path):
+    """No transcripts found -> usage summary is None, no error path involved."""
+    monkeypatch.setattr("agile_backlog.app.discover_transcripts", lambda _cwd: [])
+    assert _compute_usage_summary(tmp_path) is None

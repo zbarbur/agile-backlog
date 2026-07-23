@@ -2,27 +2,62 @@
 
 Instructions for a Claude Code agent to set up agile-backlog in a project that already has task tracking (KANBAN.md, TODO.md, or similar).
 
-This is a one-time migration runbook. Follow each section in order.
+Two channels — pick one:
+
+| | Pip-only | Plugin |
+|---|---|---|
+| 1 | `pip install agile-backlog` | `/plugin install agile-backlog` |
+| 2 | `agile-backlog init` | `pip install agile-backlog` |
+| 3 | import tasks (below) | `agile-backlog init --config-only`, then import tasks |
+
+**Pip-only** installs skills and hooks into the project's `.claude/`. **Plugin** ships skills, slash commands (namespaced, e.g. `/agile-backlog:sprint-start`), and the context-logging hook via the plugin itself — `init --config-only` then only scaffolds `sprint-config.yaml`, doc dirs, and `.gitignore`.
 
 ---
 
-## 1. Install agile-backlog
+## 1. Install and Initialize
 
 ```bash
-# Install from GitHub (not yet published to PyPI)
 pip install git+https://github.com/zbarbur/agile-backlog.git
-# or if using uv:
-uv pip install git+https://github.com/zbarbur/agile-backlog.git
+# or: uv pip install git+https://github.com/zbarbur/agile-backlog.git
+
+agile-backlog init            # pip-only path (add --config-only on the plugin path)
 ```
+
+`init` detects your toolchain (pyproject.toml / package.json), prompts for test/lint/CI commands (accept defaults with `--yes`), then:
+
+- writes `.claude/sprint-config.yaml` (skips if present; `--force` overwrites)
+- creates `docs/sprints/`, `docs/process/`, `docs/superpowers/{specs,plans}/`
+- adds `.claude/context-logs/` to `.gitignore`
+- installs the 9 sprint skills into `.claude/skills/` (pip-only path)
+- installs `.claude/hooks/post-tool-logger.sh` and wires it into `.claude/settings.local.json` `PostToolUse` (pip-only path)
+- prints a suggested CLAUDE.md process section — paste it in yourself; init never edits CLAUDE.md
 
 Verify:
 
 ```bash
-agile-backlog --help
-agile-backlog list          # should print "No items found."
+agile-backlog list                          # "No items found."
+grep current_sprint .claude/sprint-config.yaml
+agile-backlog context-report                # after a few Claude Code tool calls
 ```
 
-This creates a `backlog/` directory in the project root for YAML item files.
+### Optional: statusline
+
+Add a statusline hook to `.claude/settings.local.json` to show sprint status in the Claude Code terminal. Create or merge into the existing file:
+
+```json
+{
+  "hooks": {
+    "StatusLine": [
+      {
+        "type": "command",
+        "command": "sprint=$(grep 'current_sprint:' .claude/sprint-config.yaml 2>/dev/null | awk '{print $2}'); doing=$(agile-backlog list --status doing 2>/dev/null | tail -n +3 | wc -l | tr -d ' '); echo \"Sprint $sprint | $doing doing\""
+      }
+    ]
+  }
+}
+```
+
+This shows `Sprint N | X doing` in the status bar.
 
 ---
 
@@ -94,215 +129,7 @@ When mapping section headers or keywords to tags, use:
 
 ---
 
-## 3. Set Up Sprint Methodology
-
-### Create sprint-config.yaml
-
-Create `.claude/sprint-config.yaml` with project-specific commands:
-
-```yaml
-project_name: <project-name>
-language: <python|typescript|go|etc>
-
-current_sprint: 1
-
-# Commands — adapt to your project's toolchain
-test_command: "<your test command>"
-lint_command: "<your lint command>"
-format_command: "<your format command>"
-ci_command: "<your full CI command — lint + test>"
-
-# Backlog tool
-backlog_tool: agile-backlog
-backlog_commands:
-  list: "agile-backlog list"
-  list_doing: "agile-backlog list --status doing"
-  list_done: "agile-backlog list --status done"
-  list_backlog: "agile-backlog list --status backlog"
-  list_bugs: "agile-backlog list --category bug --status backlog"
-  show: "agile-backlog show {id}"
-  add: "agile-backlog add \"{title}\" --category {category} --priority {priority}"
-  move: "agile-backlog move {id} --status {status}"
-  edit: "agile-backlog edit {id}"
-  flagged: "agile-backlog flagged"
-
-# Documentation paths
-docs:
-  handover_dir: "docs/sprints/"
-  specs_dir: "docs/superpowers/specs/"
-  plans_dir: "docs/superpowers/plans/"
-  project_context: "docs/process/PROJECT_CONTEXT.md"
-  definition_of_done: "docs/process/DEFINITION_OF_DONE.md"
-
-# Branch conventions
-branch_pattern: "sprint{N}/main"
-commit_style: conventional
-
-# Sprint settings
-default_sprint_capacity:
-  small: 3-4
-  medium: 2-3
-  large: 1-2
-```
-
-Adjust `test_command`, `lint_command`, `ci_command` to match the project's actual toolchain. If the CLI is installed in a venv, prefix with `.venv/bin/`.
-
-### Create Documentation Directories
-
-```bash
-mkdir -p docs/sprints docs/process
-```
-
-### Add CLAUDE.md Process Section
-
-Add the following to the project's `CLAUDE.md` (create if it doesn't exist):
-
-```markdown
-## Commands
-
-- **CI:** `<ci_command from sprint-config>`
-- **Sprint config:** `.claude/sprint-config.yaml`
-
-## Design Principles
-
-- Research first, design second, code third
-- Code review before every merge
-- DRY, YAGNI, TDD
-
-## Context
-
-| File | Purpose |
-|---|---|
-| `.claude/sprint-config.yaml` | Commands, paths, sprint settings |
-| `backlog/*.yaml` | Backlog items (single source of truth) |
-```
-
----
-
-## 4. Configure Hooks
-
-agile-backlog uses two hooks in `.claude/settings.local.json`. **Neither is installed by `install-skills` (Step 6) — add them manually.**
-
-### 4.1 Context-logging hooks (recommended)
-
-These power the context-analysis features (`agile-backlog context-report`, `context-summary`) by logging every tool call to `.claude/context-logs/`. Without them, those commands have no data to report.
-
-First copy the hook script into the project — it ships in the repo, **not** the pip package:
-
-```bash
-mkdir -p .claude/hooks
-curl -fsSL https://raw.githubusercontent.com/zbarbur/agile-backlog/main/.claude/hooks/post-tool-logger.sh \
-  -o .claude/hooks/post-tool-logger.sh
-```
-
-Then wire it to every tool via `PostToolUse` in `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      { "matcher": "Read",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Grep",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Glob",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Bash",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "WebFetch", "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Agent",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Edit",     "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Write",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] },
-      { "matcher": "Skill",    "hooks": [{ "type": "command", "command": "bash .claude/hooks/post-tool-logger.sh" }] }
-    ]
-  }
-}
-```
-
-The script logs each call to `.claude/context-logs/tools-<session>.jsonl` and warns on re-reads. Add `.claude/context-logs/` to `.gitignore`. Verify after a few tool calls:
-
-```bash
-agile-backlog context-report
-```
-
-### 4.2 Statusline (optional)
-
-Add a statusline hook to `.claude/settings.local.json` to show sprint status in the Claude Code terminal. Create or merge into the existing file:
-
-```json
-{
-  "hooks": {
-    "StatusLine": [
-      {
-        "type": "command",
-        "command": "sprint=$(grep 'current_sprint:' .claude/sprint-config.yaml 2>/dev/null | awk '{print $2}'); doing=$(agile-backlog list --status doing 2>/dev/null | tail -n +3 | wc -l | tr -d ' '); echo \"Sprint $sprint | $doing doing\""
-      }
-    ]
-  }
-}
-```
-
-This shows `Sprint N | X doing` in the status bar.
-
----
-
-## 5. Verify Setup
-
-Run these checks to confirm everything is working:
-
-```bash
-# CLI works
-agile-backlog list
-
-# Sprint config is readable
-grep current_sprint .claude/sprint-config.yaml
-
-# CI passes
-<ci_command>
-
-# Items imported (if migration was done)
-agile-backlog list --status backlog
-```
-
----
-
-## 6. Install Sprint Skills
-
-Sprint skills are bundled with the agile-backlog package. Install them into the current project:
-
-```bash
-agile-backlog install-skills
-```
-
-This copies all bundled skills to `.claude/skills/`. Existing skills are **not overwritten** by default — use `--force` to replace them:
-
-```bash
-agile-backlog install-skills --force
-```
-
-**If the target project already has skills with the same name**, review before using `--force`. The existing skills may have project-specific customizations worth keeping.
-
-### Skills to Adopt
-
-| Skill | Purpose | Likely needs adaptation? |
-|-------|---------|------------------------|
-| `cli-reference` | All CLI commands, flags, and usage patterns | No — copy as-is, always keep updated |
-| `sprint-start` | Initialize sprint — scope selection, task specs, branch | Yes — commands, branch pattern |
-| `sprint-execute` | Implement tasks — TDD, CI gates, specialist agents | Yes — specialist defaults, CI command |
-| `sprint-end` | Close sprint — handover doc, status updates | Minimal |
-| `sprint-plan-next` | Pre-plan next sprint scope while current runs | Minimal |
-| `plan` | Project inception, roadmap review, scope analysis | May conflict with existing |
-| `fix-bug` | Investigate and fix a bug from the backlog | May conflict with existing |
-| `report-bug` | Report a bug with structured details | May conflict with existing |
-| `document` | Research, design docs, architecture docs, audits | May conflict with existing |
-
-### Adaptation Notes
-
-All sprint skills read commands from `.claude/sprint-config.yaml` using placeholders like `{ci_command}`, `{backlog_commands.list}`, etc. As long as the sprint-config is set up correctly (Step 3), the skills work without modification to their core logic. The main things to adapt:
-
-- **Specialist defaults** in sprint-config — map your project's domains to agent types
-- **Branch pattern** — `sprint{N}/main` is the default, change if your project uses a different convention
-- **CI command** — ensure it matches your project's actual test/lint setup
-
-> **Updating skills:** After `pip install --upgrade agile-backlog`, run `agile-backlog install-skills --force` to get the latest skill versions.
-
-## 7. Updating
+## 3. Updating
 
 The CLI and web UI update via pip:
 
@@ -318,9 +145,11 @@ After upgrading, update skills too:
 agile-backlog install-skills --force
 ```
 
+Plugin users: update via `/plugin` instead; `init --config-only` never needs re-running.
+
 ---
 
-## 8. Start Your First Sprint
+## 4. Start Your First Sprint
 
 With agile-backlog set up and items imported, you can now use the sprint workflow:
 

@@ -2,6 +2,7 @@
 
 import html as _html
 import re as _re
+from collections.abc import Sequence
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -233,6 +234,70 @@ def group_items_by_section(items: list[BacklogItem], current_sprint: int | None)
     vnext.sort(key=_sort_key)
     vfuture.sort(key=_sort_key)
     return {"backlog": backlog, "vnext": vnext, "vfuture": vfuture}
+
+
+# Planning-view lane sizing (backlog/vnext/vfuture). Every lane's flex-grow weight is
+# clamped into this range: MIN keeps an empty lane from disappearing (it still needs room
+# for its header + "No items." line), MAX stops a single huge lane from starving the others
+# down to nothing when counts are wildly lopsided (e.g. 500 vs 1 vs 1).
+LANE_MIN_WEIGHT = 1.0
+LANE_MAX_WEIGHT = 12.0
+# When a lane is zoomed, its weight is boosted to at least this multiple of the combined
+# weight of the other lanes, guaranteeing it a majority (>50%) share of the vertical space
+# while the other lanes keep whatever weight their own contents earned — they stay visible
+# and scrollable rather than collapsing to a bare header.
+LANE_ZOOM_MAJORITY_RATIO = 1.5
+
+
+def lane_flex_weights(counts: Sequence[int], focus_index: int | None = None) -> list[float]:
+    """Compute proportional flex-grow weights for planning lanes from their item counts.
+
+    Weight scales with item count so a full lane claims more vertical space than a
+    near-empty one, clamped to [LANE_MIN_WEIGHT, LANE_MAX_WEIGHT] so a huge lane can't
+    erase a small one and an empty lane still gets a readable floor. When ``focus_index``
+    is given (zoom mode), that lane's weight is boosted to a majority share while the
+    other lanes keep their normal weights instead of collapsing to zero.
+    """
+    if not counts:
+        return []
+    weights = [min(max(float(count), LANE_MIN_WEIGHT), LANE_MAX_WEIGHT) for count in counts]
+    if focus_index is not None:
+        others_total = sum(w for i, w in enumerate(weights) if i != focus_index)
+        weights[focus_index] = max(weights[focus_index], others_total * LANE_ZOOM_MAJORITY_RATIO, LANE_MIN_WEIGHT)
+    return weights
+
+
+_COMPLEXITY_SIZES = ("S", "M", "L")
+
+
+def summarize_complexity(items: list[BacklogItem]) -> dict[str, int]:
+    """Summarize a lane's items by complexity: per-size counts plus an 'unsized' count.
+
+    Items with complexity=None are counted as 'unsized' rather than dropped — an item
+    invisible to any total is exactly the failure mode this exists to surface.
+    """
+    breakdown = dict.fromkeys(_COMPLEXITY_SIZES, 0)
+    breakdown["unsized"] = 0
+    for item in items:
+        if item.complexity is None:
+            breakdown["unsized"] += 1
+        else:
+            breakdown[item.complexity] += 1
+    return breakdown
+
+
+def format_complexity_breakdown(breakdown: dict[str, int]) -> str:
+    """Render a complexity breakdown as compact text, e.g. '2L 1S' or '2L 1S, 1 unsized'.
+
+    Sizes with a zero count are omitted. Returns '' when the whole breakdown is zero, so
+    callers can skip rendering a misleading breakdown next to an empty lane.
+    """
+    parts = [f"{breakdown[size]}{size}" for size in ("L", "M", "S") if breakdown.get(size)]
+    text = " ".join(parts)
+    unsized = breakdown.get("unsized", 0)
+    if unsized:
+        text = f"{text}, {unsized} unsized" if text else f"{unsized} unsized"
+    return text
 
 
 def group_done_by_sprint(items: list[BacklogItem]) -> dict[int | None, list[BacklogItem]]:

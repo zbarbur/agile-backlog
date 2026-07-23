@@ -44,7 +44,7 @@ test_plan:
 - 'tests/test_cli.py: validate with no flag produces byte-identical output to the
   current implementation for a fully specced sprint'
 notes: ''
-phase: spec
+phase: review
 design_reviewed: false
 code_reviewed: false
 comments: []
