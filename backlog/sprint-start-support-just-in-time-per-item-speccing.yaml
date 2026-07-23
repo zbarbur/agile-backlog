@@ -1,5 +1,5 @@
 title: 'sprint-start: support just-in-time per-item speccing'
-status: backlog
+status: doing
 priority: P3
 category: feature
 sprint_target: 32
@@ -7,19 +7,44 @@ created: 2026-07-02
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: Let sprint-start scope a sprint without forcing full technical-specs/test-plan
-  on every item up front.
+goal: Let sprint-start scope a sprint from goal + complexity + acceptance criteria,
+  deferring technical-specs and test-plan to each item's own spec phase.
 complexity: S
-technical_specs: []
+technical_specs:
+- ".claude/skills/sprint-start/SKILL.md Step 6 \u2014 currently requires full technical-specs\
+  \ + test-plan for every selected item up front, duplicating each item's later spec\
+  \ phase and front-loading work for items built at the end of the sprint. Introduce\
+  \ two tiers: 'scope' (goal + complexity + acceptance-criteria) and 'full'."
+- "src/agile_backlog/cli.py:501-509 (validate) \u2014 currently demands goal, complexity,\
+  \ >=2 acceptance_criteria and >=1 technical_specs from every sprint item. Add a\
+  \ --level [scope|full] flag so the readiness gate matches the tier the sprint was\
+  \ scoped at; default preserves today's behaviour."
+- ".claude/skills/sprint-start/SKILL.md Step 7 \u2014 the completeness check must\
+  \ call validate at the chosen level rather than always demanding full specs."
+- Document that an item must reach 'full' before it enters build, so deferral does
+  not become permanent.
+- "tests/test_cli.py \u2014 cover both validate levels."
 description: 'Dogfood (tracksupp.ai, sprint 1): sprint-start Step 6 requires speccing
   ALL selected items with technical-specs + test-plan immediately, which duplicates
   each item''s own plan/spec phase and front-loads work for items built later. Suggestion:
   allow scoping with goal+AC only, and defer technical-specs/test-plan to when the
   item enters its spec phase (just-in-time). Could be a flag or default guidance.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- sprint-start documents both scoping tiers and when each is appropriate.
+- '''validate --level scope'' passes on an item with goal + complexity + 2 acceptance
+  criteria and no technical_specs.'
+- '''validate'' with no --level behaves exactly as today (no regression for existing
+  projects).'
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: validate --level scope passes an item lacking technical_specs
+  and test_plan'
+- 'tests/test_cli.py: validate --level full fails that same item'
+- 'tests/test_cli.py: validate with no flag produces byte-identical output to the
+  current implementation for a fully specced sprint'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

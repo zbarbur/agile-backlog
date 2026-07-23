@@ -1,5 +1,5 @@
 title: serve fails out of the box, and its error prescribes pip under a uv-tool install
-status: backlog
+status: doing
 priority: P1
 category: bug
 sprint_target: 32
@@ -7,9 +7,22 @@ created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
+goal: Make 'serve' work on a default install, and when NiceGUI is genuinely missing,
+  print the remedy that matches the user's actual install method.
 complexity: S
-technical_specs: []
+technical_specs:
+- "pyproject.toml:33-36 \u2014 dependency policy decision: nicegui currently sits\
+  \ in the [project.optional-dependencies].ui extra, so a default install cannot run\
+  \ the headline command. Either promote it to base dependencies or keep the extra\
+  \ and rely on the improved message (FLAGGED for user decision)."
+- "src/agile_backlog/cli.py:660 \u2014 replace the hardcoded 'pip install agile-backlog[ui]'\
+  \ SystemExit with install-context detection: uv tool receipt (~/.local/share/uv/tools/agile-backlog/uv-receipt.toml),\
+  \ pipx metadata, plain pip/venv. Print the matching command for the detected context."
+- "src/agile_backlog/cli.py \u2014 when detection is inconclusive, print BOTH the\
+  \ pip and the uv command; never print only pip. Keep detection in a small pure helper\
+  \ so it is testable without a real install."
+- "tests/test_cli.py \u2014 cover remedy selection per detected context using a stubbed\
+  \ filesystem root."
 description: "Hit on tracksupp.ai 2026-07-23 (v0.30.0) on first attempt to use the\
   \ UI for sprint planning. 'agile-backlog serve' exits 1 with: 'Error: NiceGUI is\
   \ not installed. Install with: pip install agile-backlog[ui]'. Two problems. (1)\
@@ -24,10 +37,21 @@ description: "Hit on tracksupp.ai 2026-07-23 (v0.30.0) on first attempt to use t
   \ and print the matching command; or have serve offer to install the extra itself.\
   \ At minimum print BOTH the pip and uv commands rather than only the one that does\
   \ not apply."
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- After 'uv tool install --force --editable <repo>', 'agile-backlog serve' starts
+  the UI with no separate extras step.
+- When NiceGUI is missing, the error names a command that actually works for the detected
+  install method.
+- When the install context cannot be determined, the message lists both the pip and
+  the uv command.
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: uv-tool context (stub receipt present) -> message contains the
+  uv command, not a bare pip command'
+- 'tests/test_cli.py: unknown context -> message contains both pip and uv commands'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

@@ -1,5 +1,5 @@
 title: "Two-channel adoption \u2014 init command + bundled plugin"
-status: backlog
+status: doing
 priority: P1
 category: feature
 sprint_target: 32
@@ -7,16 +7,68 @@ created: 2026-07-02
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
+goal: "Reduce adoption to one step on two channels \u2014 'agile-backlog init' for\
+  \ pip/uv users and a full bundled plugin for plugin users \u2014 replacing the 8-step\
+  \ manual runbook."
 complexity: L
-technical_specs: []
+technical_specs:
+- "Execute docs/superpowers/plans/2026-07-02-two-channel-adoption-init-and-plugin.md\
+  \ (1143 lines, already written and approved). Design: docs/superpowers/specs/2026-07-02-two-channel-adoption-init-and-plugin-design.md.\
+  \ This item is plan-ready \u2014 do not re-design."
+- "src/agile_backlog/bundled_hooks/post-tool-logger.sh (NEW) + pyproject.toml package-data\
+  \ \u2014 the context-logging hook currently ships only in the repo's .claude/hooks/,\
+  \ never in the installed package. Make it package data."
+- "src/agile_backlog/cli.py \u2014 new 'init' command: detect test/lint/ci/format\
+  \ commands and language from pyproject.toml or package.json; scaffold .claude/sprint-config.yaml;\
+  \ create docs/sprints/; append .claude/context-logs/ to .gitignore without duplicate\
+  \ lines. Flags --config-only and --force; idempotent by default."
+- "src/agile_backlog/cli.py \u2014 init MERGES the 9 PostToolUse matchers into an\
+  \ existing .claude/settings.local.json, never clobbers it. Reuse the existing install-skills\
+  \ copy logic via an extracted shared helper (DRY), do not duplicate the loop."
+- "init PRINTS the suggested CLAUDE.md process block for the user to paste; it must\
+  \ not edit an existing CLAUDE.md (design decision A \u2014 non-invasive)."
+- "plugin/ \u2014 plugin.json gains hooks and a version bump; plugin/skills/ carries\
+  \ all 9 skills (replacing the single stub); plugin/commands/ carries the sprint\
+  \ slash-commands; plugin/hooks/hooks.json references the script via CLAUDE_PLUGIN_ROOT.\
+  \ No marketplace.json yet (decision C)."
+- "scripts/sync-plugin.py (NEW) \u2014 mirrors bundled_skills/ and bundled_hooks/\
+  \ into plugin/, plus a --check mode wired into CI as a test so plugin/ cannot drift\
+  \ from canonical."
+- "docs/guides/ADOPTION.md \u2014 replace the 8-step runbook with the two 3-step paths;\
+  \ keep the task-import heuristics section."
 description: 'Implement docs/superpowers/plans/2026-07-02-two-channel-adoption-init-and-plugin.md:
   agile-backlog init (config+skills+hooks scaffolding), bundled_hooks package data,
   full plugin with sync script + CI drift check, ADOPTION.md rewrite. Spec: docs/superpowers/specs/2026-07-02-two-channel-adoption-init-and-plugin-design.md'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- "A fresh project runs 'agile-backlog init' and gets sprint-config.yaml, the 9 skills,\
+  \ the context-logging hook, docs/sprints/, and a .gitignore entry \u2014 with no\
+  \ manual file editing."
+- Running init twice is a no-op; an existing settings.local.json keeps its hooks and
+  gains no duplicate matchers.
+- "init never modifies an existing CLAUDE.md \u2014 it prints the block for the user\
+  \ to paste."
+- The post-tool-logger hook is retrievable as package data from a built wheel, not
+  just from the repo checkout.
+- '''sync-plugin.py --check'' passes on a synced tree and fails on a drifted one,
+  and runs as part of CI.'
+- "Existing pip users are unaffected \u2014 'install-skills' keeps working unchanged."
+- agile-backlog dogfoods init on its own .claude/ with no behavioural change (same
+  hook, same skills).
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_init.py: config detection across pyproject-only, package.json-only,
+  and neither'
+- "tests/test_init.py: idempotency \u2014 a second init run changes no files; --force\
+  \ overwrites"
+- 'tests/test_init.py: settings.local.json merge preserves pre-existing hook entries
+  and adds no duplicate matchers'
+- 'tests/test_init.py: --config-only skips skills and hooks'
+- 'tests/test_plugin_sync.py: sync --check passes on a synced tree, fails on a drifted
+  one'
+- 'Packaging: assert the hook resolves via importlib.resources from an installed wheel'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

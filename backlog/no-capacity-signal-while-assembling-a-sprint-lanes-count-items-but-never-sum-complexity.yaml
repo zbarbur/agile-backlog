@@ -1,6 +1,6 @@
 title: "No capacity signal while assembling a sprint \u2014 lanes count items but\
   \ never sum complexity"
-status: backlog
+status: doing
 priority: P2
 category: feature
 sprint_target: 32
@@ -8,9 +8,24 @@ created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: ''
+goal: "Give each planning lane a capacity signal \u2014 a complexity breakdown instead\
+  \ of a bare item count \u2014 so promoting an item is a capacity judgement made\
+  \ with a capacity number in view."
 complexity: S
-technical_specs: []
+technical_specs:
+- "src/agile_backlog/pure.py \u2014 add a pure helper summarize_complexity(items)\
+  \ -> breakdown of L/M/S counts plus an 'unsized' count for items with complexity=None.\
+  \ Pure so it is unit-testable without NiceGUI."
+- "src/agile_backlog/components.py:1099 \u2014 _section_header_el(label, count, color,\
+  \ section_key) currently receives only an int count. Extend it to render the breakdown,\
+  \ e.g. '3 items - 2L 1S'."
+- "src/agile_backlog/components.py:1169,1190,1210 \u2014 the three call sites pass\
+  \ len(filtered_backlog) / len(vnext_items) / len(vfuture_items); update them to\
+  \ pass the item lists so the header can summarize."
+- "Items with complexity=None must be surfaced explicitly (e.g. '1 unsized') \u2014\
+  \ they are invisible to any total, which is the failure mode being fixed. Sprint\
+  \ 32's own planning hit exactly this: 8 of 17 candidates had no complexity."
+- "tests/test_pure.py \u2014 cover summarize_complexity."
 description: 'Observed on tracksupp.ai 2026-07-23 during sprint-13 planning. Cards
   carry S/M/L complexity badges, and the sprint-plan-next skill asks the user to decide
   sprint size, but the UI gives only a raw item count per lane (''vNext - SPRINT 13  3'').
@@ -23,10 +38,21 @@ description: 'Observed on tracksupp.ai 2026-07-23 during sprint-13 planning. Car
   how many items carried over from the previous sprint, and how many lack complexity
   entirely (those are invisible to any total). Sister item to the lane-sizing report
   filed the same day.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- Each lane header shows a complexity breakdown alongside the item count.
+- Items with no complexity are reported as an explicit unsized count, not silently
+  omitted.
+- An empty lane renders its header without a misleading breakdown.
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: summarize_complexity over a mixed L/M/S list returns correct
+  per-size counts'
+- 'tests/test_pure.py: list of all-None complexity returns unsized == len(items) and
+  zero sized counts'
+- 'tests/test_pure.py: empty list returns an all-zero breakdown'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []

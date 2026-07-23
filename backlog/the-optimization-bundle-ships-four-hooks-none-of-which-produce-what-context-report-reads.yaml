@@ -1,0 +1,39 @@
+title: The optimization bundle ships four hooks, none of which produce what context-report
+  reads
+status: backlog
+priority: P1
+category: bug
+sprint_target: null
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Found adopting the bundle on tracksupp.ai 2026-07-23. docs/optimization/README.md\
+  \ step 3 installs capture-start.sh, inject-reminders.sh, validate-command.sh and\
+  \ session-report.sh. Their outputs go to ~/.claude/session-stats/current-session.json,\
+  \ ~/.claude/logs/bash-commands.jsonl and ~/.claude/session-stats/report-*.yaml.\
+  \ But context_report.py globs the configured context_logs_dir for 'tools-*.jsonl'\
+  \ (legacy 'reads-*.jsonl') and expects per-tool entries with tool/file/limit fields.\
+  \ NOTHING in the bundle writes that. Follow the README exactly and 'agile-backlog\
+  \ context-report --sprint N' runs against an empty directory: no error, no warning,\
+  \ just a report of zeros \u2014 which reads as 'a clean sprint' rather than 'analytics\
+  \ were never wired up'. The component that actually works is post-tool-logger.sh,\
+  \ which lives ONLY in this repo's own .claude/hooks/ and is not in docs/optimization/hooks/.\
+  \ That is why agile-backlog has SPRINT25/27/29_CONTEXT_REPORT.json and adopting\
+  \ projects have nothing. Asks: (1) ship post-tool-logger.sh in the bundle and make\
+  \ registering it step 1, since it is the piece the sprint workflow depends on; (2)\
+  \ have context-report emit a loud warning when the log dir is missing or empty,\
+  \ naming the expected path and glob; (3) state plainly in the README which hooks\
+  \ feed context-report and which only feed the separate ~/.claude session-stats reports\
+  \ \u2014 right now they read as one system."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

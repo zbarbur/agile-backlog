@@ -1,5 +1,5 @@
 title: Log swallowed exceptions in dashboard render and transcript-discovery paths
-status: backlog
+status: doing
 priority: P3
 category: chore
 sprint_target: 32
@@ -7,17 +7,43 @@ created: 2026-06-07
 updated: 2026-07-23
 depends_on: []
 tags: []
-goal: Make the broad except Exception blocks in app.py (render + transcript discovery)
-  log what they swallow instead of failing silently.
+goal: Stop discarding exceptions silently in the dashboard render and transcript-discovery
+  paths, so failures are diagnosable without a debugger.
 complexity: S
-technical_specs: []
+technical_specs:
+- "src/agile_backlog/app.py:1131-1134 \u2014 the per-transcript 'except Exception:\
+  \ continue' around parse_transcript(_tp) hides every malformed or unreadable transcript.\
+  \ Log the path and the exception, then continue."
+- "src/agile_backlog/app.py:1137-1138 \u2014 'except Exception: usage_summary = None'\
+  \ swallows any failure in discover_transcripts/analyze_usage; the dashboard then\
+  \ silently renders as if there were no data. Log before falling back."
+- "src/agile_backlog/yaml_store.py:77 \u2014 the bare 'except Exception' collects\
+  \ a path into 'skipped' and reports only a count ('Skipped N non-item YAML file(s)').\
+  \ Include which files were skipped and why, so a genuinely malformed item is distinguishable\
+  \ from an intentionally foreign YAML file."
+- Use a module-level logger rather than click.echo for the app.py paths; keep the
+  existing stderr message shape in yaml_store so CLI output stays scriptable.
 description: 'Sprint 31 review follow-up: 3 broad excepts in app.py context-view render/discovery
   paths swallow errors silently. Add logging so failures are diagnosable without crashing
   the dashboard.'
-acceptance_criteria: []
-test_plan: []
+acceptance_criteria:
+- A transcript that fails to parse produces a log record naming the file and the exception,
+  and parsing of the remaining transcripts continues.
+- A failure in the usage-summary path is logged before usage_summary falls back to
+  None.
+- yaml_store reports which files were skipped and why, not just how many.
+- "The happy path is unchanged \u2014 no new output when nothing fails."
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_yaml_store.py: a malformed YAML item produces a message naming the offending
+  file'
+- 'tests/test_yaml_store.py: a valid backlog dir produces no skip output (happy path
+  unchanged)'
+- 'tests/test_transcript.py: an unparseable transcript is logged (caplog) and the
+  remaining transcripts still parse'
 notes: ''
-phase: null
+phase: spec
 design_reviewed: false
 code_reviewed: false
 comments: []
