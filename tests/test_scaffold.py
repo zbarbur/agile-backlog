@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from agile_backlog import scaffold
 
 
@@ -133,6 +135,18 @@ class TestHooks:
         settings = json.loads(path.read_text())
         assert settings["permissions"] == {"allow": ["Bash(ls:*)"]}
         assert len(settings["hooks"]["PostToolUse"]) == 2  # existing entry kept, ours appended
+
+    def test_merge_rejects_malformed_settings_without_touching_it(self, tmp_path: Path):
+        path = tmp_path / ".claude" / "settings.local.json"
+        path.parent.mkdir(parents=True)
+        original = '{\n  "permissions": {"allow": ["Bash(ls:*)"],},\n  "hooks": {}\n}\n'
+        path.write_text(original)
+        with pytest.raises(SystemExit) as exc:
+            scaffold.merge_settings_hooks(tmp_path)
+        message = str(exc.value)
+        assert "settings.local.json" in message
+        assert "not valid JSON" in message
+        assert path.read_text() == original  # never rewrite a file we could not parse
 
     def test_merge_detects_already_wired(self, tmp_path: Path):
         assert scaffold.merge_settings_hooks(tmp_path) is True

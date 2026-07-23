@@ -140,7 +140,16 @@ def install_hooks(root: Path, force: bool = False) -> bool:
 
 def merge_settings_hooks(root: Path) -> bool:
     path = root / ".claude" / "settings.local.json"
-    settings = json.loads(path.read_text()) if path.exists() else {}
+    if path.exists():
+        try:
+            settings = json.loads(path.read_text())
+        except json.JSONDecodeError as exc:
+            raise SystemExit(
+                f"Error: {path} is not valid JSON ({exc}).\n"
+                "Left it untouched — fix the file and re-run 'agile-backlog init' (it is safe to re-run)."
+            ) from exc
+    else:
+        settings = {}
     post = settings.setdefault("hooks", {}).setdefault("PostToolUse", [])
     for entry in post:
         for hook in entry.get("hooks", []):
