@@ -116,10 +116,15 @@ Defaults to current sprint from config. Shows items grouped by phase with progre
 ### validate — Check sprint items have required spec fields
 
 ```bash
-agile-backlog validate [--sprint N]
+agile-backlog validate [--sprint N] [--level scope|full]
 ```
 
 Checks: goal, complexity, >=2 acceptance criteria, >=1 technical spec. Exit code 1 on failure.
+
+`--level scope` drops the technical-spec requirement, for sprints scoped with just-in-time speccing
+(goal + complexity + acceptance criteria up front, technical specs written when the item enters its
+spec phase). `--level full` is the default and checks everything. An item must pass `full` before it
+enters build.
 
 ### set-sprint — Set the current sprint number
 
