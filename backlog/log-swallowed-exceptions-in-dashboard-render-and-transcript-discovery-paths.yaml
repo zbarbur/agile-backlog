@@ -4,7 +4,7 @@ priority: P3
 category: chore
 sprint_target: 32
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-07-23
 depends_on: []
 tags: []
 goal: Make the broad except Exception blocks in app.py (render + transcript discovery)

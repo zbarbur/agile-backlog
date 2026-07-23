@@ -1,0 +1,33 @@
+title: "No capacity signal while assembling a sprint \u2014 lanes count items but\
+  \ never sum complexity"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: S
+technical_specs: []
+description: 'Observed on tracksupp.ai 2026-07-23 during sprint-13 planning. Cards
+  carry S/M/L complexity badges, and the sprint-plan-next skill asks the user to decide
+  sprint size, but the UI gives only a raw item count per lane (''vNext - SPRINT 13  3'').
+  Three items means nothing on its own: three L items is a very different sprint from
+  three S items. While promoting items into vNext you are making a capacity judgement
+  with no capacity number in front of you, so you fall back to counting rows. Suggested:
+  show a complexity breakdown on the lane header (e.g. ''3 items - 2L 1S''), and optionally
+  compare against the project''s historical throughput, which the tool can already
+  derive from done items per sprint. Related context worth surfacing the same way:
+  how many items carried over from the previous sprint, and how many lack complexity
+  entirely (those are invisible to any total). Sister item to the lane-sizing report
+  filed the same day.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

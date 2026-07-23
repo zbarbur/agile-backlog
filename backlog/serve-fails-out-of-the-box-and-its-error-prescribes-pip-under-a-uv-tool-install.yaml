@@ -1,0 +1,34 @@
+title: serve fails out of the box, and its error prescribes pip under a uv-tool install
+status: backlog
+priority: P1
+category: bug
+sprint_target: 32
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: S
+technical_specs: []
+description: "Hit on tracksupp.ai 2026-07-23 (v0.30.0) on first attempt to use the\
+  \ UI for sprint planning. 'agile-backlog serve' exits 1 with: 'Error: NiceGUI is\
+  \ not installed. Install with: pip install agile-backlog[ui]'. Two problems. (1)\
+  \ The remediation is wrong for the install path the docs recommend: the tool is\
+  \ installed as an isolated uv tool (uv tool install --editable), so 'pip install\
+  \ agile-backlog[ui]' either targets the wrong environment or no-ops \u2014 the user's\
+  \ serve stays broken and there is no hint why. What actually worked: uv tool install\
+  \ --force --editable <repo> --with nicegui. (2) More basic: serve is a documented\
+  \ first-class command and a headline feature, but it is dead on a default install.\
+  \ Options: fold nicegui into the base dependencies; or detect the install context\
+  \ (uv tool receipt at ~/.local/share/uv/tools/<name>/uv-receipt.toml vs pip vs pipx)\
+  \ and print the matching command; or have serve offer to install the extra itself.\
+  \ At minimum print BOTH the pip and uv commands rather than only the one that does\
+  \ not apply."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -1,0 +1,26 @@
+title: 'sprint-start: support just-in-time per-item speccing'
+status: backlog
+priority: P3
+category: feature
+sprint_target: 32
+created: 2026-07-02
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Let sprint-start scope a sprint without forcing full technical-specs/test-plan
+  on every item up front.
+complexity: S
+technical_specs: []
+description: 'Dogfood (tracksupp.ai, sprint 1): sprint-start Step 6 requires speccing
+  ALL selected items with technical-specs + test-plan immediately, which duplicates
+  each item''s own plan/spec phase and front-loads work for items built later. Suggestion:
+  allow scoping with goal+AC only, and defer technical-specs/test-plan to when the
+  item enters its spec phase (just-in-time). Could be a flag or default guidance.'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

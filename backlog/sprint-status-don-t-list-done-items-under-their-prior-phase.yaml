@@ -1,0 +1,24 @@
+title: 'sprint-status: don''t list done items under their prior phase'
+status: backlog
+priority: P2
+category: bug
+sprint_target: 32
+created: 2026-07-02
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: S
+technical_specs: []
+description: 'Dogfood (tracksupp.ai sprint 1): after moving an item to status=done,
+  sprint-status still lists it under its last phase group (e.g. ''review'') AND under
+  ''done'', reading as if it''s simultaneously in review and done. Suggest: done items
+  show only under ''done'' (phase suppressed/cleared on completion).'
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -2,9 +2,9 @@ title: analyze tool-policy analyzer + sprint-end optimization sweep
 status: backlog
 priority: P1
 category: feature
-sprint_target: 32
+sprint_target: 33
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-07-23
 depends_on:
 - analyze-command-core-context-claude-md-analyzers
 tags: []

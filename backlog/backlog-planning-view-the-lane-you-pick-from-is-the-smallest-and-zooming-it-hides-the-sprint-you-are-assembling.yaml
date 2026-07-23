@@ -1,0 +1,36 @@
+title: 'Backlog planning view: the lane you pick FROM is the smallest, and zooming
+  it hides the sprint you are assembling'
+status: backlog
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: M
+technical_specs: []
+description: "Observed on tracksupp.ai 2026-07-23 doing real sprint-13 planning in\
+  \ the Backlog tab (three lanes: Backlog / vNext / vFuture). The lane heights do\
+  \ not match the task. Backlog held 58 items and got a short scroll box showing 4\
+  \ at a time; vNext held 3 and vFuture held 0, yet vFuture rendered at near-full\
+  \ lane height with 'No items' plus roughly 200px of dead space below it. So the\
+  \ list you are picking from is the one you cannot see, and empty space is spent\
+  \ on the lane with nothing in it. The per-lane 'Zoom section' control does not resolve\
+  \ it \u2014 expanding Backlog collapses vNext and vFuture to bare headers, so while\
+  \ picking you lose sight of the sprint you are building up, which is the thing you\
+  \ are trying to judge (is it too big? what mix have I got?). Suggested directions:\
+  \ size lanes proportionally to their contents; or offer a dedicated two-pane planning\
+  \ layout \u2014 long scrollable backlog on one side, the sprint being assembled\
+  \ on the other, both visible at once. The per-card hover buttons themselves are\
+  \ good: hovering a Backlog card reveals -> vNext / -> vFuture and one click assigns.\
+  \ The gesture is right; the layout starves it."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []
