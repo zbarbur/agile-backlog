@@ -68,6 +68,6 @@ test_plan:
 notes: ''
 phase: review
 design_reviewed: false
-code_reviewed: false
+code_reviewed: true
 comments: []
 images: []
