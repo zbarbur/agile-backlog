@@ -74,10 +74,12 @@ def load_all() -> list[BacklogItem]:
             raw.pop("id", None)
             item_id = path.stem
             items.append(BacklogItem(id=item_id, **raw))
-        except Exception:
-            skipped.append(path)
+        except Exception as exc:
+            skipped.append((path, exc))
     if skipped:
-        click.echo(f"Skipped {len(skipped)} non-item YAML file(s)", err=True)
+        click.echo(f"Skipped {len(skipped)} non-item YAML file(s):", err=True)
+        for path, exc in skipped:
+            click.echo(f"  {path.name}: {exc}", err=True)
     return items
 
 

@@ -1,0 +1,73 @@
+title: 'Backlog planning view: the lane you pick FROM is the smallest, and zooming
+  it hides the sprint you are assembling'
+status: doing
+priority: P2
+category: feature
+sprint_target: 32
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Size planning lanes by what they hold, and keep the sprint you are assembling
+  visible while you pick from the backlog.
+complexity: M
+technical_specs:
+- "src/agile_backlog/components.py:1011,1022 \u2014 every lane outer is styled 'flex:1'\
+  \ regardless of contents, so an empty vFuture lane claims the same height as a 58-item\
+  \ Backlog. Replace the uniform flex with a proportional weight derived from item\
+  \ count."
+- "src/agile_backlog/pure.py \u2014 add a pure helper lane_flex_weights(counts) ->\
+  \ weights, with clamping: a large lane must not erase a small one, and every lane\
+  \ keeps a minimum readable height. Pure so proportions are unit-testable without\
+  \ a browser."
+- "src/agile_backlog/components.py:1002-1029 \u2014 _toggle_zoom collapses non-focused\
+  \ lanes to 'flex:0 0 44px' + 'display:none', which hides the sprint being assembled.\
+  \ Change zoom to give the focused lane a majority share while keeping the other\
+  \ lanes scrollable, rather than exclusive occupancy."
+- An empty lane should shrink to its header plus the 'No items.' line (components.py:1031-1037),
+  not hold roughly 200px of dead space.
+- 'Preserve existing behaviour: drag-and-drop (data-item-id / data-section props,
+  line 1049) and the hover-revealed move buttons (lines 1058-1094) must keep working.
+  The report was explicit that the hover gesture is right and only the layout starves
+  it.'
+description: "Observed on tracksupp.ai 2026-07-23 doing real sprint-13 planning in\
+  \ the Backlog tab (three lanes: Backlog / vNext / vFuture). The lane heights do\
+  \ not match the task. Backlog held 58 items and got a short scroll box showing 4\
+  \ at a time; vNext held 3 and vFuture held 0, yet vFuture rendered at near-full\
+  \ lane height with 'No items' plus roughly 200px of dead space below it. So the\
+  \ list you are picking from is the one you cannot see, and empty space is spent\
+  \ on the lane with nothing in it. The per-lane 'Zoom section' control does not resolve\
+  \ it \u2014 expanding Backlog collapses vNext and vFuture to bare headers, so while\
+  \ picking you lose sight of the sprint you are building up, which is the thing you\
+  \ are trying to judge (is it too big? what mix have I got?). Suggested directions:\
+  \ size lanes proportionally to their contents; or offer a dedicated two-pane planning\
+  \ layout \u2014 long scrollable backlog on one side, the sprint being assembled\
+  \ on the other, both visible at once. The per-card hover buttons themselves are\
+  \ good: hovering a Backlog card reveals -> vNext / -> vFuture and one click assigns.\
+  \ The gesture is right; the layout starves it."
+acceptance_criteria:
+- With lanes holding 58 / 3 / 0 items, lane heights are visibly proportional and the
+  empty lane occupies roughly header height.
+- Zooming the Backlog lane leaves the vNext lane visible enough to judge the sprint
+  being assembled.
+- No lane can be squeezed below a minimum readable height, including when one lane
+  holds hundreds of items.
+- Drag-and-drop between lanes and the hover move buttons still work after the layout
+  change.
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: lane_flex_weights([58,3,0]) -> weights ordered largest-to-smallest
+  with the empty lane at the floor'
+- "tests/test_pure.py: clamping \u2014 lane_flex_weights([500,1,1]) keeps the small\
+  \ lanes above the minimum weight"
+- 'tests/test_pure.py: equal counts produce equal weights (no regression for the balanced
+  case)'
+- 'Manual gate: load the board with a realistic backlog and eyeball lane proportions
+  plus zoom behaviour'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: true
+comments: []
+images: []

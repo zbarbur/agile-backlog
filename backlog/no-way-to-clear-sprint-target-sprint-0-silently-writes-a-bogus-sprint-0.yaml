@@ -1,0 +1,28 @@
+title: No way to clear sprint_target; --sprint 0 silently writes a bogus sprint 0
+status: backlog
+priority: P3
+category: bug
+sprint_target: 33
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: S
+technical_specs: []
+description: "Hit on tracksupp.ai 2026-07-23. After closing two items that had been\
+  \ wrongly tagged into an upcoming sprint, there was no way to remove the tag: 'edit\
+  \ --sprint' takes an integer and offers no unset. 'edit <id> --sprint 0' is accepted\
+  \ silently and writes 'sprint_target: 0' \u2014 a sprint that does not exist, which\
+  \ then appears in sprint filters and groupings. Either accept an explicit clearing\
+  \ value (--sprint none / --no-sprint) or reject 0 as invalid. Workaround used: retag\
+  \ each item to the sprint in which its work actually shipped, which was more accurate\
+  \ anyway \u2014 but that only worked because the history was known."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -1,7 +1,5 @@
 {
   "name": "agile-backlog",
-  "version": "0.1.0",
-  "description": "Kanban board management for agentic development. List, add, move, and show backlog items.",
-  "commands": "commands",
-  "skills": "skills"
+  "version": "0.32.0",
+  "description": "Kanban backlog management and sprint workflow for agentic development — sprint skills, slash commands, and context-logging hooks. Requires the agile-backlog CLI (pip install agile-backlog)."
 }

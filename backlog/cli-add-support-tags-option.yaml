@@ -1,10 +1,10 @@
 title: "CLI add \u2014 support --tags option"
-status: backlog
+status: done
 priority: P3
 category: feature
 sprint_target: null
 created: 2026-03-23
-updated: 2026-03-23
+updated: 2026-07-23
 depends_on: []
 tags:
 - cli
@@ -14,8 +14,10 @@ technical_specs: []
 description: ''
 acceptance_criteria: []
 test_plan: []
-notes: ''
+notes: "Closed 2026-07-23 as already shipped \u2014 Sprint 31 added a repeatable --tags\
+  \ option to 'agile-backlog add' (verified via 'add --help')."
 phase: null
 design_reviewed: false
 code_reviewed: false
 comments: []
+images: []

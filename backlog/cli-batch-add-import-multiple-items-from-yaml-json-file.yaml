@@ -1,10 +1,10 @@
 title: "CLI batch add \u2014 import multiple items from YAML/JSON file"
-status: backlog
+status: done
 priority: P3
 category: feature
 sprint_target: 32
 created: 2026-03-22
-updated: 2026-04-07
+updated: 2026-07-23
 depends_on: []
 tags:
 - cli
@@ -16,7 +16,8 @@ description: Support agile-backlog add --from-file items.yaml to create multiple
   at once. Useful for bulk backlog creation and migration.
 acceptance_criteria: []
 test_plan: []
-notes: ''
+notes: Closed 2026-07-23 as duplicate of add-from-yaml-bulk-import-items-from-a-yaml-or-json-file
+  (deferred to Sprint 33).
 phase: null
 design_reviewed: false
 code_reviewed: false

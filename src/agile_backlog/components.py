@@ -14,10 +14,13 @@ from agile_backlog.pure import (
     apply_reopen,
     category_style,
     filter_items,
+    format_complexity_breakdown,
     group_items_by_section,
+    lane_flex_weights,
     relative_time,
     render_card_html,
     safe_html,
+    summarize_complexity,
 )
 from agile_backlog.tokens import PRIORITY_COLORS
 from agile_backlog.yaml_store import get_backlog_dir
@@ -998,35 +1001,34 @@ def _render_backlog_list(
         "vnext": {"outer": None, "content": None},
         "vfuture": {"outer": None, "content": None},
     }
+    lane_keys = ("backlog", "vnext", "vfuture")
+    # Item counts feeding the proportional sizing. Captured once per render — the lists
+    # themselves don't change without a full refresh of this view.
+    lane_counts = {"backlog": len(filtered_backlog), "vnext": len(vnext_items), "vfuture": len(vfuture_items)}
+
+    def _apply_lane_weights():
+        """Size every lane's outer container proportionally to its contents.
+
+        In normal mode, weight scales with item count (clamped). When a lane is zoomed,
+        it gets a majority share while the others keep their normal weight — visible and
+        scrollable, not collapsed — so the sprint being assembled stays in view while
+        picking from another lane.
+        """
+        zoomed = zoom_state["zoomed"]
+        focus_index = lane_keys.index(zoomed) if zoomed else None
+        weights = lane_flex_weights([lane_counts[key] for key in lane_keys], focus_index=focus_index)
+        for key, weight in zip(lane_keys, weights, strict=True):
+            outer = section_refs[key]["outer"]
+            content = section_refs[key]["content"]
+            if outer:
+                outer.style(f"flex:{weight} 1 0%;min-height:44px;overflow:hidden;")
+            if content:
+                content.style("flex:1;overflow-y:auto;display:block;")
 
     def _toggle_zoom(section_key: str):
-        """Toggle zoom for a section: expand it, collapse others to header-only."""
-        if zoom_state["zoomed"] == section_key:
-            # Un-zoom: restore all sections
-            zoom_state["zoomed"] = None
-            for key in section_refs:
-                outer = section_refs[key]["outer"]
-                content = section_refs[key]["content"]
-                if outer:
-                    outer.style("flex:1;min-height:44px;overflow:hidden;")
-                if content:
-                    content.style("flex:1;overflow-y:auto;display:block;")
-        else:
-            # Zoom this section, collapse others
-            zoom_state["zoomed"] = section_key
-            for key in section_refs:
-                outer = section_refs[key]["outer"]
-                content = section_refs[key]["content"]
-                if key == section_key:
-                    if outer:
-                        outer.style("flex:1;min-height:44px;overflow:hidden;")
-                    if content:
-                        content.style("flex:1;overflow-y:auto;display:block;")
-                else:
-                    if outer:
-                        outer.style("flex:0 0 44px;min-height:44px;overflow:hidden;")
-                    if content:
-                        content.style("display:none;")
+        """Toggle zoom for a section: give it a majority share while keeping others visible."""
+        zoom_state["zoomed"] = None if zoom_state["zoomed"] == section_key else section_key
+        _apply_lane_weights()
 
     def _render_section_items(items: list[BacklogItem], section: str):
         if not items:
@@ -1096,8 +1098,11 @@ def _render_backlog_list(
                             f"{move_btn_style}color:#ca8a04;background:rgba(202,138,4,0.1);"
                         )
 
-    def _section_header_el(label: str, count: int, color: str, section_key: str):
-        """Render a section header with collapse arrow, label, count badge, and zoom button."""
+    def _section_header_el(label: str, items: list[BacklogItem], color: str, section_key: str):
+        """Render a section header with label, item count + complexity breakdown, and zoom button."""
+        count = len(items)
+        breakdown_text = format_complexity_breakdown(summarize_complexity(items))
+        badge_text = f"{count} · {breakdown_text}" if breakdown_text else str(count)
         with ui.element("div").style(
             "display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0;user-select:none;"
         ):
@@ -1107,11 +1112,11 @@ def _render_backlog_list(
                 f"font-weight:700;text-transform:uppercase;letter-spacing:0.12em;"
                 f'color:{color};">{label}</span>'
             )
-            # Count badge
+            # Count + complexity breakdown badge
             ui.html(
                 f"<span style=\"font-family:'IBM Plex Mono',monospace;font-size:9px;"
                 f"font-weight:500;color:#3f3f46;background:#1e1e23;padding:1px 6px;"
-                f'border-radius:4px;">{count}</span>'
+                f'border-radius:4px;">{safe_html(badge_text)}</span>'
             )
             # Spacer
             ui.element("div").style("flex:1;")
@@ -1166,7 +1171,7 @@ def _render_backlog_list(
             )
             section_refs["backlog"]["outer"] = backlog_outer
             with backlog_outer:
-                _section_header_el(backlog_label, len(filtered_backlog), "#71717a", "backlog")
+                _section_header_el(backlog_label, filtered_backlog, "#71717a", "backlog")
                 backlog_content = (
                     ui.element("div")
                     .classes("mc-drop-zone")
@@ -1187,7 +1192,7 @@ def _render_backlog_list(
             )
             section_refs["vnext"]["outer"] = vnext_outer
             with vnext_outer:
-                _section_header_el(vnext_label, len(vnext_items), "#ca8a04", "vnext")
+                _section_header_el(vnext_label, vnext_items, "#ca8a04", "vnext")
                 vnext_content = (
                     ui.element("div")
                     .classes("mc-drop-zone")
@@ -1207,7 +1212,7 @@ def _render_backlog_list(
             )
             section_refs["vfuture"]["outer"] = vfuture_outer
             with vfuture_outer:
-                _section_header_el(vfuture_label, len(vfuture_items), "#22c55e", "vfuture")
+                _section_header_el(vfuture_label, vfuture_items, "#22c55e", "vfuture")
                 vfuture_content = (
                     ui.element("div")
                     .classes("mc-drop-zone")
@@ -1217,6 +1222,9 @@ def _render_backlog_list(
                 section_refs["vfuture"]["content"] = vfuture_content
                 with vfuture_content:
                     _render_section_items(vfuture_items, "vfuture")
+
+        # Size lanes proportionally to their contents now that all three are built.
+        _apply_lane_weights()
 
         # Inject drag-to-resize JS for section handles
         _resize_js = """

@@ -1,0 +1,29 @@
+title: post-tool-logger.sh spawns python3 two to three times per tool call
+status: backlog
+priority: P3
+category: chore
+sprint_target: null
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: null
+technical_specs: []
+description: "Noted installing the logger on tracksupp.ai 2026-07-23. Registered across\
+  \ Read/Grep/Glob/Bash/WebFetch/Agent/Edit/Write/Skill, it runs on essentially every\
+  \ tool call, and each run spawns python3 once to extract the tool name, once to\
+  \ build the log entry, and a third time on Read to pull file_path for re-read detection.\
+  \ On a read-heavy session that is a per-tool-call interpreter start multiplied by\
+  \ hundreds. Worth collapsing into a single python3 invocation that does all three\
+  \ jobs, or rewriting the extraction in pure bash given the inputs are small and\
+  \ known. Not urgent \u2014 it works and exits 0 \u2014 but it is a fixed tax on\
+  \ every session in every adopting project."
+acceptance_criteria: []
+test_plan: []
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

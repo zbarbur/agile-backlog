@@ -3,22 +3,27 @@ from datetime import date, timedelta
 
 from agile_backlog.models import BacklogItem
 from agile_backlog.pure import (
+    LANE_MAX_WEIGHT,
+    LANE_MIN_WEIGHT,
     backlog_dir_mtime,
     category_style,
     comment_badge_html,
     comment_thread_html,
     detect_current_sprint,
     filter_items,
+    format_complexity_breakdown,
     group_done_by_sprint,
     group_items_by_section,
     is_recent_sprint,
     is_recently_done,
+    lane_flex_weights,
     parse_sprint_handover,
     relative_time,
     render_card_html,
     render_comment_html,
     safe_html,
     score_skill_quality,
+    summarize_complexity,
 )
 
 
@@ -813,4 +818,86 @@ def test_compute_reread_waste_threshold_and_sort():
 def test_compute_reread_waste_empty_when_under_threshold():
     entries = [{"tool": "Read", "file": "a.py"} for _ in range(3)]
     assert compute_reread_waste(entries, threshold=3) == []
+
+
+class TestLaneFlexWeights:
+    def test_empty_input_returns_empty(self):
+        assert lane_flex_weights([]) == []
+
+    def test_large_small_empty_ordered_with_empty_at_floor(self):
+        weights = lane_flex_weights([58, 3, 0])
+        assert weights[0] > weights[1] > weights[2]
+        assert weights[2] == LANE_MIN_WEIGHT
+
+    def test_huge_lane_does_not_erase_small_ones(self):
+        weights = lane_flex_weights([500, 1, 1])
+        assert weights[1] >= LANE_MIN_WEIGHT
+        assert weights[2] >= LANE_MIN_WEIGHT
+        # Small lanes still keep a meaningful share of the total, not near-zero.
+        total = sum(weights)
+        assert weights[1] / total > 0.05
+        assert weights[2] / total > 0.05
+
+    def test_equal_counts_produce_equal_weights(self):
+        weights = lane_flex_weights([5, 5, 5])
+        assert weights[0] == weights[1] == weights[2]
+
+    def test_weights_are_clamped_to_max(self):
+        weights = lane_flex_weights([1000])
+        assert weights[0] == LANE_MAX_WEIGHT
+
+    def test_zoomed_lane_gets_majority_share(self):
+        weights = lane_flex_weights([58, 3, 0], focus_index=2)
+        total = sum(weights)
+        assert weights[2] / total > 0.5
+
+    def test_zoomed_lane_does_not_hide_the_others(self):
+        weights = lane_flex_weights([58, 3, 0], focus_index=0)
+        # Backlog is already dominant on raw counts; zooming it should not zero out the rest.
+        assert weights[1] > 0
+        assert weights[2] > 0
+
+    def test_zooming_a_small_lane_still_leaves_dominant_lane_visible(self):
+        weights = lane_flex_weights([58, 3, 0], focus_index=1)
+        total = sum(weights)
+        assert weights[1] / total > 0.5  # focused lane is the majority
+        assert weights[0] / total > 0.1  # but backlog stays meaningfully visible
+
+
+class TestSummarizeComplexity:
+    def test_mixed_sizes(self):
+        items = [_item(id=str(i), complexity=c) for i, c in enumerate(["L", "L", "M", "S"])]
+        result = summarize_complexity(items)
+        assert result == {"S": 1, "M": 1, "L": 2, "unsized": 0}
+
+    def test_all_unsized(self):
+        items = [_item(id=str(i)) for i in range(3)]
+        result = summarize_complexity(items)
+        assert result == {"S": 0, "M": 0, "L": 0, "unsized": 3}
+
+    def test_empty_list(self):
+        assert summarize_complexity([]) == {"S": 0, "M": 0, "L": 0, "unsized": 0}
+
+    def test_mixed_sized_and_unsized(self):
+        items = [_item(id="a", complexity="L"), _item(id="b", complexity=None)]
+        result = summarize_complexity(items)
+        assert result == {"S": 0, "M": 0, "L": 1, "unsized": 1}
+
+
+class TestFormatComplexityBreakdown:
+    def test_mixed_breakdown(self):
+        text = format_complexity_breakdown({"S": 1, "M": 0, "L": 2, "unsized": 0})
+        assert text == "2L 1S"
+
+    def test_includes_unsized_explicitly(self):
+        text = format_complexity_breakdown({"S": 0, "M": 0, "L": 0, "unsized": 1})
+        assert text == "1 unsized"
+
+    def test_mixed_with_unsized(self):
+        text = format_complexity_breakdown({"S": 1, "M": 0, "L": 0, "unsized": 2})
+        assert text == "1S, 2 unsized"
+
+    def test_empty_breakdown_is_blank(self):
+        assert format_complexity_breakdown({"S": 0, "M": 0, "L": 0, "unsized": 0}) == ""
+
     assert compute_reread_waste([], threshold=3) == []

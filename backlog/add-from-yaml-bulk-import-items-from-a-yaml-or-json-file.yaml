@@ -2,9 +2,9 @@ title: add --from-yaml bulk import items from a YAML or JSON file
 status: backlog
 priority: P3
 category: feature
-sprint_target: 32
+sprint_target: 33
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-07-23
 depends_on: []
 tags: []
 goal: Bulk-create backlog items from a YAML/JSON file in one command, replacing hand-rolled

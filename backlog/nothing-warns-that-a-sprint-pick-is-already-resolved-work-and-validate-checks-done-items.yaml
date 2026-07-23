@@ -1,0 +1,44 @@
+title: Nothing warns that a sprint pick is already-resolved work; and validate checks
+  done items
+status: backlog
+priority: P2
+category: feature
+sprint_target: 33
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: ''
+complexity: M
+technical_specs: []
+description: "Two related gaps hit on tracksupp.ai 2026-07-23 during sprint-13 planning.\
+  \ (1) NO STALE-PICK WARNING. Two of six items promoted into the sprint from the\
+  \ Backlog lane turned out not to be work at all: one bug carried a comment reading\
+  \ 'verification COMPLETE ... close as done at the next sprint-end; no code work\
+  \ remains' (recorded 2 sprints earlier), and one RFE carried 'Folded into <other\
+  \ item> - close this one when that pass ships' where that other item was already\
+  \ status done. Both sat in the Backlog lane looking identical to real work \u2014\
+  \ the card shows title, priority, complexity and tags, none of which encode 'this\
+  \ is already finished'. Roughly a third of the sprint was phantom scope, and it\
+  \ was only caught because someone read every comment before writing specs. Suggestions:\
+  \ surface a warning badge when an item's latest comment matches close-intent phrasing;\
+  \ make a 'blocked by / superseded by' link a real field rather than prose in a comment,\
+  \ and mark items whose superseder is done; or simply show comment count + last-comment\
+  \ snippet on the card so 'this has 3 comments you have not read' is visible before\
+  \ promoting. (2) validate INCLUDES DONE ITEMS. 'agile-backlog validate --sprint\
+  \ 13' failed on two items that were already status done, demanding goal and technical_specs\
+  \ from finished work. validate is a pre-sprint readiness gate; it should scope to\
+  \ items that are not done."
+acceptance_criteria: []
+test_plan: []
+notes: "Second half CONFIRMED in agile-backlog's own repo 2026-07-23 during Sprint\
+  \ 32 start: 'validate --sprint 32' FAILed two status=done items (cli-batch-add-...,\
+  \ fix-sprint-status-display-...), demanding goal/complexity/acceptance_criteria/technical_specs\
+  \ from closed work. Root cause: src/agile_backlog/cli.py:507 selects sprint items\
+  \ with no status filter \u2014 the same defect class as the sprint-status bug at\
+  \ cli.py:478 being fixed in Sprint 32."
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

@@ -1,10 +1,10 @@
 title: 'Fix sprint-status display: items show under both review and done sections'
-status: backlog
+status: done
 priority: P3
 category: bug
-sprint_target: null
+sprint_target: 32
 created: 2026-05-26
-updated: 2026-05-26
+updated: 2026-07-23
 depends_on: []
 tags: []
 goal: ''
@@ -13,7 +13,9 @@ technical_specs: []
 description: ''
 acceptance_criteria: []
 test_plan: []
-notes: ''
+notes: "Closed 2026-07-23 as duplicate \u2014 merged into sprint-status-don-t-list-done-items-under-their-prior-phase,\
+  \ which carries the same defect confirmed independently by an external adopter (tracksupp.ai,\
+  \ 2026-07-02). Fix tracked there in Sprint 32."
 phase: null
 design_reviewed: false
 code_reviewed: false

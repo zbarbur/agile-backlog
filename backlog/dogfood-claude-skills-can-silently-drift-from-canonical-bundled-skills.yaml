@@ -1,0 +1,44 @@
+title: Dogfood .claude/skills can silently drift from canonical bundled_skills
+status: backlog
+priority: P2
+category: bug
+sprint_target: 32
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Extend the sync/drift gate to cover the dogfood .claude/skills copy, not just
+  .claude/hooks.
+complexity: S
+technical_specs: []
+description: "Found during Sprint 32 execution 2026-07-23, minutes after the plugin\
+  \ drift gate landed. scripts/sync_plugin.py mirrors canonical src/agile_backlog/bundled_skills/\
+  \ -> plugin/skills/ and enforces it in CI via --check, and it also mirrors bundled_hooks/post-tool-logger.sh\
+  \ -> .claude/hooks/ (the dogfood copy). But the dogfood SKILLS copy at .claude/skills/\
+  \ is not synced or checked by anything. Concretely: editing .claude/skills/cli-reference/SKILL.md\
+  \ to document the new 'validate --level' flag left canonical bundled_skills/ untouched,\
+  \ and nothing flagged it \u2014 the two were byte-identical before the edit and\
+  \ silently diverged after. The plugin gate did not fire because the plugin mirrors\
+  \ canonical, not the dogfood copy. Consequence: agile-backlog dogfoods its own skills,\
+  \ so a fix or doc update made in .claude/skills/ never reaches adopters (who receive\
+  \ bundled_skills via init) or plugin users (who receive the synced plugin/skills).\
+  \ This is the same defect class the plugin gate was built to prevent, on the consumer\
+  \ the gate does not watch. Suggested: add the bundled_skills -> .claude/skills pair\
+  \ to sync_plugin.py's pair list so --check covers it, matching how the hook dogfood\
+  \ copy is already handled at line 30."
+acceptance_criteria:
+- sync_plugin.py --check fails when .claude/skills/ differs from src/agile_backlog/bundled_skills/.
+- Running sync_plugin.py restores .claude/skills/ from canonical.
+- The existing plugin/ and .claude/hooks/ sync behaviour is unchanged.
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_plugin_sync.py: drifting .claude/skills/<skill>/SKILL.md makes --check
+  exit non-zero'
+- 'tests/test_plugin_sync.py: sync restores the dogfood skills copy'
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

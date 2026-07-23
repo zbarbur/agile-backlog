@@ -120,6 +120,22 @@ class TestLoadAll:
         assert items[0].id == "good"
         assert not any(issubclass(w.category, UserWarning) for w in caught)
 
+    def test_skip_message_names_offending_file(self, backlog_dir: Path, capsys):
+        """Skipped-file report names which file was skipped, not just a count."""
+        (backlog_dir / "bad.yaml").write_text(": : : not valid yaml mapping")
+        save_item(_make_item(id="good", title="Good"))
+        load_all()
+        err = capsys.readouterr().err
+        assert "Skipped 1 non-item YAML file" in err
+        assert "bad.yaml" in err
+
+    def test_happy_path_produces_no_stderr_output(self, backlog_dir: Path, capsys):
+        """No skipped files -> no stderr output at all (list must stay quiet)."""
+        save_item(_make_item(id="good", title="Good"))
+        save_item(_make_item(id="another", title="Another"))
+        load_all()
+        assert capsys.readouterr().err == ""
+
     def test_ignores_underscore_prefixed_files(self, backlog_dir: Path, capsys):
         """Files starting with _ are ignored entirely — not loaded and not counted as skipped."""
         (backlog_dir / "_sprint-plan.yaml").write_text(yaml.dump({"sprint": 31, "scope": ["a", "b"]}))

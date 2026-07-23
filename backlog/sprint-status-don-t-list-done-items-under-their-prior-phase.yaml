@@ -1,0 +1,44 @@
+title: 'sprint-status: don''t list done items under their prior phase'
+status: doing
+priority: P2
+category: bug
+sprint_target: 32
+created: 2026-07-02
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Show each done item exactly once in sprint-status, under 'done' only, never
+  also under the phase it was in when it finished.
+complexity: S
+technical_specs:
+- "src/agile_backlog/cli.py:478 \u2014 the phase-grouping comprehension filters on\
+  \ i.phase == phase with no status filter, so a done item retaining phase='review'\
+  \ renders under both 'review' (line 481) and 'done' (line 486). Exclude status ==\
+  \ 'done' from the phase groups."
+- "src/agile_backlog/cli.py:472 \u2014 the no_phase/'unphased' group has the same\
+  \ gap; exclude done items there too so a done item with no phase does not double-list."
+- 'Display-only fix: do NOT clear item.phase on completion. The stored phase is history
+  worth keeping, and clearing it would rewrite YAML on every move to done. Progress
+  count at line 495-496 is already derived from done_items and must not change.'
+- "tests/test_cli.py \u2014 regression test asserting single occurrence."
+description: 'Dogfood (tracksupp.ai sprint 1): after moving an item to status=done,
+  sprint-status still lists it under its last phase group (e.g. ''review'') AND under
+  ''done'', reading as if it''s simultaneously in review and done. Suggest: done items
+  show only under ''done'' (phase suppressed/cleared on completion).'
+acceptance_criteria:
+- An item with status=done and phase=review appears exactly once in 'sprint-status'
+  output, under the done group.
+- An item with status=done and no phase does not appear under 'unphased'.
+- 'The ''Progress: N/M complete'' line is unchanged for the same data.'
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_cli.py: sprint-status with a done+phase=review item -> item id appears
+  exactly once in stdout'
+- 'tests/test_cli.py: done item with phase=None is absent from the unphased group'
+notes: ''
+phase: review
+design_reviewed: false
+code_reviewed: true
+comments: []
+images: []

@@ -440,12 +440,75 @@ class TestServe:
         assert result.exit_code == 0
         assert calls[0]["port"] == 7777
 
-    def test_serve_without_nicegui(self, runner: CliRunner):
-        """Serve shows helpful error when NiceGUI not installed."""
+    def test_serve_without_nicegui_unknown_context(self, runner: CliRunner, monkeypatch, tmp_path: Path):
+        """When install context can't be determined, the error lists both pip and uv commands."""
+        monkeypatch.setattr("agile_backlog.cli.Path.home", lambda: tmp_path)
         with patch.dict("sys.modules", {"agile_backlog.app": None}):
             result = runner.invoke(main, ["serve"])
         assert result.exit_code != 0
         assert "agile-backlog[ui]" in result.output
+        assert "uv tool install" in result.output
+
+    def test_serve_without_nicegui_uv_context(self, runner: CliRunner, monkeypatch, tmp_path: Path):
+        """When a uv tool receipt is present, the error names the uv command, not pip."""
+        receipt = tmp_path / ".local" / "share" / "uv" / "tools" / "agile-backlog" / "uv-receipt.toml"
+        receipt.parent.mkdir(parents=True)
+        receipt.write_text("")
+        monkeypatch.setattr("agile_backlog.cli.Path.home", lambda: tmp_path)
+        with patch.dict("sys.modules", {"agile_backlog.app": None}):
+            result = runner.invoke(main, ["serve"])
+        assert result.exit_code != 0
+        assert "uv tool install" in result.output
+        assert "pip install" not in result.output
+
+
+class TestNiceguiInstallRemedy:
+    def test_uv_receipt_detected(self, tmp_path: Path):
+        from agile_backlog.cli import _detect_install_context
+
+        receipt = tmp_path / ".local" / "share" / "uv" / "tools" / "agile-backlog" / "uv-receipt.toml"
+        receipt.parent.mkdir(parents=True)
+        receipt.write_text("")
+        assert _detect_install_context(tmp_path) == "uv"
+
+    def test_pipx_metadata_detected(self, tmp_path: Path):
+        from agile_backlog.cli import _detect_install_context
+
+        metadata = tmp_path / ".local" / "pipx" / "venvs" / "agile-backlog" / "pipx_metadata.json"
+        metadata.parent.mkdir(parents=True)
+        metadata.write_text("{}")
+        assert _detect_install_context(tmp_path) == "pipx"
+
+    def test_no_markers_is_unknown(self, tmp_path: Path):
+        from agile_backlog.cli import _detect_install_context
+
+        assert _detect_install_context(tmp_path) == "unknown"
+
+    def test_message_for_uv_names_only_uv_command(self, tmp_path: Path):
+        from agile_backlog.cli import _nicegui_missing_message
+
+        receipt = tmp_path / ".local" / "share" / "uv" / "tools" / "agile-backlog" / "uv-receipt.toml"
+        receipt.parent.mkdir(parents=True)
+        receipt.write_text("")
+        msg = _nicegui_missing_message(tmp_path)
+        assert "uv tool install" in msg
+        assert "pip install" not in msg
+
+    def test_message_for_pipx_names_pipx_command(self, tmp_path: Path):
+        from agile_backlog.cli import _nicegui_missing_message
+
+        metadata = tmp_path / ".local" / "pipx" / "venvs" / "agile-backlog" / "pipx_metadata.json"
+        metadata.parent.mkdir(parents=True)
+        metadata.write_text("{}")
+        msg = _nicegui_missing_message(tmp_path)
+        assert "pipx inject" in msg
+
+    def test_message_for_unknown_lists_both_pip_and_uv(self, tmp_path: Path):
+        from agile_backlog.cli import _nicegui_missing_message
+
+        msg = _nicegui_missing_message(tmp_path)
+        assert "pip install agile-backlog[ui]" in msg
+        assert "uv tool install" in msg
 
 
 class TestJsonOutput:
@@ -593,6 +656,44 @@ class TestSprintStatus:
         assert result.exit_code == 0
         assert "No items" in result.output
 
+    def test_sprint_status_done_item_not_listed_under_prior_phase(self, runner: CliRunner, backlog_dir: Path):
+        """A done item retaining phase='review' appears once, under 'done' only."""
+        runner.invoke(main, ["add", "Finished Task", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["move", "finished-task", "--status", "doing", "--phase", "review"])
+        runner.invoke(main, ["move", "finished-task", "--status", "done"])
+
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["sprint-status"])
+        assert result.exit_code == 0
+        assert result.output.count("finished-task") == 1
+        # Should appear under the 'done' section, not 'review'
+        done_idx = result.output.index("done (")
+        item_idx = result.output.index("finished-task")
+        assert item_idx > done_idx
+
+    def test_sprint_status_done_item_no_phase_not_in_unphased(self, runner: CliRunner, backlog_dir: Path):
+        """A done item with no phase does not appear under 'unphased'."""
+        runner.invoke(main, ["add", "No Phase Done", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["move", "no-phase-done", "--status", "done"])
+
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["sprint-status"])
+        assert result.exit_code == 0
+        assert "unphased" not in result.output
+        assert result.output.count("no-phase-done") == 1
+
+    def test_sprint_status_progress_line_unchanged(self, runner: CliRunner, backlog_dir: Path):
+        """Progress N/M line is derived from done_items and unaffected by the phase-group fix."""
+        runner.invoke(main, ["add", "Task A", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["move", "task-a", "--status", "doing", "--phase", "review"])
+        runner.invoke(main, ["move", "task-a", "--status", "done"])
+        runner.invoke(main, ["add", "Task B", "--category", "feature", "--sprint", "5"])
+        runner.invoke(main, ["move", "task-b", "--status", "doing", "--phase", "build"])
+
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["sprint-status"])
+        assert "Progress: 1/2 complete" in result.output
+
 
 class TestValidate:
     def test_validate_passing(self, runner: CliRunner):
@@ -654,6 +755,78 @@ class TestValidate:
         with patch("agile_backlog.cli.get_current_sprint", return_value=5):
             result = runner.invoke(main, ["validate"])
         assert result.exit_code == 1
+
+    def test_validate_level_scope_passes_without_technical_specs(self, runner: CliRunner):
+        """'validate --level scope' passes an item with goal + complexity + 2 AC and no technical_specs."""
+        runner.invoke(main, ["add", "Scoped item", "--category", "feature", "--sprint", "5"])
+        runner.invoke(
+            main,
+            [
+                "edit",
+                "scoped-item",
+                "--goal",
+                "Deliver X",
+                "--complexity",
+                "S",
+                "--acceptance-criteria",
+                "AC one",
+                "--acceptance-criteria",
+                "AC two",
+            ],
+        )
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["validate", "--level", "scope"])
+        assert result.exit_code == 0
+        assert "PASS" in result.output
+
+    def test_validate_level_full_fails_without_technical_specs(self, runner: CliRunner):
+        """'validate --level full' still requires technical_specs on the same item."""
+        runner.invoke(main, ["add", "Scoped item", "--category", "feature", "--sprint", "5"])
+        runner.invoke(
+            main,
+            [
+                "edit",
+                "scoped-item",
+                "--goal",
+                "Deliver X",
+                "--complexity",
+                "S",
+                "--acceptance-criteria",
+                "AC one",
+                "--acceptance-criteria",
+                "AC two",
+            ],
+        )
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            result = runner.invoke(main, ["validate", "--level", "full"])
+        assert result.exit_code == 1
+        assert "technical_specs" in result.output
+
+    def test_validate_no_flag_matches_current_behaviour(self, runner: CliRunner):
+        """'validate' with no --level flag produces identical output to explicit --level full."""
+        runner.invoke(main, ["add", "Good item", "--category", "feature", "--sprint", "5"])
+        runner.invoke(
+            main,
+            [
+                "edit",
+                "good-item",
+                "--goal",
+                "Deliver X",
+                "--complexity",
+                "S",
+                "--acceptance-criteria",
+                "AC one",
+                "--acceptance-criteria",
+                "AC two",
+                "--technical-specs",
+                "File: foo.py",
+            ],
+        )
+        with patch("agile_backlog.cli.get_current_sprint", return_value=5):
+            default_result = runner.invoke(main, ["validate"])
+            full_result = runner.invoke(main, ["validate", "--level", "full"])
+        assert default_result.output == full_result.output
+        assert default_result.exit_code == full_result.exit_code == 0
 
 
 class TestDelete:

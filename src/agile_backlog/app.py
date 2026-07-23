@@ -1,6 +1,9 @@
 # src/app.py
 """NiceGUI Kanban board for agile-backlog — Mission Control dark theme."""
 
+import logging
+from pathlib import Path
+
 from nicegui import ui
 
 from agile_backlog.components import (
@@ -9,6 +12,7 @@ from agile_backlog.components import (
     _render_side_panel_content,
     prompt_button,
 )
+from agile_backlog.context_report import analyze_usage
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.pure import (
     backlog_dir_mtime,
@@ -24,6 +28,9 @@ from agile_backlog.styles import (
     STATUSES,
 )
 from agile_backlog.tokens import PRIORITY_ORDER
+from agile_backlog.transcript import discover_transcripts, parse_transcript
+
+logger = logging.getLogger(__name__)
 
 # Sort option definitions: key -> (label, sort_key_fn, reverse)
 SORT_OPTIONS = {
@@ -446,6 +453,34 @@ def _render_context_rereads_tab(reread_waste, session_data) -> None:
                         "sessions": sessions_label,
                     },
                 )
+
+
+def _parse_all_transcripts(paths: list[Path]) -> list:
+    """Parse each transcript, logging and skipping any that fail to parse.
+    Returns the non-sidechain turns from every transcript that parsed successfully."""
+    all_turns = []
+    for path in paths:
+        try:
+            session = parse_transcript(path)
+        except Exception:
+            logger.warning("Failed to parse transcript %s", path, exc_info=True)
+            continue
+        all_turns.extend(t for t in session.turns if not t.is_sidechain)
+    return all_turns
+
+
+def _compute_usage_summary(cwd: Path) -> dict | None:
+    """Discover and parse native transcripts under `cwd`, returning a usage summary.
+    Returns None (and logs) if discovery/analysis fails, or if no turns were found."""
+    try:
+        transcripts = discover_transcripts(cwd)
+        all_turns = _parse_all_transcripts(transcripts)
+        if not all_turns:
+            return None
+        return analyze_usage(all_turns)
+    except Exception:
+        logger.warning("Failed to compute usage summary for %s", cwd, exc_info=True)
+        return None
 
 
 def _sort_items(items: list[BacklogItem], sort_key: str) -> list[BacklogItem]:
@@ -1118,24 +1153,7 @@ if (!window._mcAddPasteListenerAdded) {
 
                     # Native-transcript usage (real tokens, cache-hit rate, cache-aware cost).
                     # Additive + guarded: only rendered when transcript data is present.
-                    usage_summary: dict | None = None
-                    try:
-                        from pathlib import Path as _PathU
-
-                        from agile_backlog.context_report import analyze_usage
-                        from agile_backlog.transcript import discover_transcripts, parse_transcript
-
-                        _all_turns: list = []
-                        for _tp in discover_transcripts(_PathU.cwd()):
-                            try:
-                                _ts = parse_transcript(_tp)
-                            except Exception:
-                                continue
-                            _all_turns.extend(t for t in _ts.turns if not t.is_sidechain)
-                        if _all_turns:
-                            usage_summary = analyze_usage(_all_turns)
-                    except Exception:
-                        usage_summary = None
+                    usage_summary = _compute_usage_summary(Path.cwd())
 
                     # Per-tool token estimates + tool/category data shared across tabs.
                     from agile_backlog.context_report import estimate_tool_tokens

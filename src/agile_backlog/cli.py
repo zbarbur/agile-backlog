@@ -424,28 +424,12 @@ def set_sprint(number: int):
 @click.option("--force", is_flag=True, help="Overwrite existing skills.")
 def install_skills(target: str, force: bool):
     """Install bundled sprint skills into the current project."""
-    import shutil
+    from agile_backlog import scaffold
 
-    skills_src = Path(__file__).parent / "bundled_skills"
-    if not skills_src.exists():
+    try:
+        installed, skipped = scaffold.install_skills_from_package(Path(target), force)
+    except FileNotFoundError:
         raise SystemExit("Error: bundled skills not found in package.")
-
-    target_dir = Path(target)
-    target_dir.mkdir(parents=True, exist_ok=True)
-
-    installed = []
-    skipped = []
-    for skill_dir in sorted(skills_src.iterdir()):
-        if not skill_dir.is_dir():
-            continue
-        dest = target_dir / skill_dir.name
-        if dest.exists() and not force:
-            skipped.append(skill_dir.name)
-            continue
-        if dest.exists():
-            shutil.rmtree(dest)
-        shutil.copytree(skill_dir, dest)
-        installed.append(skill_dir.name)
 
     if installed:
         click.echo(f"Installed {len(installed)} skill(s): {', '.join(installed)}")
@@ -453,6 +437,57 @@ def install_skills(target: str, force: bool):
         click.echo(f"Skipped {len(skipped)} existing skill(s): {', '.join(skipped)} (use --force to overwrite)")
     if not installed and not skipped:
         click.echo("No skills found to install.")
+
+
+@main.command()
+@click.option("--config-only", is_flag=True, help="Scaffold config, dirs, and gitignore only (for plugin users).")
+@click.option("--force", is_flag=True, help="Overwrite existing sprint-config and hook script.")
+@click.option("--yes", is_flag=True, help="Accept detected defaults without prompting.")
+def init(config_only: bool, force: bool, yes: bool):
+    """Set up agile-backlog in the current project — sprint-config, skills, hooks."""
+    from agile_backlog import scaffold
+
+    root = Path.cwd()
+    values = scaffold.detect_project(root)
+    if not yes:
+        values["project_name"] = click.prompt("Project name", default=values["project_name"])
+        values["language"] = click.prompt("Language", default=values["language"] or "python")
+        values["test_command"] = click.prompt("Test command", default=values["test_command"] or "pytest tests/ -v")
+        values["lint_command"] = click.prompt("Lint command", default=values["lint_command"] or "")
+        values["format_command"] = click.prompt("Format command", default=values["format_command"] or "")
+    else:
+        values["language"] = values["language"] or "python"
+        values["test_command"] = values["test_command"] or "pytest tests/ -v"
+        values["lint_command"] = values["lint_command"] or ""
+        values["format_command"] = values["format_command"] or ""
+
+    default_ci = " && ".join(c for c in (values["lint_command"], values["test_command"]) if c)
+    values["ci_command"] = default_ci if yes else click.prompt("CI command", default=default_ci)
+
+    wrote_config = scaffold.scaffold_sprint_config(root, values, force)
+    click.echo(f"{'Wrote' if wrote_config else 'Kept existing'} .claude/sprint-config.yaml")
+    created = scaffold.ensure_doc_dirs(root)
+    if created:
+        click.echo(f"Created dirs: {', '.join(created)}")
+    if scaffold.ensure_gitignore(root):
+        click.echo("Added .claude/context-logs/ to .gitignore")
+
+    if not config_only:
+        installed, skipped = scaffold.install_skills_from_package(root / ".claude" / "skills", force)
+        if installed:
+            click.echo(f"Installed {len(installed)} skill(s)")
+        if skipped:
+            click.echo(f"Skipped {len(skipped)} existing skill(s)")
+        if scaffold.install_hooks(root, force):
+            click.echo("Installed .claude/hooks/post-tool-logger.sh")
+        if scaffold.merge_settings_hooks(root):
+            click.echo("Wired PostToolUse logging hook in .claude/settings.local.json")
+        else:
+            click.echo("PostToolUse logging hook already wired")
+
+    click.echo("\nAdd this to your CLAUDE.md (init never edits it for you):\n")
+    click.echo(scaffold.CLAUDE_MD_BLOCK.format(ci_command=values["ci_command"] or "<your CI command>"))
+    click.echo("Done. Next: import your existing tasks, then run /sprint-start.")
 
 
 @main.command("sprint-status")
@@ -469,13 +504,13 @@ def sprint_status(sprint_number: int | None):
         return
 
     phases = ["plan", "spec", "build", "review"]
-    no_phase = [i for i in items if not i.phase or i.phase not in phases]
+    no_phase = [i for i in items if i.status != "done" and (not i.phase or i.phase not in phases)]
     done_items = [i for i in items if i.status == "done"]
 
     click.echo(f"Sprint {target} — {len(items)} items\n")
 
     for phase in phases:
-        phase_items = [i for i in items if i.phase == phase]
+        phase_items = [i for i in items if i.phase == phase and i.status != "done"]
         if not phase_items:
             continue
         click.echo(f"  {phase} ({len(phase_items)}):")
@@ -498,7 +533,13 @@ def sprint_status(sprint_number: int | None):
 
 @main.command()
 @click.option("--sprint", "sprint_number", type=int, default=None, help="Sprint number (default: current sprint).")
-def validate(sprint_number: int | None):
+@click.option(
+    "--level",
+    type=click.Choice(["scope", "full"]),
+    default="full",
+    help="Readiness tier: 'scope' (goal, complexity, >=2 acceptance criteria) or 'full' (also >=1 technical spec).",
+)
+def validate(sprint_number: int | None, level: str):
     """Check sprint items have required spec fields."""
     target = sprint_number if sprint_number is not None else get_current_sprint()
     if target is None:
@@ -518,7 +559,7 @@ def validate(sprint_number: int | None):
             missing.append("complexity")
         if len(item.acceptance_criteria) < 2:
             missing.append(f"acceptance_criteria (need >=2, have {len(item.acceptance_criteria)})")
-        if len(item.technical_specs) < 1:
+        if level == "full" and len(item.technical_specs) < 1:
             missing.append(f"technical_specs (need >=1, have {len(item.technical_specs)})")
 
         if missing:
@@ -617,6 +658,40 @@ def context_summary(sprint, output_dir, log_dir):
     click.echo(f"Summary written: {md_path}")
 
 
+_UV_RECEIPT_REL = Path(".local/share/uv/tools/agile-backlog/uv-receipt.toml")
+_PIPX_METADATA_REL = Path(".local/pipx/venvs/agile-backlog/pipx_metadata.json")
+
+_PIP_REMEDY = "pip install agile-backlog[ui]"
+_UV_REMEDY = "uv tool install --force --editable <repo> --with nicegui"
+_PIPX_REMEDY = "pipx inject agile-backlog nicegui"
+
+
+def _detect_install_context(home: Path) -> str:
+    """Detect how agile-backlog was likely installed, given an explicit home directory.
+
+    Pure/testable: takes the home path explicitly instead of reading Path.home() itself.
+    Returns 'uv', 'pipx', or 'unknown'. 'unknown' also covers a plain pip/venv install,
+    which leaves no positive signature to detect — the caller must treat it as inconclusive.
+    """
+    if (home / _UV_RECEIPT_REL).exists():
+        return "uv"
+    if (home / _PIPX_METADATA_REL).exists():
+        return "pipx"
+    return "unknown"
+
+
+def _nicegui_missing_message(home: Path) -> str:
+    """Build the 'NiceGUI is not installed' error, naming the remedy for the detected install context."""
+    context = _detect_install_context(home)
+    if context == "uv":
+        remedy = f"Install with: {_UV_REMEDY}"
+    elif context == "pipx":
+        remedy = f"Install with: {_PIPX_REMEDY}"
+    else:
+        remedy = f"Install with one of:\n  {_PIP_REMEDY}\n  {_UV_REMEDY}"
+    return f"Error: NiceGUI is not installed. {remedy}"
+
+
 def _pid_file() -> Path:
     """Return path to the server PID file."""
     return _yaml_store.get_backlog_dir().parent / ".agile-backlog.pid"
@@ -657,7 +732,7 @@ def serve(port: int | None, host: str, reload: bool):
     try:
         from agile_backlog.app import run_app
     except ImportError:
-        raise SystemExit("Error: NiceGUI is not installed. Install with: pip install agile-backlog[ui]")
+        raise SystemExit(_nicegui_missing_message(Path.home()))
 
     pf = _pid_file()
     pf.write_text(str(os.getpid()))
