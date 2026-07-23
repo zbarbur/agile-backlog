@@ -2,7 +2,7 @@ title: Dogfood .claude/skills can silently drift from canonical bundled_skills
 status: backlog
 priority: P2
 category: bug
-sprint_target: 32
+sprint_target: 33
 created: 2026-07-23
 updated: 2026-07-23
 depends_on: []
@@ -36,7 +36,8 @@ test_plan:
 - 'tests/test_plugin_sync.py: drifting .claude/skills/<skill>/SKILL.md makes --check
   exit non-zero'
 - 'tests/test_plugin_sync.py: sync restores the dogfood skills copy'
-notes: ''
+notes: "Deferred from Sprint 32 to 33 at sprint-end: filed mid-execution, never entered\
+  \ build. Not a scope failure \u2014 it was discovered by the sprint's own work."
 phase: null
 design_reviewed: false
 code_reviewed: false

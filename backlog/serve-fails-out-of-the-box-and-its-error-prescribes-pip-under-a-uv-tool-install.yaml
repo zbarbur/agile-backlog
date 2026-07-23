@@ -1,5 +1,5 @@
 title: serve fails out of the box, and its error prescribes pip under a uv-tool install
-status: doing
+status: done
 priority: P1
 category: bug
 sprint_target: 32

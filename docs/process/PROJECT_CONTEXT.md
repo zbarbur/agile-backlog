@@ -2,20 +2,20 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Sprint 32 Planning |
-| **Last Sync** | 2026-06-07 |
+| **Status** | Sprint 33 Planning |
+| **Last Sync** | 2026-07-23 |
 | **Objective** | Lightweight Kanban board for agentic development |
 
 ## Architecture
 
 Single Python package with three interfaces:
-- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, delete, show, serve, note, flagged, set-sprint, resolve-note, sprint-status, validate, install-skills, context-report, context-summary
+- **CLI** (`src/agile_backlog/cli.py`) — Click-based: add, list, move, edit, delete, show, serve, note, flagged, set-sprint, resolve-note, sprint-status, validate, install-skills, context-report, context-summary, init
 - **Web UI** (`src/agile_backlog/app.py`, `pure.py`, `styles.py`, `components.py`) — NiceGUI dark theme board + backlog planning view + context analysis dashboard + process management tools
-- **Claude Code plugin** (`plugin/`) — /backlog command wrapping CLI
+- **Claude Code plugin** (`plugin/`) — full plugin: 9 skills + 8 slash commands + PostToolUse hook, synced from canonical package content by `scripts/sync_plugin.py` (CI-gated against drift)
 
 Data: YAML files in `backlog/`, config in `.claude/sprint-config.yaml`. Single source of truth.
 
-Key modules: `models.py` (Pydantic), `yaml_store.py` (persistence), `tokens.py` (design tokens), `config.py` (sprint config), `pure.py` (pure functions), `styles.py` (CSS), `components.py` (UI components).
+Key modules: `models.py` (Pydantic), `yaml_store.py` (persistence), `scaffold.py` (`init` scaffolding, pure root-taking functions), `tokens.py` (design tokens), `config.py` (sprint config), `pure.py` (pure functions), `styles.py` (CSS), `components.py` (UI components).
 
 Package installable from git: `pip install git+https://github.com/zbarbur/agile-backlog.git`
 
@@ -23,7 +23,7 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 
 | Metric | Value |
 |--------|-------|
-| **Tests** | 415 |
+| **Tests** | 474 |
 | **Test Runner** | pytest |
 | **Lint** | ruff |
 
@@ -61,3 +61,4 @@ Package installable from git: `pip install git+https://github.com/zbarbur/agile-
 | 29 | Observability & Skill Management | 354 | — |
 | 30 | Dashboard v2 Design + Debt Paydown | 361 | #31 |
 | 31 | Native-transcript Foundation + Storybook Adoption Fixes | 415 | — |
+| 32 | Adoption + External Feedback (`init` + plugin, serve, planning view) | 474 | #33 |

@@ -1,0 +1,48 @@
+title: "Surface saved sprint context reports in the UI \u2014 per-sprint view plus\
+  \ re-read trend"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 33
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Make the 9 saved SPRINT*_CONTEXT_REPORT.json files readable in the UI, including
+  a cross-sprint re-read trend.
+complexity: S
+technical_specs: []
+description: "Raised 2026-07-23 while closing Sprint 32. sprint-end generates docs/sprints/SPRINT{N}_CONTEXT_REPORT.json\
+  \ every sprint and commits it; there are now 9 of them (Sprints 23-32). Nothing\
+  \ in the product ever reads one \u2014 grepping app.py for the filename returns\
+  \ zero hits. The Context view recomputes live from discover_transcripts(cwd) at\
+  \ app.py:476, so it shows the current session, never the frozen sprint snapshot;\
+  \ the Handovers tab globs the same docs/sprints/ directory but only for SPRINT*_HANDOVER.md.\
+  \ So the reports are write-only artifacts generated expressly to inform the next\
+  \ sprint and then never looked at. The trend is the valuable part and it is the\
+  \ part that is invisible: 0.65 (S25), 0.61 (S27), 0.78 (S29), 0.68 (S31), 0.68 (S32)\
+  \ \u2014 flat across five sprints despite CLAUDE.md opening with a hard DO-NOT-RE-READ\
+  \ rule, which is itself the finding. CAVEAT to build in: Sprints 23, 24, 26 and\
+  \ 30 have read counts of 4-17 (hook inactive), so their ratios are noise and must\
+  \ not be plotted as if comparable \u2014 needs a minimum-sample threshold or an\
+  \ explicit insufficient-data marker."
+acceptance_criteria:
+- A saved SPRINT{N}_CONTEXT_REPORT.json can be opened in the UI, showing its totals,
+  top files, and wasteful reads.
+- A trend view plots re-read ratio and estimated tokens across sprints that have reports.
+- Sprints whose sample is too small to be meaningful are marked as such rather than
+  plotted as comparable points.
+- The existing live Context view is unchanged.
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- 'tests/test_pure.py: report-series parsing tolerates a missing or malformed report
+  file'
+- 'tests/test_pure.py: sprints below the sample threshold are flagged, not silently
+  included'
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

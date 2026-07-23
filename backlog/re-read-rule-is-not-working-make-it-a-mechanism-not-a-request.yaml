@@ -1,0 +1,46 @@
+title: "Re-read rule is not working \u2014 make it a mechanism, not a request"
+status: backlog
+priority: P2
+category: feature
+sprint_target: 33
+created: 2026-07-23
+updated: 2026-07-23
+depends_on: []
+tags: []
+goal: Turn the CLAUDE.md do-not-re-read rule into an enforced mechanism, since five
+  sprints of asking has not moved the ratio.
+complexity: M
+technical_specs: []
+description: "Raised in the Sprint 32 handover. CLAUDE.md opens with a hard 'CRITICAL:\
+  \ DO NOT RE-READ FILES' instruction, repeated again at the end of the file. Across\
+  \ five well-sampled sprints the re-read ratio has not improved: 0.65 (S25), 0.61\
+  \ (S27), 0.78 (S29), 0.68 (S31), 0.68 (S32). Sprint 32 re-read 140 times across\
+  \ 67 unique files, with app.py read 27x and cli.py 24x. A prose rule that has produced\
+  \ no measurable change in five sprints is not a rule, it is a wish. Options, roughly\
+  \ in increasing strength: (a) pass file content to subagents rather than having\
+  \ each re-read the same large files independently \u2014 a known contributor, since\
+  \ Sprint 32 ran four parallel agents that each read cli.py and app.py separately,\
+  \ and there is already a related item 'Pass file content to subagents to reduce\
+  \ re-read ratio'; (b) upgrade the existing stdout re-read warning to a PreToolUse\
+  \ block, already filed as 'upgrade-re-read-detection-from-stdout-warning-to-pretooluse-block';\
+  \ (c) have the analyze command's claude-md analyzer flag rules that measurably fail,\
+  \ which is squarely in the S33 analyze epic's remit. This item is the umbrella:\
+  \ decide which mechanism, then measure whether the ratio actually moves next sprint.\
+  \ Success is a number going down, not a rule being restated more loudly."
+acceptance_criteria:
+- A concrete enforcement mechanism is chosen and implemented (not another prose restatement).
+- The Sprint 33 context report shows a re-read ratio measurably below 0.68 on a comparable
+  sample size.
+- The mechanism does not block legitimate re-reads after an edit (verifying own changes
+  must still work).
+- Tests pass (.venv/bin/pytest tests/ -v) and lint is clean (.venv/bin/ruff check
+  . && .venv/bin/ruff format --check .)
+test_plan:
+- Compare SPRINT33_CONTEXT_REPORT.json reread_ratio against Sprint 32's 0.68 at a
+  similar read volume
+notes: ''
+phase: null
+design_reviewed: false
+code_reviewed: false
+comments: []
+images: []

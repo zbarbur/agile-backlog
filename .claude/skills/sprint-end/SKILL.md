@@ -57,8 +57,13 @@ For incomplete items, ask: move to done (if actually complete) or defer to next 
 
 ```bash
 {backlog_commands.move} <item-id> --status backlog
-{backlog_commands.edit} <item-id> --sprint 0  # clear sprint target
+{backlog_commands.edit} <item-id> --sprint {N+1}  # retag to the sprint that will carry it
 ```
+
+**Do NOT use `--sprint 0` to clear the tag.** There is currently no way to unset `sprint_target`:
+`--sprint 0` is silently accepted and writes `sprint_target: 0`, a sprint that does not exist,
+which then shows up in sprint filters and groupings. Retag the item to the sprint that will
+actually carry the work — that is both accurate and avoids the bogus value.
 
 ## Phase 2b: Issue Reconciliation
 

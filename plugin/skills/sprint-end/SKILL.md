@@ -57,8 +57,13 @@ For incomplete items, ask: move to done (if actually complete) or defer to next 
 
 ```bash
 {backlog_commands.move} <item-id> --status backlog
-{backlog_commands.edit} <item-id> --sprint 0  # clear sprint target
+{backlog_commands.edit} <item-id> --sprint {N+1}  # retag to the sprint that will carry it
 ```
+
+**Do NOT use `--sprint 0` to clear the tag.** There is currently no way to unset `sprint_target`:
+`--sprint 0` is silently accepted and writes `sprint_target: 0`, a sprint that does not exist,
+which then shows up in sprint filters and groupings. Retag the item to the sprint that will
+actually carry the work — that is both accurate and avoids the bogus value.
 
 ## Phase 2b: Issue Reconciliation
 
@@ -122,6 +127,43 @@ Run a structured memory audit, then update:
 
 **4. Verify MEMORY.md index** matches actual files in the memory directory.
 
+## Phase 3c: Context Efficiency Report
+
+Generate the context analysis report for this sprint:
+
+```bash
+{backlog_commands.context_report} --sprint {N} --log-dir /tmp/claude-context-logs --output-dir docs/sprints
+```
+
+If log data exists, include a brief summary in the handover doc:
+- Total reads / unique files / re-read ratio
+- Top 3 most-read files
+- Any wasteful re-reads to address
+
+If no log data exists (hook wasn't active for this sprint), skip and note "No context logs available."
+
+Add the report JSON to the commit:
+```bash
+git add docs/sprints/SPRINT{N}_CONTEXT_REPORT.json
+```
+
+## Phase 3a: Backlog Update from Handover
+
+**Every recommendation in the handover MUST become a backlog item.** Prose recommendations in docs get ignored — only YAML items get tracked.
+
+After writing the handover:
+
+1. Re-read the "Recommendations for Next Sprint" section
+2. For each recommendation, create a backlog item:
+
+```bash
+{backlog_commands.add} "<recommendation title>" --category <category> --priority <priority>
+```
+
+3. Verify: count recommendations vs. created items — they must match
+
+Also check: were any lessons learned actionable? If so, create items for those too.
+
 ## Phase 3b: Code Review (MANDATORY before merge)
 
 **This phase is mandatory — never skip it.** Run a code review on the full sprint diff before creating the PR.
@@ -151,6 +193,21 @@ Present findings to the user:
 ## Phase 4: Clean Slate
 
 ### Merge and Cleanup
+
+### Auto-tag Release
+
+Create a git tag for the sprint release:
+
+```bash
+# Read version from sprint-config.yaml
+VERSION=$(grep 'current_version' .claude/sprint-config.yaml | awk '{print $2}' | tr -d '"')
+git tag -a "v${VERSION}" -m "Release v${VERSION} — Sprint {N}"
+git push origin "v${VERSION}"
+```
+
+**Keep version in sync** — update BOTH files (they must match):
+1. `src/agile_backlog/__init__.py` — `__version__ = "0.{next_sprint}.0"`
+2. `.claude/sprint-config.yaml` — `current_version: "0.{next_sprint}.0"`
 
 ```bash
 # Create PR and merge

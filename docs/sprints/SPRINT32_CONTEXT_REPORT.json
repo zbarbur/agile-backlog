@@ -1,0 +1,609 @@
+{
+  "sprint": 32,
+  "total_reads": 207,
+  "unique_files": 67,
+  "reread_count": 140,
+  "reread_ratio": 0.68,
+  "estimated_tokens": 244640,
+  "top_files": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+      "count": 27
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/cli.py",
+      "count": 24
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_cli.py",
+      "count": 13
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/components.py",
+      "count": 13
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/plans/2026-07-02-two-channel-adoption-init-and-plugin.md",
+      "count": 11
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+      "count": 8
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/views/done.py",
+      "count": 6
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md",
+      "count": 5
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/yaml_store.py",
+      "count": 5
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+      "count": 4
+    }
+  ],
+  "wasteful_reads": [
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/tokens.py",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+      "count": 8,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/specs/2026-05-30-context-optimization-session-analysis-research.md",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/yaml_store.py",
+      "count": 5,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/transcript.py",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/prompts.py",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/process/PROJECT_CONTEXT.md",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_yaml_store.py",
+      "count": 4,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/CLAUDE.md",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/pyproject.toml",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/scaffold.py",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/plugin/plugin.json",
+      "count": 2,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/Projects/agile-backlog/docs/guides/ADOPTION.md",
+      "count": 3,
+      "range": "0-0"
+    },
+    {
+      "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/sprint-32-planning-status.md",
+      "count": 2,
+      "range": "0-0"
+    }
+  ],
+  "tool_usage": {
+    "total_tool_calls": 1194,
+    "by_tool": {
+      "Bash": 584,
+      "Read": 207,
+      "WebFetch": 148,
+      "Edit": 105,
+      "Write": 39,
+      "Grep": 38,
+      "Glob": 30,
+      "Agent": 25,
+      "Skill": 18
+    },
+    "reads": 275,
+    "writes": 144,
+    "read_write_ratio": 1.91
+  },
+  "efficiency": {
+    "total_reads": 207,
+    "reread_count": 140,
+    "exact_reread_count": 28,
+    "reread_waste_ratio": 0.14,
+    "unique_grep_patterns": 35,
+    "total_grep_calls": 38
+  },
+  "errors": {
+    "total_errors": 0,
+    "error_rate": 0.0,
+    "errors_by_tool": {},
+    "top_error_commands": []
+  },
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "cache_hit_rate": 0.0,
+    "cost_usd": 0.0
+  },
+  "sessions": [
+    {
+      "total_reads": 36,
+      "unique_files": 18,
+      "reread_count": 18,
+      "reread_ratio": 0.5,
+      "estimated_tokens": 33820,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 8
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/views/done.py",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/cli.py",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/add-claude-code-terminal-session.yaml",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_cli.py",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/export-to-kanban-md.yaml",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/sprints/SPRINT29_HANDOVER.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/backlog/design-session-context-and-process-dashboard-v2-with-per-tool-context-cost-skill-invocation-tracking-historical-sprint-comparison-and-actionable-prompts.yaml",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/__init__.py",
+          "count": 2,
+          "range": "0-0"
+        }
+      ],
+      "session_id": "w0t0p08087CDF5-B334-47EE-9763-9DD065DCF120",
+      "tool_usage": {
+        "total_tool_calls": 431,
+        "by_tool": {
+          "Bash": 213,
+          "WebFetch": 138,
+          "Read": 36,
+          "Edit": 16,
+          "Write": 10,
+          "Grep": 10,
+          "Skill": 4,
+          "Agent": 2,
+          "Glob": 2
+        },
+        "reads": 48,
+        "writes": 26,
+        "read_write_ratio": 1.85
+      },
+      "efficiency": {
+        "total_reads": 36,
+        "reread_count": 18,
+        "exact_reread_count": 1,
+        "reread_waste_ratio": 0.03,
+        "unique_grep_patterns": 9,
+        "total_grep_calls": 10
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      },
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_hit_rate": 0.0,
+        "cost_usd": 0.0
+      }
+    },
+    {
+      "total_reads": 77,
+      "unique_files": 25,
+      "reread_count": 52,
+      "reread_ratio": 0.68,
+      "estimated_tokens": 93624,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 11
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+          "count": 8
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/cli.py",
+          "count": 8
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_cli.py",
+          "count": 5
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/components.py",
+          "count": 4
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/design/SPRINT30_DASHBOARD_V2_DESIGN.md",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/yaml_store.py",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_yaml_store.py",
+          "count": 3
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 3
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/tokens.py",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/context_report.py",
+          "count": 8,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/specs/2026-05-30-context-optimization-session-analysis-research.md",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_context_report.py",
+          "count": 4,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/yaml_store.py",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/transcript.py",
+          "count": 3,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/prompts.py",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/MEMORY.md",
+          "count": 3,
+          "range": "0-0"
+        }
+      ],
+      "session_id": "w1t0p0839C62ED-5FE3-48EC-B1A0-B31E40E602F8",
+      "tool_usage": {
+        "total_tool_calls": 335,
+        "by_tool": {
+          "Bash": 171,
+          "Read": 77,
+          "Edit": 42,
+          "Agent": 15,
+          "Write": 10,
+          "Skill": 8,
+          "Glob": 6,
+          "Grep": 6
+        },
+        "reads": 89,
+        "writes": 52,
+        "read_write_ratio": 1.71
+      },
+      "efficiency": {
+        "total_reads": 77,
+        "reread_count": 52,
+        "exact_reread_count": 14,
+        "reread_waste_ratio": 0.18,
+        "unique_grep_patterns": 6,
+        "total_grep_calls": 6
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      },
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_hit_rate": 0.0,
+        "cost_usd": 0.0
+      }
+    },
+    {
+      "total_reads": 86,
+      "unique_files": 39,
+      "reread_count": 47,
+      "reread_ratio": 0.55,
+      "estimated_tokens": 86876,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/cli.py",
+          "count": 11
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/superpowers/plans/2026-07-02-two-channel-adoption-init-and-plugin.md",
+          "count": 11
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/components.py",
+          "count": 9
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/app.py",
+          "count": 8
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/tests/test_cli.py",
+          "count": 6
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/plugin/plugin.json",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/pyproject.toml",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/scaffold.py",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 2
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/yaml_store.py",
+          "count": 2
+        }
+      ],
+      "wasteful_reads": [
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/pure.py",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/pyproject.toml",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/scaffold.py",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/plugin/plugin.json",
+          "count": 2,
+          "range": "0-0"
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/guides/ADOPTION.md",
+          "count": 2,
+          "range": "0-0"
+        }
+      ],
+      "session_id": "w4t0p0C807A8DB-DFB1-44FD-BF0E-91D5E31C427C",
+      "tool_usage": {
+        "total_tool_calls": 379,
+        "by_tool": {
+          "Bash": 179,
+          "Read": 86,
+          "Edit": 45,
+          "Glob": 22,
+          "Grep": 22,
+          "Write": 17,
+          "Agent": 6,
+          "Skill": 2
+        },
+        "reads": 130,
+        "writes": 62,
+        "read_write_ratio": 2.1
+      },
+      "efficiency": {
+        "total_reads": 86,
+        "reread_count": 47,
+        "exact_reread_count": 5,
+        "reread_waste_ratio": 0.06,
+        "unique_grep_patterns": 20,
+        "total_grep_calls": 22
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      },
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_hit_rate": 0.0,
+        "cost_usd": 0.0
+      }
+    },
+    {
+      "total_reads": 8,
+      "unique_files": 8,
+      "reread_count": 0,
+      "reread_ratio": 0.0,
+      "estimated_tokens": 30320,
+      "top_files": [
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/memory/sprint-32-planning-status.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/fc6a81c0-ca9f-44a9-833b-0c8ca76e47a1/tool-results/toolu_01TdSeHb51CyQ7pD4fadpA1A.txt",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/fc6a81c0-ca9f-44a9-833b-0c8ca76e47a1/tool-results/toolu_01E2c5dzSprHYZ2Rbv5qXAXG.txt",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/docs/guides/ADOPTION.md",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/fc6a81c0-ca9f-44a9-833b-0c8ca76e47a1/tool-results/toolu_01T9vTozYKRh7vCkv8qzxtYr.txt",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/Projects/agile-backlog/src/agile_backlog/cli.py",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/fc6a81c0-ca9f-44a9-833b-0c8ca76e47a1/tool-results/toolu_015aApwbrGbz1EiZGvzREfZy.txt",
+          "count": 1
+        },
+        {
+          "file": "/Users/guyguzner/.claude/projects/-Users-guyguzner-Projects-agile-backlog/fc6a81c0-ca9f-44a9-833b-0c8ca76e47a1/tool-results/toolu_01WpjRN2ctk5dsPtpy1ctcV2.txt",
+          "count": 1
+        }
+      ],
+      "wasteful_reads": [],
+      "session_id": "w7t0p0470DE4EE-AC60-46D1-A67B-D2D9F7B756DF",
+      "tool_usage": {
+        "total_tool_calls": 49,
+        "by_tool": {
+          "Bash": 21,
+          "WebFetch": 10,
+          "Read": 8,
+          "Skill": 4,
+          "Edit": 2,
+          "Agent": 2,
+          "Write": 2
+        },
+        "reads": 8,
+        "writes": 4,
+        "read_write_ratio": 2.0
+      },
+      "efficiency": {
+        "total_reads": 8,
+        "reread_count": 0,
+        "exact_reread_count": 0,
+        "reread_waste_ratio": 0.0,
+        "unique_grep_patterns": 0,
+        "total_grep_calls": 0
+      },
+      "errors": {
+        "total_errors": 0,
+        "error_rate": 0.0,
+        "errors_by_tool": {},
+        "top_error_commands": []
+      },
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_hit_rate": 0.0,
+        "cost_usd": 0.0
+      }
+    }
+  ]
+}
