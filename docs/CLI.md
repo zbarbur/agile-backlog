@@ -74,7 +74,7 @@ agile-backlog add TITLE [OPTIONS]
 | `--category` | bug/feature/docs/chore | *required* | Category |
 | `--description` | text | "" | Item description |
 | `--sprint` | integer | none | Target sprint number |
-| `--id` | ASCII slug | derived from the title | Explicit ASCII id (lowercase, digits, single dashes); required when the title has no Latin letters (e.g. Hebrew) |
+| `--id` | ASCII slug | derived from the title | Explicit ASCII id (lowercase, digits, single dashes); required when the title's derived slug has no ASCII letter (e.g. an all-Hebrew title, or a Hebrew title with a year in it). An explicit `--id` that already exists is refused, not suffixed. |
 
 ```bash
 agile-backlog add "Fix auth leak" --category bug --priority P1
