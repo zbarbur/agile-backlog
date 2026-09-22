@@ -50,6 +50,20 @@ class TestSaveAndLoad:
         save_item(item)
         assert (backlog_dir / "test-item.yaml").exists()
 
+    def test_hebrew_is_written_as_hebrew(self, backlog_dir: Path):
+        """The file is what a human and a git diff see: Hebrew stays Hebrew.
+
+        Without allow_unicode the dumper writes every non-ASCII character as
+        a \\uXXXX escape — 190 of one adopter's 448 items were unreadable in
+        git while loading back correctly, so a load-based test cannot see it.
+        """
+        item = _make_item(title="תזכורת לפני פקיעת ויתור שאירים", goal="להתריע ליועץ")
+        save_item(item)
+        raw = (backlog_dir / "test-item.yaml").read_text(encoding="utf-8")
+        assert "תזכורת לפני פקיעת ויתור שאירים" in raw
+        assert "\\u05" not in raw
+        assert load_item("test-item").title == item.title
+
     def test_yaml_does_not_contain_id_field(self, backlog_dir: Path):
         item = _make_item()
         save_item(item)
