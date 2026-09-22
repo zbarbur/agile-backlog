@@ -110,6 +110,43 @@ class TestAdd:
         assert data["tags"] == []
         assert data["acceptance_criteria"] == []
 
+    def test_add_hebrew_title_without_id_is_refused(self, runner: CliRunner, backlog_dir: Path):
+        """An all-Hebrew title slugifies to '' — the CLI must refuse, not write backlog/.yaml."""
+        result = runner.invoke(main, ["add", "דוח שאירים לפי לקוח", "--category", "feature"])
+        assert result.exit_code == 2
+        assert "Title produces an invalid ID" in result.output
+        assert "--id" in result.output
+        assert not (backlog_dir / ".yaml").exists()
+        assert list(backlog_dir.iterdir()) == []
+
+    def test_add_hebrew_title_with_id(self, runner: CliRunner, backlog_dir: Path):
+        result = runner.invoke(
+            main,
+            ["add", "דוח שאירים לפי לקוח", "--category", "feature", "--id", "survivors-report-per-client"],
+        )
+        assert result.exit_code == 0, result.output
+        assert "Created: survivors-report-per-client" in result.output
+        path = backlog_dir / "survivors-report-per-client.yaml"
+        assert path.exists()
+        data = yaml.safe_load(path.read_text())
+        assert "id" not in data, "the id is the filename, never a YAML field"
+        assert data["title"] == "דוח שאירים לפי לקוח"
+
+    def test_add_id_must_be_an_ascii_slug(self, runner: CliRunner, backlog_dir: Path):
+        for bad in ["דוח", "Has Spaces", "UPPER", "trailing-", "-leading", "double--dash"]:
+            result = runner.invoke(main, ["add", "x", "--category", "feature", "--id", bad])
+            assert result.exit_code == 2, bad
+            assert "--id" in result.output, bad
+        assert list(backlog_dir.iterdir()) == []
+
+    def test_add_explicit_id_collides_like_a_slug(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "a", "--category", "feature", "--id", "same"])
+        result = runner.invoke(main, ["add", "b", "--category", "feature", "--id", "same"])
+        assert result.exit_code == 0
+        assert "same-2" in result.output
+        assert (backlog_dir / "same.yaml").exists()
+        assert (backlog_dir / "same-2.yaml").exists()
+
 
 class TestList:
     def test_list_empty(self, runner: CliRunner):
