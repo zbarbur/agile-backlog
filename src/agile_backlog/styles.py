@@ -24,6 +24,20 @@ body {
     color: #e4e4e7;
     font-family: 'DM Sans', sans-serif !important;
 }
+/* Bidirectional text reads in order. Item titles, goals, criteria and
+   comments may be Hebrew, English, or Hebrew with digits and Latin
+   tokens; plaintext takes each paragraph's direction from its first
+   strong character — the CSS form of dir="auto" — so nothing here needs
+   to know which language an item was written in. */
+.mc-card-row span,
+.mc-editable,
+.q-field__native,
+textarea,
+.nicegui-markdown,
+.nicegui-markdown *,
+.q-item__label {
+    unicode-bidi: plaintext;
+}
 .nicegui-content {
     padding: 0 !important;
 }
