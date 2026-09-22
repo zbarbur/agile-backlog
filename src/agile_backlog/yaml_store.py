@@ -48,7 +48,10 @@ def save_item(item: BacklogItem) -> Path:
     item.updated = date.today()
     path = get_backlog_dir() / f"{item.id}.yaml"
     data = item.to_yaml_dict()
-    path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    path.write_text(
+        yaml.dump(data, default_flow_style=False, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
     return path
 
 
