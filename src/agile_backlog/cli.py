@@ -48,7 +48,7 @@ def main(backlog_dir: str | None):
     "--id",
     "item_id_opt",
     default=None,
-    help="Explicit ASCII id (lowercase, digits, single dashes). Required when the title has no Latin letters.",
+    help="Explicit ASCII id (lowercase, digits, single dashes). Required when the title's slug has no ASCII letter.",
 )
 def add(
     title_pos: str | None,
@@ -76,17 +76,20 @@ def add(
                 param_hint="'--id'",
             )
         item_id = item_id_opt
+        if item_exists(item_id):
+            raise click.UsageError(f"id '{item_id}' already exists.")
     else:
         item_id = slugify(title)
-        if not item_id:
+        if not re.search(r"[a-z]", item_id):
             raise click.UsageError("Title produces an invalid ID; pass --id <ascii-slug>.")
 
-    # Handle slug collision
-    if item_exists(item_id):
-        n = 2
-        while item_exists(f"{item_id}-{n}"):
-            n += 1
-        item_id = f"{item_id}-{n}"
+        # Handle slug collision — a derived id is ours to rename; an
+        # explicit --id above is the caller's and is refused instead.
+        if item_exists(item_id):
+            n = 2
+            while item_exists(f"{item_id}-{n}"):
+                n += 1
+            item_id = f"{item_id}-{n}"
 
     item = BacklogItem(
         id=item_id,

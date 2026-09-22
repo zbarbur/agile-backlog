@@ -137,15 +137,40 @@ class TestAdd:
             result = runner.invoke(main, ["add", "x", "--category", "feature", "--id", bad])
             assert result.exit_code == 2, bad
             assert "--id" in result.output, bad
+            assert "Invalid value for '--id'" in result.output, bad
         assert list(backlog_dir.iterdir()) == []
 
-    def test_add_explicit_id_collides_like_a_slug(self, runner: CliRunner, backlog_dir: Path):
+    def test_add_derived_slug_with_no_ascii_letter_is_refused(self, runner: CliRunner, backlog_dir: Path):
+        """A Hebrew title carrying a year slugifies to a bare number
+        ('2026') — accepting it would silently create backlog/2026.yaml.
+        The guard fires whenever the derived slug has no ASCII letter, not
+        only when it is empty."""
+        result = runner.invoke(main, ["add", "דוח 2026 לפי לקוח", "--category", "feature"])
+        assert result.exit_code == 2
+        assert "Title produces an invalid ID" in result.output
+        assert "--id" in result.output
+        assert list(backlog_dir.iterdir()) == []
+
+    def test_add_derived_slug_collision_still_suffixes(self, runner: CliRunner, backlog_dir: Path):
+        runner.invoke(main, ["add", "Same title", "--category", "feature"])
+        result = runner.invoke(main, ["add", "Same title", "--category", "feature"])
+        assert result.exit_code == 0
+        assert "same-title-2" in result.output
+        assert (backlog_dir / "same-title.yaml").exists()
+        assert (backlog_dir / "same-title-2.yaml").exists()
+
+    def test_add_explicit_id_collision_is_refused(self, runner: CliRunner, backlog_dir: Path):
+        """An explicit --id names a specific file; renaming it out from
+        under the caller is a surprise a consumer's lane check would only
+        discover later (id != folder name), so it is refused instead."""
         runner.invoke(main, ["add", "a", "--category", "feature", "--id", "same"])
         result = runner.invoke(main, ["add", "b", "--category", "feature", "--id", "same"])
-        assert result.exit_code == 0
-        assert "same-2" in result.output
+        assert result.exit_code == 2
+        assert "id 'same' already exists" in result.output
         assert (backlog_dir / "same.yaml").exists()
-        assert (backlog_dir / "same-2.yaml").exists()
+        assert not (backlog_dir / "same-2.yaml").exists()
+        data = yaml.safe_load((backlog_dir / "same.yaml").read_text())
+        assert data["title"] == "a", "the first add must not have been overwritten"
 
 
 class TestList:
