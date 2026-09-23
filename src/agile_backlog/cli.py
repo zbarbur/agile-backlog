@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from datetime import date
 from pathlib import Path
 
@@ -13,6 +14,11 @@ from agile_backlog.config import get_context_logs_dir, get_current_sprint, get_s
 from agile_backlog.context_report import generate_sprint_report, generate_sprint_summary
 from agile_backlog.models import BacklogItem, slugify
 from agile_backlog.yaml_store import delete_item, item_exists, load_all, load_item, save_item
+
+#: An item id is its filename and its cross-reference key, so it is ASCII
+#: by design. `slugify` derives one from an English title; a title in any
+#: other script derives nothing, and the caller supplies the id instead.
+ID_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
 @click.group()
@@ -38,6 +44,12 @@ def main(backlog_dir: str | None):
 @click.option("--complexity", type=click.Choice(["S", "M", "L"]), default=None, help="Complexity estimate.")
 @click.option("--acceptance-criteria", "acceptance_criteria", multiple=True, help="DoD criterion (repeatable).")
 @click.option("--tags", multiple=True, help="Tag (repeatable).")
+@click.option(
+    "--id",
+    "item_id_opt",
+    default=None,
+    help="Explicit ASCII id (lowercase, digits, single dashes). Required when the title's slug has no ASCII letter.",
+)
 def add(
     title_pos: str | None,
     title_opt: str | None,
@@ -49,6 +61,7 @@ def add(
     complexity: str | None,
     acceptance_criteria: tuple[str, ...],
     tags: tuple[str, ...],
+    item_id_opt: str | None,
 ):
     """Create a new backlog item."""
     if title_pos and title_opt:
@@ -56,14 +69,27 @@ def add(
     title = title_pos or title_opt
     if not title:
         raise click.UsageError("Missing title. Provide as positional argument or --title option.")
-    item_id = slugify(title)
+    if item_id_opt is not None:
+        if not ID_PATTERN.match(item_id_opt):
+            raise click.BadParameter(
+                "must be lowercase letters, digits and single dashes, e.g. survivors-report-per-client",
+                param_hint="'--id'",
+            )
+        item_id = item_id_opt
+        if item_exists(item_id):
+            raise click.UsageError(f"id '{item_id}' already exists.")
+    else:
+        item_id = slugify(title)
+        if not re.search(r"[a-z]", item_id):
+            raise click.UsageError("Title produces an invalid ID; pass --id <ascii-slug>.")
 
-    # Handle slug collision
-    if item_exists(item_id):
-        n = 2
-        while item_exists(f"{item_id}-{n}"):
-            n += 1
-        item_id = f"{item_id}-{n}"
+        # Handle slug collision — a derived id is ours to rename; an
+        # explicit --id above is the caller's and is refused instead.
+        if item_exists(item_id):
+            n = 2
+            while item_exists(f"{item_id}-{n}"):
+                n += 1
+            item_id = f"{item_id}-{n}"
 
     item = BacklogItem(
         id=item_id,
