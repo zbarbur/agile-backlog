@@ -30,5 +30,8 @@ build/
 # Context analysis logs (session-specific, not committed)
 .claude/context-logs/
 
+# Git worktrees
+.claude/worktrees/
+
 # Uploaded images
 backlog/images/

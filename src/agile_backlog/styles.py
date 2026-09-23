@@ -24,6 +24,33 @@ body {
     color: #e4e4e7;
     font-family: 'DM Sans', sans-serif !important;
 }
+/* Bidirectional text reads in order. Item titles, goals, criteria and
+   comments may be Hebrew, English, or Hebrew with digits and Latin
+   tokens; plaintext takes each paragraph's direction from its first
+   strong character — the CSS form of dir="auto" — so nothing here needs
+   to know which language an item was written in. unicode-bidi is NOT
+   inherited: every .mc-editable site is a ui.html(...) wrapper whose text
+   lives one element in (e.g. components.py:445, :626), so the rule must
+   also reach the wrapper's descendants, not just the wrapper itself. */
+.mc-card-row span,
+.mc-editable,
+.mc-editable *,
+.q-field__native,
+textarea,
+.nicegui-markdown,
+.nicegui-markdown *,
+.q-item__label {
+    unicode-bidi: plaintext;
+}
+/* ...but not markdown code blocks: a Hebrew comment inside a fenced code
+   sample must stay LTR, not take an RTL base from its first character.
+   !important is required here, not decorative: a class selector like
+   ".nicegui-markdown *" (specificity 0,1,0) outranks a bare "pre, code"
+   reset (specificity 0,0,1) regardless of source order, so an
+   unqualified reset would silently lose to the rule above it. */
+pre, code {
+    unicode-bidi: normal !important;
+}
 .nicegui-content {
     padding: 0 !important;
 }
