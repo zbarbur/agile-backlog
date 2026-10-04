@@ -31,13 +31,13 @@ model_short=$(echo "$model_id" | awk -F'-' '{print $2}')
 [ -z "$model_short" ] && model_short="unknown"
 
 # --- Effort level ---
-# Priority: stdin JSON → project .claude/settings.local.json → ~/.claude/settings.json
-effort_raw=$(echo "$input" | jq -r '.effortLevel // empty' 2>/dev/null)
+# Priority: stdin JSON (effort.level) → project .claude/settings.local.json → $CLAUDE_CONFIG_DIR (or ~/.claude)/settings.json
+effort_raw=$(echo "$input" | jq -r '.effort.level // .effortLevel // empty' 2>/dev/null)
 if [ -z "$effort_raw" ] && [ -n "$git_root" ] && [ -f "${git_root}/.claude/settings.local.json" ]; then
   effort_raw=$(jq -r '.effortLevel // empty' "${git_root}/.claude/settings.local.json" 2>/dev/null)
 fi
 if [ -z "$effort_raw" ]; then
-  effort_raw=$(jq -r '.effortLevel // empty' ~/.claude/settings.json 2>/dev/null)
+  effort_raw=$(jq -r '.effortLevel // empty' "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json" 2>/dev/null)
 fi
 if [ -n "$effort_raw" ]; then
   case "$effort_raw" in
